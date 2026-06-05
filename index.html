@@ -92,6 +92,7 @@
         .game-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
         .game-saved-score { font-size: 12px; color: #94a3b8; }
 
+        .card-mower { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .card-snake { background: linear-gradient(135deg, #16a085, #2ecc71); }
         .card-pong { background: linear-gradient(135deg, #2980b9, #3498db); }
         .card-clicker { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
@@ -113,21 +114,28 @@
 
         .modal-content {
             background-color: var(--card-bg);
-            padding: 30px;
+            padding: 20px;
             border-radius: 12px;
             text-align: center;
             max-width: 95%;
+            width: fit-content;
         }
 
-        canvas {
+        canvas, iframe {
             background-color: #000;
             border: 4px solid var(--primary);
             border-radius: 8px;
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
         }
 
+        iframe {
+            width: 800px;
+            height: 500px;
+            max-width: 100%;
+        }
+
         .close-btn {
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 10px 20px;
             background-color: var(--accent);
             color: white;
@@ -187,6 +195,12 @@
     <main>
         <h2 class="section-title">Popular Games</h2>
         <div class="game-grid">
+            <div class="game-card card-mower" onclick="openGame('mower')">
+                <div class="game-icon">🚜</div>
+                <div class="game-title">Lawn Mower 3D</div>
+                <div class="game-saved-score">Live Chat & Multiplayer</div>
+            </div>
+
             <div class="game-card card-snake" onclick="openGame('snake')">
                 <div class="game-icon">🐍</div>
                 <div class="game-title">Neon Snake</div>
@@ -217,9 +231,14 @@
         <div class="modal-content">
             <h2 id="modalTitle" style="margin-bottom: 15px;">Game</h2>
             
+            <div id="mowerContainer" style="display: none;">
+                <iframe id="mowerFrame" src=""></iframe>
+                <p class="game-instructions">Drive around and cut the grass in 3D!</p>
+            </div>
+
             <div id="snakeContainer" style="display: none;">
                 <canvas id="snakeCanvas" width="400" height="400"></canvas>
-                <p class="game-instructions">Use Arrow Keys to move. Now runs smoother and slower!</p>
+                <p class="game-instructions">Use Arrow Keys to move.</p>
             </div>
 
             <div id="pongContainer" style="display: none;">
@@ -253,16 +272,8 @@
 
     <script>
         // --- DATA & SAVING LOGIC ---
-        let saveData = {
-            snakeHigh: 0,
-            pongHigh: 0,
-            cookies: 0,
-            grandmas: 0,
-            megas: 0,
-            racerHigh: 0
-        };
+        let saveData = { snakeHigh: 0, pongHigh: 0, cookies: 0, grandmas: 0, megas: 0, racerHigh: 0 };
 
-        // Load saves from localStorage
         if (localStorage.getItem('playzone_save')) {
             saveData = { ...saveData, ...JSON.parse(localStorage.getItem('playzone_save')) };
         }
@@ -283,16 +294,22 @@
         // --- PORTAL MODAL LOGIC ---
         const modal = document.getElementById('gameModal');
         const modalTitle = document.getElementById('modalTitle');
+        const mowerFrame = document.getElementById('mowerFrame');
         let currentInterval;
 
         function openGame(gameType) {
             modal.classList.add('active');
+            document.getElementById('mowerContainer').style.display = 'none';
             document.getElementById('snakeContainer').style.display = 'none';
             document.getElementById('pongContainer').style.display = 'none';
             document.getElementById('clickerContainer').style.display = 'none';
             document.getElementById('racerContainer').style.display = 'none';
             
-            if (gameType === 'snake') {
+            if (gameType === 'mower') {
+                document.getElementById('mowerContainer').style.display = 'block';
+                modalTitle.innerText = "Lawn Mower 3D";
+                mowerFrame.src = "game.html"; // Laad jouw game.html bestand in het venster
+            } else if (gameType === 'snake') {
                 document.getElementById('snakeContainer').style.display = 'block';
                 modalTitle.innerText = "Neon Snake";
                 startSnakeGame();
@@ -313,11 +330,12 @@
 
         function closeGame() {
             modal.classList.remove('active');
+            mowerFrame.src = ""; // Zet de iframe stil als de modal sluit
             if (currentInterval) clearInterval(currentInterval);
             saveToStorage();
         }
 
-        // --- SNAKE GAME LOGIC (MADE SLOWER: 140ms interval instead of 100ms) ---
+        // --- SNAKE GAME LOGIC ---
         const snakeCanvas = document.getElementById('snakeCanvas');
         const snakeCtx = snakeCanvas.getContext('2d');
         const gridSize = 20;
@@ -328,7 +346,7 @@
             dx = gridSize; dy = 0; snakeScore = 0;
             spawnFood();
             if (currentInterval) clearInterval(currentInterval);
-            currentInterval = setInterval(updateSnakeGame, 140); // 140ms is trager en makkelijker!
+            currentInterval = setInterval(updateSnakeGame, 140);
         }
 
         function updateSnakeGame() {
@@ -434,11 +452,10 @@
             pongCtx.font = '30px Arial'; pongCtx.fillText(p1Score, 200, 70); pongCtx.fillText(p2Score, 380, 70);
         }
 
-        // --- COOKIE CLICKER WITH UPGRADES & AUTOSAVE ---
+        // --- COOKIE CLICKER LOGIC ---
         function startClickerGame() {
             updateClickerUI();
             if (currentInterval) clearInterval(currentInterval);
-            // Passive income calculation (Grandmas) every second
             currentInterval = setInterval(() => {
                 saveData.cookies += (saveData.grandmas * 1);
                 updateClickerUI();
@@ -446,7 +463,6 @@
         }
 
         function clickCookie() {
-            // Base click is 1 + 5 per Mega Clicker upgrade
             saveData.cookies += (1 + (saveData.megas * 5));
             updateClickerUI();
         }
@@ -477,7 +493,7 @@
             saveToStorage();
         }
 
-        // --- NEW GAME: PIXEL RACER ---
+        // --- PIXEL RACER ---
         const racerCanvas = document.getElementById('racerCanvas');
         const racerCtx = racerCanvas.getContext('2d');
         let playerCar, enemies, racerScore, racerSpeed;
@@ -485,9 +501,7 @@
 
         function startRacerGame() {
             playerCar = { x: 155, y: 370, width: 40, height: 60 };
-            enemies = [];
-            racerScore = 0;
-            racerSpeed = 4;
+            enemies = []; racerScore = 0; racerSpeed = 4;
             spawnEnemyCar();
             if (currentInterval) clearInterval(currentInterval);
             currentInterval = setInterval(updateRacerGame, 1000/60);
@@ -501,26 +515,20 @@
 
         function updateRacerGame() {
             racerScore++;
-            if (racerScore % 300 === 0) racerSpeed += 0.5; // Speed up slowly
+            if (racerScore % 300 === 0) racerSpeed += 0.5;
 
             if (leftPressed && playerCar.x > 20) playerCar.x -= 5;
             if (rightPressed && playerCar.x < racerCanvas.width - playerCar.width - 20) playerCar.x += 5;
 
-            // Move enemies
             enemies.forEach((enemy, index) => {
                 enemy.y += racerSpeed;
-                // Check Collision
                 if (playerCar.x < enemy.x + enemy.width && playerCar.x + playerCar.width > enemy.x &&
                     playerCar.y < enemy.y + enemy.height && playerCar.y + playerCar.height > enemy.y) {
                     if(racerScore > saveData.racerHigh) { saveData.racerHigh = racerScore; saveToStorage(); }
                     alert("Crash! Your Score: " + racerScore);
-                    startRacerGame();
-                    return;
+                    startRacerGame(); return;
                 }
-                // Remove out of bounds enemies
-                if(enemy.y > racerCanvas.height) {
-                    enemies.splice(index, 1);
-                }
+                if(enemy.y > racerCanvas.height) enemies.splice(index, 1);
             });
 
             if (racerScore % 80 === 0) spawnEnemyCar();
@@ -528,12 +536,10 @@
         }
 
         function drawRacerGame() {
-            // Background / Road
             racerCtx.fillStyle = '#334155'; racerCtx.fillRect(0, 0, racerCanvas.width, racerCanvas.height);
             racerCtx.fillStyle = '#1e293b'; racerCtx.fillRect(0, 0, 20, racerCanvas.height);
             racerCtx.fillRect(racerCanvas.width-20, 0, 20, racerCanvas.height);
 
-            // Lines
             racerCtx.fillStyle = '#cbd5e1';
             for(let i = 0; i < racerCanvas.height; i += 40) {
                 racerCtx.fillRect(105, i + (racerScore % 40), 4, 20);
@@ -541,45 +547,37 @@
                 racerCtx.fillRect(245, i + (racerScore % 40), 4, 20);
             }
 
-            // Player Car (Red)
             racerCtx.fillStyle = '#f43f5e'; racerCtx.fillRect(playerCar.x, playerCar.y, playerCar.width, playerCar.height);
-            // Wheels/Details
             racerCtx.fillStyle = '#000';
             racerCtx.fillRect(playerCar.x-2, playerCar.y+10, 4, 12); racerCtx.fillRect(playerCar.x+playerCar.width-2, playerCar.y+10, 4, 12);
             racerCtx.fillRect(playerCar.x-2, playerCar.y+40, 4, 12); racerCtx.fillRect(playerCar.x+playerCar.width-2, playerCar.y+40, 4, 12);
 
-            // Enemies (Blue)
             racerCtx.fillStyle = '#3b82f6';
             enemies.forEach(enemy => {
                 racerCtx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
                 racerCtx.fillStyle = '#000';
                 racerCtx.fillRect(enemy.x-2, enemy.y+10, 4, 12); racerCtx.fillRect(enemy.x+enemy.width-2, enemy.y+10, 4, 12);
-                racerCtx.fillStyle = '#3b82f6'; // Reset back
+                racerCtx.fillStyle = '#3b82f6';
             });
 
-            // UI
             racerCtx.font = '16px Arial'; racerCtx.fillStyle = '#fff';
             racerCtx.fillText("Score: " + racerScore, 30, 30);
             racerCtx.fillText("High: " + saveData.racerHigh, 30, 50);
         }
 
-        // --- GENERAL CONTROLS ---
+        // --- CONTROLS ---
         document.addEventListener('keydown', (e) => {
             if (!modal.classList.contains('active')) return;
-            
-            // Snake Controls
             if (document.getElementById('snakeContainer').style.display === 'block') {
                 if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -gridSize; }
                 if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = gridSize; }
                 if (e.key === 'ArrowLeft' && dx === 0) { dx = -gridSize; dy = 0; }
                 if (e.key === 'ArrowRight' && dx === 0) { dx = gridSize; dy = 0; }
             }
-            // Pong Controls
             if (document.getElementById('pongContainer').style.display === 'block') {
                 if (e.key === 'ArrowUp') upPressed = true;
                 if (e.key === 'ArrowDown') downPressed = true;
             }
-            // Racer Controls
             if (document.getElementById('racerContainer').style.display === 'block') {
                 if (e.key === 'ArrowLeft') leftPressed = true;
                 if (e.key === 'ArrowRight') rightPressed = true;
