@@ -93,7 +93,7 @@
         .game-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
         .game-saved-score { font-size: 13px; color: #94a3b8; }
 
-        /* Coole Gradients per game card */
+        /* Gradients per game card */
         .card-snake { background: linear-gradient(135deg, #16a085, #2ecc71); }
         .card-pong { background: linear-gradient(135deg, #2980b9, #3498db); }
         .card-clicker { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
@@ -257,12 +257,12 @@
 
             <div id="bricksContainer" style="display: none;">
                 <canvas id="bricksCanvas" width="480" height="400"></canvas>
-                <p class="game-instructions">Gebruik Links / Rechts Pijltjestoetsen om het platform te bewegen.</p>
+                <p class="game-instructions">Gebruik Links / Rechts Pijltjestoetsen. Je hebt 3 levens!</p>
             </div>
 
             <div id="spaceContainer" style="display: none;">
                 <canvas id="spaceCanvas" width="500" height="400"></canvas>
-                <p class="game-instructions">Links/Rechts Pijltjes om te bewegen, SPATIEBALK om te schieten.</p>
+                <p class="game-instructions">Links/Rechts om te bewegen. Hou SPATIEBALK ingedrukt om continu te vuren!</p>
             </div>
 
             <div id="memoryContainer" style="display: none;">
@@ -298,7 +298,7 @@
         updatePortalScores();
 
         function saveToStorage() {
-            localStorage.setItem('playzone_save', JSON.stringify(saveData)); // backward compatibility
+            localStorage.setItem('playzone_save', JSON.stringify(saveData));
             localStorage.setItem('playzone_arcade_save', JSON.stringify(saveData));
             updatePortalScores();
         }
@@ -418,7 +418,7 @@
         function startClicker() {
             updateClickerUI();
             currentInterval = setInterval(() => {
-                saveData.cookies += (saveData.grandmas * 0.2); // Passief per tick
+                saveData.cookies += (saveData.grandmas * 0.2);
                 updateClickerUI();
             }, 200);
         }
@@ -456,17 +456,16 @@
 
             if (racerScore % 70 === 0) { obstacles.push({ x: [40, 110, 180, 250][Math.floor(Math.random()*4)], y: -60 }); }
             
-            racerCtx.fillStyle = '#334155'; racerCtx.fillRect(0,0,360,450); // Weg
-            racerCtx.fillStyle = '#f59e0b'; // Strepen
+            racerCtx.fillStyle = '#334155'; racerCtx.fillRect(0,0,360,450);
+            racerCtx.fillStyle = '#f59e0b';
             for(let i=0; i<450; i+=40) racerCtx.fillRect(178, i + (racerScore%40), 4, 20);
 
-            racerCtx.fillStyle = '#ef4444'; racerCtx.fillRect(carX, 360, 40, 60); // Speler
+            racerCtx.fillStyle = '#ef4444'; racerCtx.fillRect(carX, 360, 40, 60);
 
-            racerCtx.fillStyle = '#3b82f6'; // Tegenliggers
+            racerCtx.fillStyle = '#3b82f6';
             for(let i=obstacles.length-1; i>=0; i--) {
                 obstacles[i].y += racerSpeed;
                 racerCtx.fillRect(obstacles[i].x, obstacles[i].y, 40, 60);
-                // Collision
                 if (carX < obstacles[i].x + 40 && carX + 40 > obstacles[i].x && 360 < obstacles[i].y + 60 && 420 > obstacles[i].y) {
                     if (racerScore > saveData.racerHigh) { saveData.racerHigh = racerScore; saveToStorage(); }
                     alert("Gecrasht! Jouw Score: " + racerScore); startRacer(); return;
@@ -476,20 +475,26 @@
             racerCtx.fillStyle = '#fff'; racerCtx.font = '16px Arial'; racerCtx.fillText("Score: " + racerScore, 20, 30);
         }
 
-        // --- 5. BRICK BREAKER LOGIC ---
+        // --- 5. BRICK BREAKER LOGIC (NU GEMAFT & MET LEVENS) ---
         const bricksCanvas = document.getElementById('bricksCanvas');
         const bricksCtx = bricksCanvas.getContext('2d');
-        let bBall, bPaddle, bricks, brickRows = 4, brickCols = 6, bricksScore;
+        let bBall, bPaddle, bricks, brickRows = 4, brickCols = 6, bricksScore, bricksLives;
 
         function startBricks() {
-            bBall = { x: 240, y: 300, dx: 3, dy: -3, r: 7 };
-            bPaddle = { x: 200, w: 80, h: 10 }; bricksScore = 0;
+            // Snelheid verlaagd naar 2.2 (was 3) voor een makkelijkere ervaring
+            bBall = { x: 240, y: 300, dx: 2.2, dy: -2.2, r: 8 };
+            bPaddle = { x: 180, w: 120, h: 10 }; // Balkje verbreed van 80 naar 120
+            bricksScore = 0;
+            bricksLives = 3; // 3 levens toegevoegd!
+            initBricksGrid();
+            currentInterval = setInterval(updateBricks, 1000/60);
+        }
+        function initBricksGrid() {
             bricks = [];
             for(let c=0; c<brickCols; c++) {
                 bricks[c] = [];
                 for(let r=0; r<brickRows; r++) bricks[c][r] = { x: 0, y: 0, status: 1 };
             }
-            currentInterval = setInterval(updateBricks, 1000/60);
         }
         function updateBricks() {
             if (keys['ArrowLeft'] && bPaddle.x > 0) bPaddle.x -= 6;
@@ -499,9 +504,24 @@
             if (bBall.x <= 0 || bBall.x >= bricksCanvas.width) bBall.dx *= -1;
             if (bBall.y <= 0) bBall.dy *= -1;
 
-            if (bBall.y >= 380 && bBall.x >= bPaddle.x && bBall.x <= bPaddle.x + bPaddle.w) bBall.dy = -Math.abs(bBall.dy);
+            if (bBall.y >= 380 && bBall.x >= bPaddle.x && bBall.x <= bPaddle.x + bPaddle.w) {
+                bBall.dy = -Math.abs(bBall.dy);
+            }
 
-            if (bBall.y > bricksCanvas.height) { alert("Bal verloren! Game Over."); startBricks(); return; }
+            // Als de bal op de grond valt
+            if (bBall.y > bricksCanvas.height) {
+                bricksLives--;
+                if(bricksLives <= 0) {
+                    alert("Geen levens meer! Game Over. Score: " + bricksScore); 
+                    startBricks(); 
+                    return;
+                } else {
+                    alert("Oeps! Bal verloren. Levens over: " + bricksLives);
+                    // Reset bal en platformpositie
+                    bBall.x = 240; bBall.y = 300; bBall.dx = 2.2; bBall.dy = -2.2;
+                    bPaddle.x = 180;
+                }
+            }
 
             let activeBricksCount = 0;
             bricksCtx.fillStyle = '#000'; bricksCtx.fillRect(0,0,bricksCanvas.width,bricksCanvas.height);
@@ -523,14 +543,15 @@
                     }
                 }
             }
-            if(activeBricksCount === 0) { alert("Gefeliciteerd! Level Gehaald!"); startBricks(); return; }
+            if(activeBricksCount === 0) { alert("Geweldig! Je hebt alle blokken gebroken!"); startBricks(); return; }
 
             bricksCtx.fillStyle = '#fff'; bricksCtx.fillRect(bPaddle.x, 380, bPaddle.w, bPaddle.h);
-            bricksCtx.fillStyle = '#fff'; bricksCtx.beginPath(); bricksCtx.arc(bBall.x, bBall.y, bBall.r, 0, Math.PI*2); bricksCtx.fill();
-            bricksCtx.fillText("Score: " + bricksScore + " | High: " + saveData.bricksHigh, 20, 30);
+            bricksCtx.fillStyle = '#3b82f6'; bricksCtx.beginPath(); bricksCtx.arc(bBall.x, bBall.y, bBall.r, 0, Math.PI*2); bricksCtx.fill();
+            bricksCtx.fillStyle = '#fff'; bricksCtx.font = '15px Arial';
+            bricksCtx.fillText("Score: " + bricksScore + " | High: " + saveData.bricksHigh + " | Levens: " + bricksLives, 20, 30);
         }
 
-        // --- 6. SPACE INVADERS LOGIC ---
+        // --- 6. SPACE INVADERS LOGIC (NU MET AUTOFIRE) ---
         const spaceCanvas = document.getElementById('spaceCanvas');
         const spaceCtx = spaceCanvas.getContext('2d');
         let playerX, lasers, invaders, spaceScore, invaderDir, spaceCooldown;
@@ -547,16 +568,19 @@
             if (keys['ArrowRight'] && playerX < 450) playerX += 4;
             if (spaceCooldown > 0) spaceCooldown--;
 
-            if (keys[' '] && spaceCooldown === 0) { lasers.push({ x: playerX + 20, y: 360 }); spaceCooldown = 25; }
+            // AUTOFIRE FIX: Je kunt de spatiebalk nu ingedrukt houden om continu te schieten!
+            if (keys[' '] && spaceCooldown === 0) { 
+                lasers.push({ x: playerX + 18, y: 360 }); 
+                spaceCooldown = 15; // Cooldown verlaagd voor sneller vuren
+            }
 
             spaceCtx.fillStyle = '#000'; spaceCtx.fillRect(0,0,500,400);
-            spaceCtx.fillStyle = '#10b981'; spaceCtx.fillRect(playerX, 370, 40, 15); // Player
+            spaceCtx.fillStyle = '#10b981'; spaceCtx.fillRect(playerX, 370, 40, 15);
 
-            // Move invaders
             let shiftDown = false;
             invaders.forEach(inv => {
                 if(!inv.alive) return;
-                inv.x += invaderDir * 0.8;
+                inv.x += invaderDir * 0.9; // Iets sneller bewegen
                 if(inv.x > 460 || inv.x < 10) shiftDown = true;
             });
             if(shiftDown) { invaderDir *= -1; invaders.forEach(inv => { if(inv.alive) inv.y += 15; }); }
@@ -565,15 +589,15 @@
             invaders.forEach(inv => {
                 if(!inv.alive) return;
                 aliveCount++;
-                spaceCtx.fillStyle = '#a855f7'; spaceCtx.fillRect(inv.x, inv.y, 30, 20); // Invader
-                if(inv.y > 340) { alert("De aliens hebben de aarde bereikt! Game Over."); startSpace(); return; }
+                spaceCtx.fillStyle = '#a855f7'; spaceCtx.fillRect(inv.x, inv.y, 30, 20);
+                if(inv.y > 340) { alert("De aliens hebben gewonnen! Game Over."); startSpace(); return; }
             });
 
-            if(aliveCount === 0) { alert("Gewonnen! Je hebt de aarde gered!"); startSpace(); return; }
+            if(aliveCount === 0) { alert("Gewonnen! Je hebt de invasie verslagen!"); startSpace(); return; }
 
-            // Lasers bewegen en checken
+            // Lasers bewegen
             for(let i=lasers.length-1; i>=0; i--) {
-                lasers[i].y -= 5;
+                lasers[i].y -= 6; // Lasers gaan sneller omhoog
                 spaceCtx.fillStyle = '#f43f5e'; spaceCtx.fillRect(lasers[i].x, lasers[i].y, 4, 12);
 
                 invaders.forEach(inv => {
