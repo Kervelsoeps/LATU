@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Game Portal</title>
+    <title>Ultimate PlayZone Portal</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -80,31 +80,34 @@
             justify-content: center;
             text-align: center;
             padding: 20px;
+            border: 2px solid transparent;
         }
 
         .game-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            border: 2px solid var(--primary);
+            border-color: var(--primary);
         }
 
-        .game-icon { font-size: 60px; margin-bottom: 15px; }
+        .game-icon { font-size: 55px; margin-bottom: 12px; }
         .game-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
-        .game-saved-score { font-size: 12px; color: #94a3b8; }
+        .game-saved-score { font-size: 13px; color: #94a3b8; }
 
-        /* Coole achtergrondkleuren voor de game-kaarten */
-        .card-mower { background: linear-gradient(135deg, #10b981, #047857); } /* Groen voor gras maaien */
+        /* Coole Gradients per game card */
         .card-snake { background: linear-gradient(135deg, #16a085, #2ecc71); }
         .card-pong { background: linear-gradient(135deg, #2980b9, #3498db); }
         .card-clicker { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
         .card-racer { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .card-bricks { background: linear-gradient(135deg, #d35400, #e67e22); }
+        .card-space { background: linear-gradient(135deg, #2c3e50, #34495e); }
+        .card-memory { background: linear-gradient(135deg, #27ae60, #2ecc71); }
 
-        /* Modal / Het speelscherm overlay */
+        /* Modal Overlays */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.95);
+            background-color: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -116,31 +119,24 @@
         .modal-content {
             background-color: var(--card-bg);
             padding: 25px;
-            border-radius: 16px;
+            border-radius: 12px;
             text-align: center;
             max-width: 95%;
-            width: fit-content;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 30px rgba(0,0,0,0.6);
         }
 
-        canvas, .iframe-wrapper iframe {
+        canvas {
             background-color: #000;
             border: 4px solid var(--primary);
             border-radius: 8px;
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
-        }
-
-        /* Dit zorgt ervoor dat jouw 3D Grasmaaier game de perfecte grootte heeft in de pop-up */
-        .iframe-wrapper iframe {
-            width: 900px;
-            height: 550px;
-            max-width: 100%;
-            border: none;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            display: block;
+            margin: 0 auto;
         }
 
         .close-btn {
-            margin-top: 15px;
-            padding: 12px 28px;
+            margin-top: 20px;
+            padding: 10px 25px;
             background-color: var(--accent);
             color: white;
             border: none;
@@ -148,47 +144,28 @@
             font-size: 16px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
         }
 
-        .close-btn:hover { background-color: #e11d48; transform: scale(1.05); }
-        .close-btn:active { transform: scale(0.95); }
+        .close-btn:hover { background-color: #e11d48; }
         .game-instructions { margin-top: 10px; color: #94a3b8; font-size: 14px; }
         
-        /* Clicker Shop Layout */
-        .clicker-layout {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-            justify-content: center;
-        }
-        #cookieBtn { font-size: 100px; background: transparent; border: none; cursor: pointer; transition: transform 0.1s; }
+        /* Cookie Clicker Styling */
+        .clicker-layout { display: flex; gap: 30px; align-items: center; justify-content: center; }
+        #cookieBtn { font-size: 90px; background: transparent; border: none; cursor: pointer; transition: transform 0.1s; }
         #cookieBtn:active { transform: scale(0.9); }
-        #cookieScore { font-size: 28px; font-weight: bold; margin-bottom: 10px; color: #facc15; }
-        
-        .shop-container {
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: left;
-            min-width: 200px;
-        }
+        #cookieScore { font-size: 26px; font-weight: bold; margin-bottom: 10px; color: #facc15; }
+        .shop-container { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; text-align: left; min-width: 220px; }
         .shop-title { font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
-        .shop-btn {
-            display: block;
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 8px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-        }
+        .shop-btn { display: block; width: 100%; padding: 8px; margin-bottom: 8px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; text-align: left; }
         .shop-btn:hover { background: #2563eb; }
-        .shop-btn:disabled { background: #475569; cursor: not-allowed; }
+        .shop-btn:disabled { background: #475569; cursor: not-allowed; opacity: 0.6; }
+
+        /* Memory Game Board Styling */
+        .memory-board { display: grid; grid-template-columns: repeat(4, 70px); gap: 10px; margin: 15px auto; justify-content: center; }
+        .memory-card { width: 70px; height: 70px; background: var(--primary); border-radius: 8px; font-size: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: background 0.2s; }
+        .memory-card.flipped { background: #f8fafc; color: #000; }
+        .memory-card.matched { background: var(--success); color: white; cursor: default; }
     </style>
 </head>
 <body>
@@ -198,15 +175,8 @@
     </header>
 
     <main>
-        <h2 class="section-title">Popular Games</h2>
+        <h2 class="section-title">Arcade Games</h2>
         <div class="game-grid">
-            
-            <div class="game-card card-mower" onclick="openGame('mower')">
-                <div class="game-icon">🚜</div>
-                <div class="game-title">Lawn Mower 3D</div>
-                <div class="game-saved-score">Multiplayer & Live Chat</div>
-            </div>
-
             <div class="game-card card-snake" onclick="openGame('snake')">
                 <div class="game-icon">🐍</div>
                 <div class="game-title">Neon Snake</div>
@@ -230,6 +200,24 @@
                 <div class="game-title">Pixel Racer</div>
                 <div class="game-saved-score" id="racerPortalScore">Highscore: 0</div>
             </div>
+
+            <div class="game-card card-bricks" onclick="openGame('bricks')">
+                <div class="game-icon">🧱</div>
+                <div class="game-title">Brick Breaker</div>
+                <div class="game-saved-score" id="bricksPortalScore">Highscore: 0</div>
+            </div>
+
+            <div class="game-card card-space" onclick="openGame('space')">
+                <div class="game-icon">🛸</div>
+                <div class="game-title">Space Invaders</div>
+                <div class="game-saved-score" id="spacePortalScore">Highscore: 0</div>
+            </div>
+
+            <div class="game-card card-memory" onclick="openGame('memory')">
+                <div class="game-icon">🧠</div>
+                <div class="game-title">Memory Match</div>
+                <div class="game-saved-score" id="memoryPortalScore">Best Moves: --</div>
+            </div>
         </div>
     </main>
 
@@ -237,19 +225,14 @@
         <div class="modal-content">
             <h2 id="modalTitle" style="margin-bottom: 15px;">Game</h2>
             
-            <div id="mowerContainer" style="display: none;" class="iframe-wrapper">
-                <iframe id="mowerFrame" src=""></iframe>
-                <p class="game-instructions">Drive around, cut the grass and enjoy the 3D graphics!</p>
-            </div>
-
             <div id="snakeContainer" style="display: none;">
                 <canvas id="snakeCanvas" width="400" height="400"></canvas>
-                <p class="game-instructions">Use Arrow Keys to move.</p>
+                <p class="game-instructions">Gebruik de pijltjestoetsen om te sturen.</p>
             </div>
 
             <div id="pongContainer" style="display: none;">
                 <canvas id="pongCanvas" width="600" height="400"></canvas>
-                <p class="game-instructions">Use Up/Down Arrow Keys to move your paddle (Left).</p>
+                <p class="game-instructions">Gebruik Pijltje Omhoog / Omlaag om je pallet (links) te bewegen.</p>
             </div>
 
             <div id="clickerContainer" style="display: none;">
@@ -259,29 +242,48 @@
                         <button id="cookieBtn" onclick="clickCookie()">🍪</button>
                     </div>
                     <div class="shop-container">
-                        <div class="shop-title">Upgrades</div>
-                        <button class="shop-btn" id="upgrade1Btn" onclick="buyUpgrade('grandma')">Buy Grandma (Cost: 15)<br><span style="font-weight:normal;">+1 Cookie/sec</span></button>
-                        <button class="shop-btn" id="upgrade2Btn" onclick="buyUpgrade('mega')">Buy Mega Click (Cost: 50)<br><span style="font-weight:normal;">+5 Per Click</span></button>
-                        <div style="font-size: 11px; margin-top: 10px; color: #a1a1aa;" id="statsText">Grandmas: 0 | Megas: 0</div>
+                        <div class="shop-title">Upgrades Shop</div>
+                        <button class="shop-btn" id="upgrade1Btn" onclick="buyUpgrade('grandma')"></button>
+                        <button class="shop-btn" id="upgrade2Btn" onclick="buyUpgrade('mega')"></button>
+                        <div style="font-size: 12px; margin-top: 10px; color: #a1a1aa;" id="statsText"></div>
                     </div>
                 </div>
             </div>
 
             <div id="racerContainer" style="display: none;">
                 <canvas id="racerCanvas" width="360" height="450"></canvas>
-                <p class="game-instructions">Use Left/Right Arrow Keys to avoid oncoming traffic!</p>
+                <p class="game-instructions">Gebruik Links / Rechts Pijltjestoetsen om auto's te ontwijken.</p>
             </div>
 
-            <button class="close-btn" onclick="closeGame()">Close Game</button>
+            <div id="bricksContainer" style="display: none;">
+                <canvas id="bricksCanvas" width="480" height="400"></canvas>
+                <p class="game-instructions">Gebruik Links / Rechts Pijltjestoetsen om het platform te bewegen.</p>
+            </div>
+
+            <div id="spaceContainer" style="display: none;">
+                <canvas id="spaceCanvas" width="500" height="400"></canvas>
+                <p class="game-instructions">Links/Rechts Pijltjes om te bewegen, SPATIEBALK om te schieten.</p>
+            </div>
+
+            <div id="memoryContainer" style="display: none;">
+                <div style="font-size: 18px; margin-bottom: 10px;" id="memoryStats">Moves: 0</div>
+                <div class="memory-board" id="memoryBoard"></div>
+                <p class="game-instructions">Klik op de kaarten om paren te vinden!</p>
+            </div>
+
+            <button class="close-btn" onclick="closeGame()">Sluit Game</button>
         </div>
     </div>
 
     <script>
-        // --- DATA & SAVING LOGIC ---
-        let saveData = { snakeHigh: 0, pongHigh: 0, cookies: 0, grandmas: 0, megas: 0, racerHigh: 0 };
+        // --- OPSLAG EN HIGHSCORES LOGICA ---
+        let saveData = {
+            snakeHigh: 0, pongHigh: 0, cookies: 0, grandmas: 0, megas: 0,
+            racerHigh: 0, bricksHigh: 0, spaceHigh: 0, memoryBest: 999
+        };
 
-        if (localStorage.getItem('playzone_save')) {
-            saveData = { ...saveData, ...JSON.parse(localStorage.getItem('playzone_save')) };
+        if (localStorage.getItem('playzone_arcade_save')) {
+            saveData = { ...saveData, ...JSON.parse(localStorage.getItem('playzone_arcade_save')) };
         }
 
         function updatePortalScores() {
@@ -289,318 +291,352 @@
             document.getElementById('pongPortalScore').innerText = "Best Rally: " + saveData.pongHigh;
             document.getElementById('clickerPortalScore').innerText = "Cookies: " + Math.floor(saveData.cookies);
             document.getElementById('racerPortalScore').innerText = "Highscore: " + saveData.racerHigh;
+            document.getElementById('bricksPortalScore').innerText = "Highscore: " + saveData.bricksHigh;
+            document.getElementById('spacePortalScore').innerText = "Highscore: " + saveData.spaceHigh;
+            document.getElementById('memoryPortalScore').innerText = "Best Moves: " + (saveData.memoryBest === 999 ? "--" : saveData.memoryBest);
         }
         updatePortalScores();
 
         function saveToStorage() {
-            localStorage.setItem('playzone_save', JSON.stringify(saveData));
+            localStorage.setItem('playzone_save', JSON.stringify(saveData)); // backward compatibility
+            localStorage.setItem('playzone_arcade_save', JSON.stringify(saveData));
             updatePortalScores();
         }
 
-        // --- PORTAL MODAL LOGIC ---
+        // --- GENERAL MODAL CONTROL ---
         const modal = document.getElementById('gameModal');
         const modalTitle = document.getElementById('modalTitle');
-        const mowerFrame = document.getElementById('mowerFrame');
-        let currentInterval;
+        let currentInterval = null;
+        let activeGame = "";
+
+        // Toetsenbord listeners trackers
+        let keys = {};
+        document.addEventListener('keydown', (e) => { keys[e.key] = true; handleSnakeInput(e); });
+        document.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
         function openGame(gameType) {
             modal.classList.add('active');
+            activeGame = gameType;
             
-            // Verberg eerst alle game-schermen
-            document.getElementById('mowerContainer').style.display = 'none';
-            document.getElementById('snakeContainer').style.display = 'none';
-            document.getElementById('pongContainer').style.display = 'none';
-            document.getElementById('clickerContainer').style.display = 'none';
-            document.getElementById('racerContainer').style.display = 'none';
-            
-            // Start de gekozen game
-            if (gameType === 'mower') {
-                document.getElementById('mowerContainer').style.display = 'block';
-                modalTitle.innerText = "Lawn Mower 3D";
-                // Dit laadt JOUW game.html rechtstreeks in de pop-up!
-                mowerFrame.src = "game.html"; 
-            } else if (gameType === 'snake') {
-                document.getElementById('snakeContainer').style.display = 'block';
-                modalTitle.innerText = "Neon Snake";
-                startSnakeGame();
-            } else if (gameType === 'pong') {
-                document.getElementById('pongContainer').style.display = 'block';
-                modalTitle.innerText = "Retro Pong";
-                startPongGame();
-            } else if (gameType === 'clicker') {
-                document.getElementById('clickerContainer').style.display = 'block';
-                modalTitle.innerText = "Cookie Clicker";
-                startClickerGame();
-            } else if (gameType === 'racer') {
-                document.getElementById('racerContainer').style.display = 'block';
-                modalTitle.innerText = "Pixel Racer";
-                startRacerGame();
-            }
+            // Verberg alle containers
+            const containers = ['snakeContainer', 'pongContainer', 'clickerContainer', 'racerContainer', 'bricksContainer', 'spaceContainer', 'memoryContainer'];
+            containers.forEach(id => document.getElementById(id).style.display = 'none');
+            if (currentInterval) clearInterval(currentInterval);
+
+            // Open specifieke container
+            document.getElementById(gameType + 'Container').style.display = 'block';
+
+            if (gameType === 'snake') { modalTitle.innerText = "Neon Snake"; startSnake(); }
+            else if (gameType === 'pong') { modalTitle.innerText = "Retro Pong"; startPong(); }
+            else if (gameType === 'clicker') { modalTitle.innerText = "Cookie Clicker"; startClicker(); }
+            else if (gameType === 'racer') { modalTitle.innerText = "Pixel Racer"; startRacer(); }
+            else if (gameType === 'bricks') { modalTitle.innerText = "Brick Breaker"; startBricks(); }
+            else if (gameType === 'space') { modalTitle.innerText = "Space Invaders"; startSpace(); }
+            else if (gameType === 'memory') { modalTitle.innerText = "Memory Match"; startMemory(); }
         }
 
         function closeGame() {
             modal.classList.remove('active');
-            // Reset de iframe broncode zodat de game stopt met draaien op de achtergrond
-            mowerFrame.src = ""; 
             if (currentInterval) clearInterval(currentInterval);
+            activeGame = "";
             saveToStorage();
         }
 
-        // --- SNAKE GAME LOGIC ---
+        // --- 1. NEON SNAKE LOGIC ---
         const snakeCanvas = document.getElementById('snakeCanvas');
         const snakeCtx = snakeCanvas.getContext('2d');
-        const gridSize = 20;
-        let snake, food, dx, dy, snakeScore;
+        let snake, food, dx, dy, snakeScore, snakeGrid = 20;
 
-        function startSnakeGame() {
-            snake = [{ x: 160, y: 160 }, { x: 140, y: 160 }, { x: 120, y: 160 }];
-            dx = gridSize; dy = 0; snakeScore = 0;
-            spawnFood();
-            if (currentInterval) clearInterval(currentInterval);
-            currentInterval = setInterval(updateSnakeGame, 140);
+        function startSnake() {
+            snake = [{x: 160, y: 160}, {x: 140, y: 160}, {x: 120, y: 160}];
+            dx = snakeGrid; dy = 0; snakeScore = 0;
+            spawnSnakeFood();
+            currentInterval = setInterval(updateSnake, 130);
         }
-
-        function updateSnakeGame() {
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-            snake.unshift(head);
-
-            if (head.x === food.x && head.y === food.y) {
-                snakeScore++; 
-                if(snakeScore > saveData.snakeHigh) { saveData.snakeHigh = snakeScore; saveToStorage(); }
-                spawnFood();
-            } else {
-                snake.pop();
-            }
-
-            if (head.x < 0 || head.x >= snakeCanvas.width || head.y < 0 || head.y >= snakeCanvas.height || checkSnakeCollision(head)) {
-                alert("Game Over! Score: " + snakeScore);
-                startSnakeGame(); return;
-            }
-            drawSnakeGame();
+        function handleSnakeInput(e) {
+            if (activeGame !== 'snake') return;
+            if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -snakeGrid; }
+            if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = snakeGrid; }
+            if (e.key === 'ArrowLeft' && dx === 0) { dx = -snakeGrid; dy = 0; }
+            if (e.key === 'ArrowRight' && dx === 0) { dx = snakeGrid; dy = 0; }
         }
-
-        function drawSnakeGame() {
-            snakeCtx.fillStyle = '#000'; snakeCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
-            snakeCtx.fillStyle = '#f43f5e'; snakeCtx.beginPath();
-            snakeCtx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2 - 2, 0, Math.PI*2); snakeCtx.fill();
-
-            snake.forEach((segment, index) => {
-                snakeCtx.fillStyle = index === 0 ? '#60a5fa' : '#3b82f6';
-                snakeCtx.fillRect(segment.x + 1, segment.y + 1, gridSize - 2, gridSize - 2);
-            });
-            snakeCtx.fillStyle = 'rgba(255, 255, 255, 0.6)'; snakeCtx.font = '16px Arial';
-            snakeCtx.fillText("Score: " + snakeScore + "  Best: " + saveData.snakeHigh, 10, 25);
-        }
-
-        function spawnFood() {
+        function spawnSnakeFood() {
             food = {
-                x: Math.floor(Math.random() * (snakeCanvas.width / gridSize)) * gridSize,
-                y: Math.floor(Math.random() * (snakeCanvas.height / gridSize)) * gridSize
+                x: Math.floor(Math.random() * (snakeCanvas.width / snakeGrid)) * snakeGrid,
+                y: Math.floor(Math.random() * (snakeCanvas.height / snakeGrid)) * snakeGrid
             };
-            if(checkSnakeCollision(food)) spawnFood();
         }
+        function updateSnake() {
+            let head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                snakeScore++;
+                if (snakeScore > saveData.snakeHigh) { saveData.snakeHigh = snakeScore; saveToStorage(); }
+                spawnSnakeFood();
+            } else { snake.pop(); }
 
-        function checkSnakeCollision(obj) {
-            for (let i = 1; i < snake.length; i++) {
-                if (obj.x === snake[i].x && obj.y === snake[i].y) return true;
+            if (head.x < 0 || head.x >= snakeCanvas.width || head.y < 0 || head.y >= snakeCanvas.height || snake.slice(1).some(s => s.x === head.x && s.y === head.y)) {
+                alert("Game Over! Score: " + snakeScore); startSnake(); return;
             }
-            return false;
+            snakeCtx.fillStyle = '#000'; snakeCtx.fillRect(0,0,400,400);
+            snakeCtx.fillStyle = '#f43f5e'; snakeCtx.fillRect(food.x+2, food.y+2, 16, 16);
+            snakeCtx.fillStyle = '#3b82f6'; snake.forEach(s => snakeCtx.fillRect(s.x+1, s.y+1, 18, 18));
+            snakeCtx.fillStyle = '#fff'; snakeCtx.font = '16px Arial'; snakeCtx.fillText("Score: " + snakeScore, 10, 25);
         }
 
-        // --- PONG GAME LOGIC ---
+        // --- 2. RETRO PONG LOGIC ---
         const pongCanvas = document.getElementById('pongCanvas');
         const pongCtx = pongCanvas.getContext('2d');
-        let ball, player1, player2, p1Score, p2Score, rallyCount;
-        let upPressed = false, downPressed = false;
+        let ball, p1, p2, rally;
 
-        function startPongGame() {
-            ball = { x: 300, y: 200, radius: 10, speed: 5, dx: 5, dy: 5 };
-            player1 = { x: 10, y: 150, width: 10, height: 100, dy: 6 };
-            player2 = { x: 580, y: 150, width: 10, height: 100, dy: 4.5 };
-            p1Score = 0; p2Score = 0; rallyCount = 0;
-            if (currentInterval) clearInterval(currentInterval);
-            currentInterval = setInterval(updatePongGame, 1000/60);
+        function startPong() {
+            ball = { x:300, y:200, dx:4, dy:4, r:8 };
+            p1 = { y: 150, h: 80 }; p2 = { y: 150, h: 80 }; rally = 0;
+            currentInterval = setInterval(updatePong, 1000/60);
         }
-
-        function updatePongGame() {
-            if (upPressed && player1.y > 0) player1.y -= player1.dy;
-            if (downPressed && player1.y < pongCanvas.height - player1.height) player1.y += player1.dy;
-            if (ball.y < player2.y + player2.height/2) player2.y -= player2.dy;
-            if (ball.y > player2.y + player2.height/2) player2.y += player2.dy;
+        function updatePong() {
+            if (keys['ArrowUp'] && p1.y > 0) p1.y -= 5;
+            if (keys['ArrowDown'] && p1.y < 320) p1.y += 5;
+            if (ball.y < p2.y + 40 && p2.y > 0) p2.y -= 3.8;
+            if (ball.y > p2.y + 40 && p2.y < 320) p2.y += 3.8;
 
             ball.x += ball.dx; ball.y += ball.dy;
-            if (ball.y + ball.radius > pongCanvas.height || ball.y - ball.radius < 0) ball.dy *= -1;
+            if (ball.y <= 0 || ball.y >= 392) ball.dy *= -1;
 
-            let paddle = ball.x < pongCanvas.width / 2 ? player1 : player2;
-            if (ball.x - ball.radius < paddle.x + paddle.width && ball.x + ball.radius > paddle.x && 
-                ball.y + ball.radius > paddle.y && ball.y - ball.radius < paddle.y + paddle.height) {
-                ball.dx *= -1;
-                ball.dx += (ball.dx > 0 ? 0.3 : -0.3);
-                if(paddle === player1) {
-                    rallyCount++;
-                    if(rallyCount > saveData.pongHigh) { saveData.pongHigh = rallyCount; saveToStorage(); }
-                }
-            }
+            if (ball.x <= 25 && ball.y >= p1.y && ball.y <= p1.y + p1.h) { ball.dx *= -1.05; rally++; if(rally > saveData.pongHigh) { saveData.pongHigh = rally; saveToStorage(); } }
+            if (ball.x >= 570 && ball.y >= p2.y && ball.y <= p2.y + p2.h) ball.dx *= -1;
 
-            if (ball.x - ball.radius < 0) { p2Score++; rallyCount = 0; resetBall(); }
-            if (ball.x + ball.radius > pongCanvas.width) { p1Score++; rallyCount = 0; resetBall(); }
-            drawPongGame();
+            if (ball.x < 0 || ball.x > 600) { alert("Rally afgelopen! Behaalde rally: " + rally); startPong(); return; }
+
+            pongCtx.fillStyle = '#000'; pongCtx.fillRect(0,0,600,400);
+            pongCtx.fillStyle = '#fff'; pongCtx.fillRect(15, p1.y, 10, p1.h); pongCtx.fillRect(575, p2.y, 10, p2.h);
+            pongCtx.beginPath(); pongCtx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); pongCtx.fill();
+            pongCtx.font = '16px Arial'; pongCtx.fillText("Rally: " + rally + " | Best: " + saveData.pongHigh, 20, 30);
         }
 
-        function resetBall() {
-            ball.x = pongCanvas.width / 2; ball.y = pongCanvas.height / 2;
-            ball.dx = (Math.random() > 0.5 ? 5 : -5); ball.dy = (Math.random() > 0.5 ? 4 : -4);
-        }
-
-        function drawPongGame() {
-            pongCtx.fillStyle = '#000'; pongCtx.fillRect(0, 0, pongCanvas.width, pongCanvas.height);
-            pongCtx.fillStyle = '#fff';
-            pongCtx.fillRect(player1.x, player1.y, player1.width, player1.height);
-            pongCtx.fillRect(player2.x, player2.y, player2.width, player2.height);
-            pongCtx.beginPath(); pongCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); pongCtx.fill();
-            pongCtx.font = '20px Arial'; pongCtx.fillStyle = 'rgba(255,255,255,0.5)';
-            pongCtx.fillText("Rally: " + rallyCount + "   Best Rally: " + saveData.pongHigh, 30, 30);
-            pongCtx.font = '30px Arial'; pongCtx.fillText(p1Score, 200, 70); pongCtx.fillText(p2Score, 380, 70);
-        }
-
-        // --- COOKIE CLICKER LOGIC ---
-        function startClickerGame() {
+        // --- 3. COOKIE CLICKER LOGIC ---
+        function startClicker() {
             updateClickerUI();
-            if (currentInterval) clearInterval(currentInterval);
             currentInterval = setInterval(() => {
-                saveData.cookies += (saveData.grandmas * 1);
+                saveData.cookies += (saveData.grandmas * 0.2); // Passief per tick
                 updateClickerUI();
-            }, 1000);
+            }, 200);
         }
-
-        function clickCookie() {
-            saveData.cookies += (1 + (saveData.megas * 5));
-            updateClickerUI();
-        }
-
+        function clickCookie() { saveData.cookies += (1 + (saveData.megas * 5)); updateClickerUI(); }
         function buyUpgrade(type) {
-            if (type === 'grandma' && saveData.cookies >= (15 + saveData.grandmas * 5)) {
-                saveData.cookies -= (15 + saveData.grandmas * 5);
-                saveData.grandmas++;
-            } else if (type === 'mega' && saveData.cookies >= (50 + saveData.megas * 15)) {
-                saveData.cookies -= (50 + saveData.megas * 15);
-                saveData.megas++;
-            }
-            updateClickerUI();
-            saveToStorage();
+            let gCost = 15 + saveData.grandmas * 6;
+            let mCost = 60 + saveData.megas * 20;
+            if (type === 'grandma' && saveData.cookies >= gCost) { saveData.cookies -= gCost; saveData.grandmas++; }
+            if (type === 'mega' && saveData.cookies >= mCost) { saveData.cookies -= mCost; saveData.megas++; }
+            saveToStorage(); updateClickerUI();
         }
-
         function updateClickerUI() {
-            const gCost = 15 + saveData.grandmas * 5;
-            const mCost = 50 + saveData.megas * 15;
-            
+            let gCost = 15 + saveData.grandmas * 6; let mCost = 60 + saveData.megas * 20;
             document.getElementById('cookieScore').innerText = "Cookies: " + Math.floor(saveData.cookies);
-            document.getElementById('upgrade1Btn').innerHTML = `Buy Grandma (Cost: ${gCost})<br><span style="font-weight:normal;">+1 Cookie/sec</span>`;
-            document.getElementById('upgrade2Btn').innerHTML = `Buy Mega Click (Cost: ${mCost})<br><span style="font-weight:normal;">+5 Per Click</span>`;
-            document.getElementById('statsText').innerText = `Grandmas: ${saveData.grandmas} | Megas: ${saveData.megas}`;
-            
+            document.getElementById('upgrade1Btn').innerHTML = `Oma kopen (Kost: ${gCost})<br><span style="font-weight:normal;">+1 koekje/sec</span>`;
+            document.getElementById('upgrade2Btn').innerHTML = `Mega Klik (Kost: ${mCost})<br><span style="font-weight:normal;">+5 per klik</span>`;
+            document.getElementById('statsText').innerText = `Oma's: ${saveData.grandmas} | Mega Kliks: ${saveData.megas}`;
             document.getElementById('upgrade1Btn').disabled = saveData.cookies < gCost;
             document.getElementById('upgrade2Btn').disabled = saveData.cookies < mCost;
-            saveToStorage();
         }
 
-        // --- PIXEL RACER ---
+        // --- 4. PIXEL RACER LOGIC ---
         const racerCanvas = document.getElementById('racerCanvas');
         const racerCtx = racerCanvas.getContext('2d');
-        let playerCar, enemies, racerScore, racerSpeed;
-        let leftPressed = false, rightPressed = false;
+        let carX, obstacles, racerScore, racerSpeed;
 
-        function startRacerGame() {
-            playerCar = { x: 155, y: 370, width: 40, height: 60 };
-            enemies = []; racerScore = 0; racerSpeed = 4;
-            spawnEnemyCar();
-            if (currentInterval) clearInterval(currentInterval);
-            currentInterval = setInterval(updateRacerGame, 1000/60);
+        function startRacer() {
+            carX = 160; obstacles = []; racerScore = 0; racerSpeed = 4;
+            currentInterval = setInterval(updateRacer, 1000/60);
         }
+        function updateRacer() {
+            racerScore++; if (racerScore % 400 === 0) racerSpeed += 0.6;
+            if (keys['ArrowLeft'] && carX > 30) carX -= 4;
+            if (keys['ArrowRight'] && carX < 290) carX += 4;
 
-        function spawnEnemyCar() {
-            const lanes = [40, 110, 180, 250];
-            const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
-            enemies.push({ x: randomLane, y: -70, width: 40, height: 60 });
-        }
+            if (racerScore % 70 === 0) { obstacles.push({ x: [40, 110, 180, 250][Math.floor(Math.random()*4)], y: -60 }); }
+            
+            racerCtx.fillStyle = '#334155'; racerCtx.fillRect(0,0,360,450); // Weg
+            racerCtx.fillStyle = '#f59e0b'; // Strepen
+            for(let i=0; i<450; i+=40) racerCtx.fillRect(178, i + (racerScore%40), 4, 20);
 
-        function updateRacerGame() {
-            racerScore++;
-            if (racerScore % 300 === 0) racerSpeed += 0.5;
+            racerCtx.fillStyle = '#ef4444'; racerCtx.fillRect(carX, 360, 40, 60); // Speler
 
-            if (leftPressed && playerCar.x > 20) playerCar.x -= 5;
-            if (rightPressed && playerCar.x < racerCanvas.width - playerCar.width - 20) playerCar.x += 5;
-
-            enemies.forEach((enemy, index) => {
-                enemy.y += racerSpeed;
-                if (playerCar.x < enemy.x + enemy.width && playerCar.x + playerCar.width > enemy.x &&
-                    playerCar.y < enemy.y + enemy.height && playerCar.y + playerCar.height > enemy.y) {
-                    if(racerScore > saveData.racerHigh) { saveData.racerHigh = racerScore; saveToStorage(); }
-                    alert("Crash! Your Score: " + racerScore);
-                    startRacerGame(); return;
+            racerCtx.fillStyle = '#3b82f6'; // Tegenliggers
+            for(let i=obstacles.length-1; i>=0; i--) {
+                obstacles[i].y += racerSpeed;
+                racerCtx.fillRect(obstacles[i].x, obstacles[i].y, 40, 60);
+                // Collision
+                if (carX < obstacles[i].x + 40 && carX + 40 > obstacles[i].x && 360 < obstacles[i].y + 60 && 420 > obstacles[i].y) {
+                    if (racerScore > saveData.racerHigh) { saveData.racerHigh = racerScore; saveToStorage(); }
+                    alert("Gecrasht! Jouw Score: " + racerScore); startRacer(); return;
                 }
-                if(enemy.y > racerCanvas.height) enemies.splice(index, 1);
-            });
-
-            if (racerScore % 80 === 0) spawnEnemyCar();
-            drawRacerGame();
+                if (obstacles[i].y > 450) obstacles.splice(i, 1);
+            }
+            racerCtx.fillStyle = '#fff'; racerCtx.font = '16px Arial'; racerCtx.fillText("Score: " + racerScore, 20, 30);
         }
 
-        function drawRacerGame() {
-            racerCtx.fillStyle = '#334155'; racerCtx.fillRect(0, 0, racerCanvas.width, racerCanvas.height);
-            racerCtx.fillStyle = '#1e293b'; racerCtx.fillRect(0, 0, 20, racerCanvas.height);
-            racerCtx.fillRect(racerCanvas.width-20, 0, 20, racerCanvas.height);
+        // --- 5. BRICK BREAKER LOGIC ---
+        const bricksCanvas = document.getElementById('bricksCanvas');
+        const bricksCtx = bricksCanvas.getContext('2d');
+        let bBall, bPaddle, bricks, brickRows = 4, brickCols = 6, bricksScore;
 
-            racerCtx.fillStyle = '#cbd5e1';
-            for(let i = 0; i < racerCanvas.height; i += 40) {
-                racerCtx.fillRect(105, i + (racerScore % 40), 4, 20);
-                racerCtx.fillRect(175, i + (racerScore % 40), 4, 20);
-                racerCtx.fillRect(245, i + (racerScore % 40), 4, 20);
+        function startBricks() {
+            bBall = { x: 240, y: 300, dx: 3, dy: -3, r: 7 };
+            bPaddle = { x: 200, w: 80, h: 10 }; bricksScore = 0;
+            bricks = [];
+            for(let c=0; c<brickCols; c++) {
+                bricks[c] = [];
+                for(let r=0; r<brickRows; r++) bricks[c][r] = { x: 0, y: 0, status: 1 };
             }
+            currentInterval = setInterval(updateBricks, 1000/60);
+        }
+        function updateBricks() {
+            if (keys['ArrowLeft'] && bPaddle.x > 0) bPaddle.x -= 6;
+            if (keys['ArrowRight'] && bPaddle.x < bricksCanvas.width - bPaddle.w) bPaddle.x += 6;
 
-            racerCtx.fillStyle = '#f43f5e'; racerCtx.fillRect(playerCar.x, playerCar.y, playerCar.width, playerCar.height);
-            racerCtx.fillStyle = '#000';
-            racerCtx.fillRect(playerCar.x-2, playerCar.y+10, 4, 12); racerCtx.fillRect(playerCar.x+playerCar.width-2, playerCar.y+10, 4, 12);
-            racerCtx.fillRect(playerCar.x-2, playerCar.y+40, 4, 12); racerCtx.fillRect(playerCar.x+playerCar.width-2, playerCar.y+40, 4, 12);
+            bBall.x += bBall.dx; bBall.y += bBall.dy;
+            if (bBall.x <= 0 || bBall.x >= bricksCanvas.width) bBall.dx *= -1;
+            if (bBall.y <= 0) bBall.dy *= -1;
 
-            racerCtx.fillStyle = '#3b82f6';
-            enemies.forEach(enemy => {
-                racerCtx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-                racerCtx.fillStyle = '#000';
-                racerCtx.fillRect(enemy.x-2, enemy.y+10, 4, 12); racerCtx.fillRect(enemy.x+enemy.width-2, enemy.y+10, 4, 12);
-                racerCtx.fillStyle = '#3b82f6';
-            });
+            if (bBall.y >= 380 && bBall.x >= bPaddle.x && bBall.x <= bPaddle.x + bPaddle.w) bBall.dy = -Math.abs(bBall.dy);
 
-            racerCtx.font = '16px Arial'; racerCtx.fillStyle = '#fff';
-            racerCtx.fillText("Score: " + racerScore, 30, 30);
-            racerCtx.fillText("High: " + saveData.racerHigh, 30, 50);
+            if (bBall.y > bricksCanvas.height) { alert("Bal verloren! Game Over."); startBricks(); return; }
+
+            let activeBricksCount = 0;
+            bricksCtx.fillStyle = '#000'; bricksCtx.fillRect(0,0,bricksCanvas.width,bricksCanvas.height);
+
+            for(let c=0; c<brickCols; c++) {
+                for(let r=0; r<brickRows; r++) {
+                    let b = bricks[c][r];
+                    if(b.status === 1) {
+                        activeBricksCount++;
+                        let bx = (c*(65+12))+25; let by = (r*(20+10))+50;
+                        b.x = bx; b.y = by;
+                        bricksCtx.fillStyle = ['#f43f5e','#3b82f6','#10b981','#eab308'][r];
+                        bricksCtx.fillRect(bx, by, 65, 20);
+
+                        if(bBall.x > bx && bBall.x < bx+65 && bBall.y > by && bBall.y < by+20) {
+                            bBall.dy *= -1; b.status = 0; bricksScore += 10;
+                            if(bricksScore > saveData.bricksHigh) { saveData.bricksHigh = bricksScore; saveToStorage(); }
+                        }
+                    }
+                }
+            }
+            if(activeBricksCount === 0) { alert("Gefeliciteerd! Level Gehaald!"); startBricks(); return; }
+
+            bricksCtx.fillStyle = '#fff'; bricksCtx.fillRect(bPaddle.x, 380, bPaddle.w, bPaddle.h);
+            bricksCtx.fillStyle = '#fff'; bricksCtx.beginPath(); bricksCtx.arc(bBall.x, bBall.y, bBall.r, 0, Math.PI*2); bricksCtx.fill();
+            bricksCtx.fillText("Score: " + bricksScore + " | High: " + saveData.bricksHigh, 20, 30);
         }
 
-        // --- CONTROLS ---
-        document.addEventListener('keydown', (e) => {
-            if (!modal.classList.contains('active')) return;
-            if (document.getElementById('snakeContainer').style.display === 'block') {
-                if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -gridSize; }
-                if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = gridSize; }
-                if (e.key === 'ArrowLeft' && dx === 0) { dx = -gridSize; dy = 0; }
-                if (e.key === 'ArrowRight' && dx === 0) { dx = gridSize; dy = 0; }
-            }
-            if (document.getElementById('pongContainer').style.display === 'block') {
-                if (e.key === 'ArrowUp') upPressed = true;
-                if (e.key === 'ArrowDown') downPressed = true;
-            }
-            if (document.getElementById('racerContainer').style.display === 'block') {
-                if (e.key === 'ArrowLeft') leftPressed = true;
-                if (e.key === 'ArrowRight') rightPressed = true;
-            }
-        });
+        // --- 6. SPACE INVADERS LOGIC ---
+        const spaceCanvas = document.getElementById('spaceCanvas');
+        const spaceCtx = spaceCanvas.getContext('2d');
+        let playerX, lasers, invaders, spaceScore, invaderDir, spaceCooldown;
 
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowUp') upPressed = false;
-            if (e.key === 'ArrowDown') downPressed = false;
-            if (e.key === 'ArrowLeft') leftPressed = false;
-            if (e.key === 'ArrowRight') rightPressed = false;
-        });
+        function startSpace() {
+            playerX = 230; lasers = []; invaders = []; spaceScore = 0; invaderDir = 1; spaceCooldown = 0;
+            for(let x=0; x<6; x++) {
+                for(let y=0; y<3; y++) invaders.push({ x: x * 60 + 50, y: y * 40 + 50, alive: true });
+            }
+            currentInterval = setInterval(updateSpace, 1000/60);
+        }
+        function updateSpace() {
+            if (keys['ArrowLeft'] && playerX > 10) playerX -= 4;
+            if (keys['ArrowRight'] && playerX < 450) playerX += 4;
+            if (spaceCooldown > 0) spaceCooldown--;
+
+            if (keys[' '] && spaceCooldown === 0) { lasers.push({ x: playerX + 20, y: 360 }); spaceCooldown = 25; }
+
+            spaceCtx.fillStyle = '#000'; spaceCtx.fillRect(0,0,500,400);
+            spaceCtx.fillStyle = '#10b981'; spaceCtx.fillRect(playerX, 370, 40, 15); // Player
+
+            // Move invaders
+            let shiftDown = false;
+            invaders.forEach(inv => {
+                if(!inv.alive) return;
+                inv.x += invaderDir * 0.8;
+                if(inv.x > 460 || inv.x < 10) shiftDown = true;
+            });
+            if(shiftDown) { invaderDir *= -1; invaders.forEach(inv => { if(inv.alive) inv.y += 15; }); }
+
+            let aliveCount = 0;
+            invaders.forEach(inv => {
+                if(!inv.alive) return;
+                aliveCount++;
+                spaceCtx.fillStyle = '#a855f7'; spaceCtx.fillRect(inv.x, inv.y, 30, 20); // Invader
+                if(inv.y > 340) { alert("De aliens hebben de aarde bereikt! Game Over."); startSpace(); return; }
+            });
+
+            if(aliveCount === 0) { alert("Gewonnen! Je hebt de aarde gered!"); startSpace(); return; }
+
+            // Lasers bewegen en checken
+            for(let i=lasers.length-1; i>=0; i--) {
+                lasers[i].y -= 5;
+                spaceCtx.fillStyle = '#f43f5e'; spaceCtx.fillRect(lasers[i].x, lasers[i].y, 4, 12);
+
+                invaders.forEach(inv => {
+                    if(inv.alive && lasers[i] && lasers[i].x > inv.x && lasers[i].x < inv.x + 30 && lasers[i].y > inv.y && lasers[i].y < inv.y + 20) {
+                        inv.alive = false; lasers.splice(i, 1); spaceScore += 20;
+                        if(spaceScore > saveData.spaceHigh) { saveData.spaceHigh = spaceScore; saveToStorage(); }
+                    }
+                });
+                if(lasers[i] && lasers[i].y < 0) lasers.splice(i, 1);
+            }
+            spaceCtx.fillStyle = '#fff'; spaceCtx.font = '16px Arial'; spaceCtx.fillText("Score: " + spaceScore + " | High: " + saveData.spaceHigh, 20, 30);
+        }
+
+        // --- 7. MEMORY MATCH LOGIC ---
+        let memoryCards = []; let flippedCards = []; let memoryMoves = 0;
+        const emojis = ['🍕','🍕','🚗','🚗','🎈','🎈','💎','💎','👻','👻','🐱','🐱','🤖','🤖','🍏','🍏'];
+
+        function startMemory() {
+            memoryMoves = 0; flippedCards = [];
+            document.getElementById('memoryStats').innerText = "Moves: " + memoryMoves;
+            let shuffled = emojis.sort(() => Math.random() - 0.5);
+            const board = document.getElementById('memoryBoard');
+            board.innerHTML = "";
+
+            shuffled.forEach((emoji, index) => {
+                let card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.emoji = emoji;
+                card.dataset.index = index;
+                card.innerText = "?";
+                card.onclick = () => clickMemoryCard(card);
+                board.appendChild(card);
+            });
+        }
+        function clickMemoryCard(card) {
+            if (flippedCards.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped'); card.innerText = card.dataset.emoji;
+            flippedCards.push(card);
+
+            if(flippedCards.length === 2) {
+                memoryMoves++; document.getElementById('memoryStats').innerText = "Moves: " + memoryMoves;
+                if(flippedCards[0].dataset.emoji === flippedCards[1].dataset.emoji) {
+                    flippedCards[0].classList.add('matched'); flippedCards[1].classList.add('matched');
+                    flippedCards = [];
+                    checkMemoryWin();
+                } else {
+                    setTimeout(() => {
+                        flippedCards[0].classList.remove('flipped'); flippedCards[0].innerText = "?";
+                        flippedCards[1].classList.remove('flipped'); flippedCards[1].innerText = "?";
+                        flippedCards = [];
+                    }, 800);
+                }
+            }
+        }
+        function checkMemoryWin() {
+            const allMatched = document.querySelectorAll('.memory-card.matched').length;
+            if(allMatched === emojis.length) {
+                if(memoryMoves < saveData.memoryBest) { saveData.memoryBest = memoryMoves; saveToStorage(); }
+                alert("Gewonnen in " + memoryMoves + " zetten!");
+                startMemory();
+            }
+        }
     </script>
 </body>
 </html>
