@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Game Portal</title>
+    <title>Ultimate Game Portal</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -11,6 +11,7 @@
             --primary: #3b82f6;
             --accent: #f43f5e;
             --text-main: #f8fafc;
+            --success: #10b981;
         }
 
         * {
@@ -62,7 +63,7 @@
 
         .game-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 20px;
         }
 
@@ -78,6 +79,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            padding: 20px;
         }
 
         .game-card:hover {
@@ -87,13 +89,15 @@
         }
 
         .game-icon { font-size: 60px; margin-bottom: 15px; }
-        .game-title { font-size: 18px; font-weight: bold; }
+        .game-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .game-saved-score { font-size: 12px; color: #94a3b8; }
 
         .card-snake { background: linear-gradient(135deg, #16a085, #2ecc71); }
         .card-pong { background: linear-gradient(135deg, #2980b9, #3498db); }
         .card-clicker { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
         .card-racer { background: linear-gradient(135deg, #c0392b, #e74c3c); }
 
+        /* Modal / Game Overlays */
         .modal {
             display: none;
             position: fixed;
@@ -112,7 +116,7 @@
             padding: 30px;
             border-radius: 12px;
             text-align: center;
-            max-width: 90%;
+            max-width: 95%;
         }
 
         canvas {
@@ -138,12 +142,40 @@
         .close-btn:hover { background-color: #e11d48; }
         .game-instructions { margin-top: 10px; color: #94a3b8; font-size: 14px; }
         
-        /* Clicker Game Styling */
-        #clickerGame { padding: 40px; }
-        #cookieBtn { font-size: 80px; background: transparent; border: none; cursor: pointer; transition: transform 0.1s; }
+        /* Clicker Shop Layout */
+        .clicker-layout {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            justify-content: center;
+        }
+        #cookieBtn { font-size: 100px; background: transparent; border: none; cursor: pointer; transition: transform 0.1s; }
         #cookieBtn:active { transform: scale(0.9); }
-        #cookieScore { font-size: 32px; font-weight: bold; margin-bottom: 20px; color: #facc15; }
-
+        #cookieScore { font-size: 28px; font-weight: bold; margin-bottom: 10px; color: #facc15; }
+        
+        .shop-container {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            min-width: 200px;
+        }
+        .shop-title { font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #475569; padding-bottom: 5px; }
+        .shop-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .shop-btn:hover { background: #2563eb; }
+        .shop-btn:disabled { background: #475569; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -158,21 +190,25 @@
             <div class="game-card card-snake" onclick="openGame('snake')">
                 <div class="game-icon">🐍</div>
                 <div class="game-title">Neon Snake</div>
+                <div class="game-saved-score" id="snakePortalScore">Highscore: 0</div>
             </div>
 
             <div class="game-card card-pong" onclick="openGame('pong')">
                 <div class="game-icon">🏓</div>
                 <div class="game-title">Retro Pong</div>
+                <div class="game-saved-score" id="pongPortalScore">Best Rally: 0</div>
             </div>
 
             <div class="game-card card-clicker" onclick="openGame('clicker')">
                 <div class="game-icon">🍪</div>
                 <div class="game-title">Cookie Clicker</div>
+                <div class="game-saved-score" id="clickerPortalScore">Cookies: 0</div>
             </div>
 
-            <div class="game-card card-racer" onclick="alert('Racing game coming soon!')">
+            <div class="game-card card-racer" onclick="openGame('racer')">
                 <div class="game-icon">🏎️</div>
                 <div class="game-title">Pixel Racer</div>
+                <div class="game-saved-score" id="racerPortalScore">Highscore: 0</div>
             </div>
         </div>
     </main>
@@ -183,7 +219,7 @@
             
             <div id="snakeContainer" style="display: none;">
                 <canvas id="snakeCanvas" width="400" height="400"></canvas>
-                <p class="game-instructions">Use Arrow Keys to move.</p>
+                <p class="game-instructions">Use Arrow Keys to move. Now runs smoother and slower!</p>
             </div>
 
             <div id="pongContainer" style="display: none;">
@@ -192,11 +228,23 @@
             </div>
 
             <div id="clickerContainer" style="display: none;">
-                <div id="clickerGame">
-                    <div id="cookieScore">Cookies: 0</div>
-                    <button id="cookieBtn" onclick="clickCookie()">🍪</button>
-                    <p class="game-instructions">Click as fast as you can!</p>
+                <div class="clicker-layout">
+                    <div>
+                        <div id="cookieScore">Cookies: 0</div>
+                        <button id="cookieBtn" onclick="clickCookie()">🍪</button>
+                    </div>
+                    <div class="shop-container">
+                        <div class="shop-title">Upgrades</div>
+                        <button class="shop-btn" id="upgrade1Btn" onclick="buyUpgrade('grandma')">Buy Grandma (Cost: 15)<br><span style="font-weight:normal;">+1 Cookie/sec</span></button>
+                        <button class="shop-btn" id="upgrade2Btn" onclick="buyUpgrade('mega')">Buy Mega Click (Cost: 50)<br><span style="font-weight:normal;">+5 Per Click</span></button>
+                        <div style="font-size: 11px; margin-top: 10px; color: #a1a1aa;" id="statsText">Grandmas: 0 | Megas: 0</div>
+                    </div>
                 </div>
+            </div>
+
+            <div id="racerContainer" style="display: none;">
+                <canvas id="racerCanvas" width="360" height="450"></canvas>
+                <p class="game-instructions">Use Left/Right Arrow Keys to avoid oncoming traffic!</p>
             </div>
 
             <button class="close-btn" onclick="closeGame()">Close Game</button>
@@ -204,18 +252,45 @@
     </div>
 
     <script>
-        // --- PORTAL LOGIC ---
+        // --- DATA & SAVING LOGIC ---
+        let saveData = {
+            snakeHigh: 0,
+            pongHigh: 0,
+            cookies: 0,
+            grandmas: 0,
+            megas: 0,
+            racerHigh: 0
+        };
+
+        // Load saves from localStorage
+        if (localStorage.getItem('playzone_save')) {
+            saveData = { ...saveData, ...JSON.parse(localStorage.getItem('playzone_save')) };
+        }
+
+        function updatePortalScores() {
+            document.getElementById('snakePortalScore').innerText = "Highscore: " + saveData.snakeHigh;
+            document.getElementById('pongPortalScore').innerText = "Best Rally: " + saveData.pongHigh;
+            document.getElementById('clickerPortalScore').innerText = "Cookies: " + Math.floor(saveData.cookies);
+            document.getElementById('racerPortalScore').innerText = "Highscore: " + saveData.racerHigh;
+        }
+        updatePortalScores();
+
+        function saveToStorage() {
+            localStorage.setItem('playzone_save', JSON.stringify(saveData));
+            updatePortalScores();
+        }
+
+        // --- PORTAL MODAL LOGIC ---
         const modal = document.getElementById('gameModal');
         const modalTitle = document.getElementById('modalTitle');
         let currentInterval;
 
         function openGame(gameType) {
             modal.classList.add('active');
-            
-            // Hide all containers
             document.getElementById('snakeContainer').style.display = 'none';
             document.getElementById('pongContainer').style.display = 'none';
             document.getElementById('clickerContainer').style.display = 'none';
+            document.getElementById('racerContainer').style.display = 'none';
             
             if (gameType === 'snake') {
                 document.getElementById('snakeContainer').style.display = 'block';
@@ -229,15 +304,20 @@
                 document.getElementById('clickerContainer').style.display = 'block';
                 modalTitle.innerText = "Cookie Clicker";
                 startClickerGame();
+            } else if (gameType === 'racer') {
+                document.getElementById('racerContainer').style.display = 'block';
+                modalTitle.innerText = "Pixel Racer";
+                startRacerGame();
             }
         }
 
         function closeGame() {
             modal.classList.remove('active');
             if (currentInterval) clearInterval(currentInterval);
+            saveToStorage();
         }
 
-        // --- SNAKE GAME LOGIC ---
+        // --- SNAKE GAME LOGIC (MADE SLOWER: 140ms interval instead of 100ms) ---
         const snakeCanvas = document.getElementById('snakeCanvas');
         const snakeCtx = snakeCanvas.getContext('2d');
         const gridSize = 20;
@@ -248,7 +328,7 @@
             dx = gridSize; dy = 0; snakeScore = 0;
             spawnFood();
             if (currentInterval) clearInterval(currentInterval);
-            currentInterval = setInterval(updateSnakeGame, 100);
+            currentInterval = setInterval(updateSnakeGame, 140); // 140ms is trager en makkelijker!
         }
 
         function updateSnakeGame() {
@@ -256,7 +336,9 @@
             snake.unshift(head);
 
             if (head.x === food.x && head.y === food.y) {
-                snakeScore++; spawnFood();
+                snakeScore++; 
+                if(snakeScore > saveData.snakeHigh) { saveData.snakeHigh = snakeScore; saveToStorage(); }
+                spawnFood();
             } else {
                 snake.pop();
             }
@@ -270,19 +352,15 @@
 
         function drawSnakeGame() {
             snakeCtx.fillStyle = '#000'; snakeCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
-            snakeCtx.fillStyle = '#f43f5e';
-            snakeCtx.beginPath();
-            snakeCtx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2 - 2, 0, Math.PI*2);
-            snakeCtx.fill();
+            snakeCtx.fillStyle = '#f43f5e'; snakeCtx.beginPath();
+            snakeCtx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2 - 2, 0, Math.PI*2); snakeCtx.fill();
 
             snake.forEach((segment, index) => {
                 snakeCtx.fillStyle = index === 0 ? '#60a5fa' : '#3b82f6';
                 snakeCtx.fillRect(segment.x + 1, segment.y + 1, gridSize - 2, gridSize - 2);
             });
-            
-            snakeCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-            snakeCtx.font = '20px Arial';
-            snakeCtx.fillText("Score: " + snakeScore, 10, 25);
+            snakeCtx.fillStyle = 'rgba(255, 255, 255, 0.6)'; snakeCtx.font = '16px Arial';
+            snakeCtx.fillText("Score: " + snakeScore + "  Best: " + saveData.snakeHigh, 10, 25);
         }
 
         function spawnFood() {
@@ -303,98 +381,189 @@
         // --- PONG GAME LOGIC ---
         const pongCanvas = document.getElementById('pongCanvas');
         const pongCtx = pongCanvas.getContext('2d');
-        
-        let ball, player1, player2;
-        let p1Score = 0, p2Score = 0;
+        let ball, player1, player2, p1Score, p2Score, rallyCount;
         let upPressed = false, downPressed = false;
 
         function startPongGame() {
             ball = { x: 300, y: 200, radius: 10, speed: 5, dx: 5, dy: 5 };
             player1 = { x: 10, y: 150, width: 10, height: 100, dy: 6 };
-            player2 = { x: 580, y: 150, width: 10, height: 100, dy: 4 }; // AI is slightly slower
-            p1Score = 0; p2Score = 0;
-            
+            player2 = { x: 580, y: 150, width: 10, height: 100, dy: 4.5 };
+            p1Score = 0; p2Score = 0; rallyCount = 0;
             if (currentInterval) clearInterval(currentInterval);
-            currentInterval = setInterval(updatePongGame, 1000/60); // 60 FPS
+            currentInterval = setInterval(updatePongGame, 1000/60);
         }
 
         function updatePongGame() {
-            // Move Player Paddle
             if (upPressed && player1.y > 0) player1.y -= player1.dy;
             if (downPressed && player1.y < pongCanvas.height - player1.height) player1.y += player1.dy;
-
-            // Simple AI for Right Paddle
             if (ball.y < player2.y + player2.height/2) player2.y -= player2.dy;
             if (ball.y > player2.y + player2.height/2) player2.y += player2.dy;
 
-            // Move Ball
-            ball.x += ball.dx;
-            ball.y += ball.dy;
-
-            // Ball Collision with top/bottom
+            ball.x += ball.dx; ball.y += ball.dy;
             if (ball.y + ball.radius > pongCanvas.height || ball.y - ball.radius < 0) ball.dy *= -1;
 
-            // Ball Collision with paddles
             let paddle = ball.x < pongCanvas.width / 2 ? player1 : player2;
-            if (ball.x - ball.radius < paddle.x + paddle.width && 
-                ball.x + ball.radius > paddle.x && 
-                ball.y + ball.radius > paddle.y && 
-                ball.y - ball.radius < paddle.y + paddle.height) {
+            if (ball.x - ball.radius < paddle.x + paddle.width && ball.x + ball.radius > paddle.x && 
+                ball.y + ball.radius > paddle.y && ball.y - ball.radius < paddle.y + paddle.height) {
                 ball.dx *= -1;
-                // Speed up slightly on hit
-                ball.dx += (ball.dx > 0 ? 0.2 : -0.2); 
+                ball.dx += (ball.dx > 0 ? 0.3 : -0.3);
+                if(paddle === player1) {
+                    rallyCount++;
+                    if(rallyCount > saveData.pongHigh) { saveData.pongHigh = rallyCount; saveToStorage(); }
+                }
             }
 
-            // Scoring
-            if (ball.x - ball.radius < 0) { p2Score++; resetBall(); }
-            if (ball.x + ball.radius > pongCanvas.width) { p1Score++; resetBall(); }
-
+            if (ball.x - ball.radius < 0) { p2Score++; rallyCount = 0; resetBall(); }
+            if (ball.x + ball.radius > pongCanvas.width) { p1Score++; rallyCount = 0; resetBall(); }
             drawPongGame();
         }
 
         function resetBall() {
-            ball.x = pongCanvas.width / 2;
-            ball.y = pongCanvas.height / 2;
-            ball.dx = (Math.random() > 0.5 ? 5 : -5);
-            ball.dy = (Math.random() > 0.5 ? 5 : -5);
+            ball.x = pongCanvas.width / 2; ball.y = pongCanvas.height / 2;
+            ball.dx = (Math.random() > 0.5 ? 5 : -5); ball.dy = (Math.random() > 0.5 ? 4 : -4);
         }
 
         function drawPongGame() {
             pongCtx.fillStyle = '#000'; pongCtx.fillRect(0, 0, pongCanvas.width, pongCanvas.height);
-            
-            // Draw Paddles & Ball
             pongCtx.fillStyle = '#fff';
             pongCtx.fillRect(player1.x, player1.y, player1.width, player1.height);
             pongCtx.fillRect(player2.x, player2.y, player2.width, player2.height);
-            
-            pongCtx.beginPath();
-            pongCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
-            pongCtx.fill();
-
-            // Draw Scores
-            pongCtx.font = '30px Arial';
-            pongCtx.fillText(p1Score, 150, 50);
-            pongCtx.fillText(p2Score, 430, 50);
-
-            // Draw Center Line
-            for(let i = 0; i < pongCanvas.height; i += 30) {
-                pongCtx.fillRect(pongCanvas.width/2 - 1, i, 2, 15);
-            }
+            pongCtx.beginPath(); pongCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); pongCtx.fill();
+            pongCtx.font = '20px Arial'; pongCtx.fillStyle = 'rgba(255,255,255,0.5)';
+            pongCtx.fillText("Rally: " + rallyCount + "   Best Rally: " + saveData.pongHigh, 30, 30);
+            pongCtx.font = '30px Arial'; pongCtx.fillText(p1Score, 200, 70); pongCtx.fillText(p2Score, 380, 70);
         }
 
-        // --- CLICKER GAME LOGIC ---
-        let cookies = 0;
+        // --- COOKIE CLICKER WITH UPGRADES & AUTOSAVE ---
         function startClickerGame() {
-            cookies = 0;
-            document.getElementById('cookieScore').innerText = "Cookies: " + cookies;
+            updateClickerUI();
+            if (currentInterval) clearInterval(currentInterval);
+            // Passive income calculation (Grandmas) every second
+            currentInterval = setInterval(() => {
+                saveData.cookies += (saveData.grandmas * 1);
+                updateClickerUI();
+            }, 1000);
         }
 
         function clickCookie() {
-            cookies++;
-            document.getElementById('cookieScore').innerText = "Cookies: " + cookies;
+            // Base click is 1 + 5 per Mega Clicker upgrade
+            saveData.cookies += (1 + (saveData.megas * 5));
+            updateClickerUI();
         }
 
-        // --- CONTROLS ---
+        function buyUpgrade(type) {
+            if (type === 'grandma' && saveData.cookies >= (15 + saveData.grandmas * 5)) {
+                saveData.cookies -= (15 + saveData.grandmas * 5);
+                saveData.grandmas++;
+            } else if (type === 'mega' && saveData.cookies >= (50 + saveData.megas * 15)) {
+                saveData.cookies -= (50 + saveData.megas * 15);
+                saveData.megas++;
+            }
+            updateClickerUI();
+            saveToStorage();
+        }
+
+        function updateClickerUI() {
+            const gCost = 15 + saveData.grandmas * 5;
+            const mCost = 50 + saveData.megas * 15;
+            
+            document.getElementById('cookieScore').innerText = "Cookies: " + Math.floor(saveData.cookies);
+            document.getElementById('upgrade1Btn').innerHTML = `Buy Grandma (Cost: ${gCost})<br><span style="font-weight:normal;">+1 Cookie/sec</span>`;
+            document.getElementById('upgrade2Btn').innerHTML = `Buy Mega Click (Cost: ${mCost})<br><span style="font-weight:normal;">+5 Per Click</span>`;
+            document.getElementById('statsText').innerText = `Grandmas: ${saveData.grandmas} | Megas: ${saveData.megas}`;
+            
+            document.getElementById('upgrade1Btn').disabled = saveData.cookies < gCost;
+            document.getElementById('upgrade2Btn').disabled = saveData.cookies < mCost;
+            saveToStorage();
+        }
+
+        // --- NEW GAME: PIXEL RACER ---
+        const racerCanvas = document.getElementById('racerCanvas');
+        const racerCtx = racerCanvas.getContext('2d');
+        let playerCar, enemies, racerScore, racerSpeed;
+        let leftPressed = false, rightPressed = false;
+
+        function startRacerGame() {
+            playerCar = { x: 155, y: 370, width: 40, height: 60 };
+            enemies = [];
+            racerScore = 0;
+            racerSpeed = 4;
+            spawnEnemyCar();
+            if (currentInterval) clearInterval(currentInterval);
+            currentInterval = setInterval(updateRacerGame, 1000/60);
+        }
+
+        function spawnEnemyCar() {
+            const lanes = [40, 110, 180, 250];
+            const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
+            enemies.push({ x: randomLane, y: -70, width: 40, height: 60 });
+        }
+
+        function updateRacerGame() {
+            racerScore++;
+            if (racerScore % 300 === 0) racerSpeed += 0.5; // Speed up slowly
+
+            if (leftPressed && playerCar.x > 20) playerCar.x -= 5;
+            if (rightPressed && playerCar.x < racerCanvas.width - playerCar.width - 20) playerCar.x += 5;
+
+            // Move enemies
+            enemies.forEach((enemy, index) => {
+                enemy.y += racerSpeed;
+                // Check Collision
+                if (playerCar.x < enemy.x + enemy.width && playerCar.x + playerCar.width > enemy.x &&
+                    playerCar.y < enemy.y + enemy.height && playerCar.y + playerCar.height > enemy.y) {
+                    if(racerScore > saveData.racerHigh) { saveData.racerHigh = racerScore; saveToStorage(); }
+                    alert("Crash! Your Score: " + racerScore);
+                    startRacerGame();
+                    return;
+                }
+                // Remove out of bounds enemies
+                if(enemy.y > racerCanvas.height) {
+                    enemies.splice(index, 1);
+                }
+            });
+
+            if (racerScore % 80 === 0) spawnEnemyCar();
+            drawRacerGame();
+        }
+
+        function drawRacerGame() {
+            // Background / Road
+            racerCtx.fillStyle = '#334155'; racerCtx.fillRect(0, 0, racerCanvas.width, racerCanvas.height);
+            racerCtx.fillStyle = '#1e293b'; racerCtx.fillRect(0, 0, 20, racerCanvas.height);
+            racerCtx.fillRect(racerCanvas.width-20, 0, 20, racerCanvas.height);
+
+            // Lines
+            racerCtx.fillStyle = '#cbd5e1';
+            for(let i = 0; i < racerCanvas.height; i += 40) {
+                racerCtx.fillRect(105, i + (racerScore % 40), 4, 20);
+                racerCtx.fillRect(175, i + (racerScore % 40), 4, 20);
+                racerCtx.fillRect(245, i + (racerScore % 40), 4, 20);
+            }
+
+            // Player Car (Red)
+            racerCtx.fillStyle = '#f43f5e'; racerCtx.fillRect(playerCar.x, playerCar.y, playerCar.width, playerCar.height);
+            // Wheels/Details
+            racerCtx.fillStyle = '#000';
+            racerCtx.fillRect(playerCar.x-2, playerCar.y+10, 4, 12); racerCtx.fillRect(playerCar.x+playerCar.width-2, playerCar.y+10, 4, 12);
+            racerCtx.fillRect(playerCar.x-2, playerCar.y+40, 4, 12); racerCtx.fillRect(playerCar.x+playerCar.width-2, playerCar.y+40, 4, 12);
+
+            // Enemies (Blue)
+            racerCtx.fillStyle = '#3b82f6';
+            enemies.forEach(enemy => {
+                racerCtx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                racerCtx.fillStyle = '#000';
+                racerCtx.fillRect(enemy.x-2, enemy.y+10, 4, 12); racerCtx.fillRect(enemy.x+enemy.width-2, enemy.y+10, 4, 12);
+                racerCtx.fillStyle = '#3b82f6'; // Reset back
+            });
+
+            // UI
+            racerCtx.font = '16px Arial'; racerCtx.fillStyle = '#fff';
+            racerCtx.fillText("Score: " + racerScore, 30, 30);
+            racerCtx.fillText("High: " + saveData.racerHigh, 30, 50);
+        }
+
+        // --- GENERAL CONTROLS ---
         document.addEventListener('keydown', (e) => {
             if (!modal.classList.contains('active')) return;
             
@@ -405,19 +574,24 @@
                 if (e.key === 'ArrowLeft' && dx === 0) { dx = -gridSize; dy = 0; }
                 if (e.key === 'ArrowRight' && dx === 0) { dx = gridSize; dy = 0; }
             }
-
             // Pong Controls
             if (document.getElementById('pongContainer').style.display === 'block') {
                 if (e.key === 'ArrowUp') upPressed = true;
                 if (e.key === 'ArrowDown') downPressed = true;
+            }
+            // Racer Controls
+            if (document.getElementById('racerContainer').style.display === 'block') {
+                if (e.key === 'ArrowLeft') leftPressed = true;
+                if (e.key === 'ArrowRight') rightPressed = true;
             }
         });
 
         document.addEventListener('keyup', (e) => {
             if (e.key === 'ArrowUp') upPressed = false;
             if (e.key === 'ArrowDown') downPressed = false;
+            if (e.key === 'ArrowLeft') leftPressed = false;
+            if (e.key === 'ArrowRight') rightPressed = false;
         });
-
     </script>
 </body>
 </html>
