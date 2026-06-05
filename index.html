@@ -92,18 +92,19 @@
         .game-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
         .game-saved-score { font-size: 12px; color: #94a3b8; }
 
-        .card-mower { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        /* Coole achtergrondkleuren voor de game-kaarten */
+        .card-mower { background: linear-gradient(135deg, #10b981, #047857); } /* Groen voor gras maaien */
         .card-snake { background: linear-gradient(135deg, #16a085, #2ecc71); }
         .card-pong { background: linear-gradient(135deg, #2980b9, #3498db); }
         .card-clicker { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
         .card-racer { background: linear-gradient(135deg, #c0392b, #e74c3c); }
 
-        /* Modal / Game Overlays */
+        /* Modal / Het speelscherm overlay */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.95);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -114,29 +115,32 @@
 
         .modal-content {
             background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
+            padding: 25px;
+            border-radius: 16px;
             text-align: center;
             max-width: 95%;
             width: fit-content;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
         }
 
-        canvas, iframe {
+        canvas, .iframe-wrapper iframe {
             background-color: #000;
             border: 4px solid var(--primary);
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
         }
 
-        iframe {
-            width: 800px;
-            height: 500px;
+        /* Dit zorgt ervoor dat jouw 3D Grasmaaier game de perfecte grootte heeft in de pop-up */
+        .iframe-wrapper iframe {
+            width: 900px;
+            height: 550px;
             max-width: 100%;
+            border: none;
         }
 
         .close-btn {
             margin-top: 15px;
-            padding: 10px 20px;
+            padding: 12px 28px;
             background-color: var(--accent);
             color: white;
             border: none;
@@ -144,10 +148,11 @@
             font-size: 16px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
 
-        .close-btn:hover { background-color: #e11d48; }
+        .close-btn:hover { background-color: #e11d48; transform: scale(1.05); }
+        .close-btn:active { transform: scale(0.95); }
         .game-instructions { margin-top: 10px; color: #94a3b8; font-size: 14px; }
         
         /* Clicker Shop Layout */
@@ -195,10 +200,11 @@
     <main>
         <h2 class="section-title">Popular Games</h2>
         <div class="game-grid">
+            
             <div class="game-card card-mower" onclick="openGame('mower')">
                 <div class="game-icon">🚜</div>
                 <div class="game-title">Lawn Mower 3D</div>
-                <div class="game-saved-score">Live Chat & Multiplayer</div>
+                <div class="game-saved-score">Multiplayer & Live Chat</div>
             </div>
 
             <div class="game-card card-snake" onclick="openGame('snake')">
@@ -231,9 +237,9 @@
         <div class="modal-content">
             <h2 id="modalTitle" style="margin-bottom: 15px;">Game</h2>
             
-            <div id="mowerContainer" style="display: none;">
+            <div id="mowerContainer" style="display: none;" class="iframe-wrapper">
                 <iframe id="mowerFrame" src=""></iframe>
-                <p class="game-instructions">Drive around and cut the grass in 3D!</p>
+                <p class="game-instructions">Drive around, cut the grass and enjoy the 3D graphics!</p>
             </div>
 
             <div id="snakeContainer" style="display: none;">
@@ -299,16 +305,20 @@
 
         function openGame(gameType) {
             modal.classList.add('active');
+            
+            // Verberg eerst alle game-schermen
             document.getElementById('mowerContainer').style.display = 'none';
             document.getElementById('snakeContainer').style.display = 'none';
             document.getElementById('pongContainer').style.display = 'none';
             document.getElementById('clickerContainer').style.display = 'none';
             document.getElementById('racerContainer').style.display = 'none';
             
+            // Start de gekozen game
             if (gameType === 'mower') {
                 document.getElementById('mowerContainer').style.display = 'block';
                 modalTitle.innerText = "Lawn Mower 3D";
-                mowerFrame.src = "game.html"; // Laad jouw game.html bestand in het venster
+                // Dit laadt JOUW game.html rechtstreeks in de pop-up!
+                mowerFrame.src = "game.html"; 
             } else if (gameType === 'snake') {
                 document.getElementById('snakeContainer').style.display = 'block';
                 modalTitle.innerText = "Neon Snake";
@@ -330,7 +340,8 @@
 
         function closeGame() {
             modal.classList.remove('active');
-            mowerFrame.src = ""; // Zet de iframe stil als de modal sluit
+            // Reset de iframe broncode zodat de game stopt met draaien op de achtergrond
+            mowerFrame.src = ""; 
             if (currentInterval) clearInterval(currentInterval);
             saveToStorage();
         }
