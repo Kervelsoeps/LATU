@@ -1,1 +1,118 @@
 
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>LATU online Legal</title>
+        <link rel="stylesheet" href="legal.css">
+        <meta name="legal" content="The legal page of LATU online">
+    </head>
+    <body>
+        <header>
+            <div class="header-content">
+                <h1>LATU Online Legal Center</h1>
+                <button id="theme-toggle" class="toggle-btn">🌙 Switch Theme</button>
+            </div>
+        </header>
+
+        <nav class="legal-nav">
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms of Service</a>
+            <a href="#cookies">Cookie Policy</a>
+        </nav>
+
+        <div id="legal">
+            <details id="privacy" open>
+                <summary>Privacy Policy & Data Processing</summary>
+                <div class="policy-content">
+                    <h2>Privacy Policy</h2>
+                    <p><strong>Effective Date:</strong> October 26, 2023</p>
+                    <p>This Privacy Policy explains how LATU Online ("the Service") collects, uses, and shares information about you. This policy applies to all users of our games and platform worldwide.</p>
+
+                    <h3>1. Information We Collect Automatically</h3>
+                    <p>When you access our Service via Firebase Authentication, we automatically collect certain information:</p>
+                    <ul>
+                        <li><strong>Identifiers:</strong> Your Firebase Unique ID (UID), IP address, and browser finger-printing for security.</li>
+                        <li><strong>Usage Data:</strong> Game session duration, interaction logs, high scores, and feature usage.</li>
+                        <li><strong>Device Information:</strong> Operating system, hardware model, and browser type.</li>
+                    </ul>
+
+                    <h3>2. Information You Provide</h3>
+                    <p>Through account creation, you provide us with your email address and display name. We do not store passwords; these are managed securely by Google Firebase.</p>
+
+                    <h3>3. Children's Privacy</h3>
+                    <p>LATU Online recognizes the importance of protecting children's privacy. We do not knowingly collect personal information from children under the age of 13 without verifiable parental consent. If we learn we have collected such data, we will delete it immediately.</p>
+
+                    <h3>4. How We Use Information</h3>
+                    <p>We use the information to:
+                    <ul>
+                        <li>Operate, maintain, and improve the gaming experience.</li>
+                        <li>Personalize game content and save progress.</li>
+                        <li>Protect the Service from cheating, fraud, or security threats.</li>
+                        <li>Provide global leaderboards and social features.</li>
+                    </ul>
+
+                    <h3>5. Data Sharing and Third Parties</h3>
+                    <p>We do not sell your personal data. We share data with <strong>Google Firebase</strong> (Cloud storage and Auth) and other essential service providers as necessary to run the Service.</p>
+
+                    <h3>6. Your Rights (GDPR/CCPA)</h3>
+                    <p>Depending on your location, you may have the right to access, correct, or delete your personal information. You can delete your account data through the game settings or by contacting us.</p>
+
+                    <h3>7. Contact Us</h3>
+                    <p>For any legal or privacy-related inquiries: <a href="mailto:lauran.calliauw@gmail.com">lauran.calliauw@gmail.com</a></p>
+                </div>
+            </details>
+
+            <details id="terms">
+                <summary>Terms of Service</summary>
+                <div class="policy-content">
+                    <h2>Terms of Service</h2>
+                    <p>These Terms of Service ("Terms") govern your access to and use of LATU Online. By using our Service, you agree to be bound by these Terms.</p>
+                    
+                    <h3>1. User Obligations</h3>
+                    <p>Users must not engage in any activity that interferes with or disrupts the Service. This includes, but is not limited to, the use of automated scripts or exploits to manipulate game outcomes.</p>
+
+                    <h3>2. Account Responsibility</h3>
+                    <p>You are solely responsible for maintaining the confidentiality of your account credentials. We are not liable for any loss resulting from unauthorized access to your account.</p>
+
+                    <h3>3. Limitation of Liability</h3>
+                    <p>LATU Online is provided "as is" without any warranties. Under no circumstances shall the Provider be liable for any direct or indirect damages arising from the use of the platform.</p>
+
+                    <h3>4. Governing Law</h3>
+                    <p>These terms are governed by and construed in accordance with the laws of your jurisdiction.</p>
+                </div>
+            </details>
+
+            <details id="cookies">
+                <summary>Cookie Policy</summary>
+                <div class="policy-content">
+                    <h2>Cookie Policy</h2>
+                    <p><strong>Last Updated:</strong> October 26, 2023</p>
+                    <p>We use cookies and similar tracking technologies to track the activity on Our Service and store certain information.</p>
+                    
+                    <h3>1. Essential Cookies</h3>
+                    <p>These are necessary for the website to function, specifically for Firebase Authentication to keep you logged in between sessions.</p>
+
+                    <h3>2. Local Storage</h3>
+                    <p>We use local storage to remember your theme preferences (Light/Dark mode) and certain game settings. These are stored locally on your device and are not used for tracking across other websites.</p>
+                </div>
+            </details>
+        </div>
+
+        <script>
+            const toggleBtn = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            toggleBtn.addEventListener('click', () => {
+                body.classList.toggle('dark-mode');
+                const isDark = body.classList.contains('dark-mode');
+                localStorage.setItem('legal-theme', isDark ? 'dark' : 'light');
+                toggleBtn.innerText = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+            });
+
+            if (localStorage.getItem('legal-theme') === 'dark') {
+                body.classList.add('dark-mode');
+                toggleBtn.innerText = '☀️ Light Mode';
+            }
+        </script>
+    </body>
+</html>
