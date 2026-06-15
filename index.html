@@ -1,133 +1,229 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Online Latu</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #0b1220;
-      --card: #121c34;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      font-family: Inter, system-ui, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 18%),
-        radial-gradient(circle at 100% 80%, rgba(168, 85, 247, 0.14), transparent 20%),
-        linear-gradient(180deg, #08111d 0%, #050814 100%);
-      color: var(--text);
-    }
-
-    .container {
-      max-width: 1040px;
-      margin: 0 auto;
-      padding: 48px 24px 64px;
-    }
-
-    header {
-      padding: 32px;
-      background: rgba(11, 18, 37, 0.92);
-      border: 1px solid rgba(148, 163, 184, 0.1);
-      border-radius: 28px;
-      backdrop-filter: blur(12px);
-      margin-bottom: 32px;
-    }
-
-    h1 {
-      margin: 0 0 14px;
-      font-size: clamp(2rem, 4vw, 3.4rem);
-      line-height: 1.05;
-    }
-
-    p {
-      margin: 0;
-      max-width: 720px;
-      color: var(--muted);
-      font-size: 1rem;
-    }
-
-    .grid {
-      display: grid;
-      gap: 20px;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    }
-
-    .card {
-      display: block;
-      padding: 24px;
-      border-radius: 22px;
-      background: var(--card);
-      border: 1px solid rgba(56, 189, 248, 0.15);
-      color: inherit;
-      text-decoration: none;
-      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
-    }
-
-    .card:hover,
-    .card:focus-visible {
-      transform: translateY(-2px);
-      border-color: rgba(56, 189, 248, 0.45);
-      background: rgba(31, 41, 55, 0.95);
-    }
-
-    .card h2 {
-      margin: 0 0 10px;
-      font-size: 1.35rem;
-    }
-
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    footer {
-      margin-top: 40px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 0.95rem;
-    }
-
-    @media (max-width: 640px) {
-      .container {
-        padding: 32px 16px 48px;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Latu</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1220;
+        --surface: rgba(10, 17, 32, 0.92);
+        --surface-strong: rgba(15, 23, 42, 0.98);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.16);
+        --radius: 28px;
+        font-family: Inter, system-ui, sans-serif;
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Online Latu</h1>
-      <a href="legal.html">Legal</a>
-    </header>
 
-    <main>
-      <div class="grid">
-        <a class="card" href="BasketballCicker.html">
-          <h2>Basketball Clicker</h2>
-        </a>
-      </div>
-            <div class="grid">
-        <a class="card" href="Pulse-Runner.html">
-          <h2>Pulse Runner</h2>
-        </a>
-      </div>
-    </main>
+      * {
+        box-sizing: border-box;
+      }
 
-    <footer>
-      &copy; 2026 Online Latu. Alle rechten voorbehouden.
-    </footer>
-  </div>
-</body>
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(56, 189, 248, 0.18),
+            transparent 18%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(168, 85, 247, 0.12),
+            transparent 22%
+          ),
+          linear-gradient(180deg, #08111d 0%, #050814 100%);
+        color: var(--text);
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      .container {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 48px 24px 64px;
+      }
+
+      header {
+        display: grid;
+        gap: 24px;
+        padding: 36px;
+        background: var(--surface);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: var(--radius);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
+        margin-bottom: 36px;
+      }
+
+      .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2.4rem, 5vw, 4rem);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        max-width: 720px;
+        line-height: 1.9;
+        font-size: 1rem;
+      }
+
+      .nav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.9rem 1.4rem;
+        border-radius: 999px;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        background: rgba(56, 189, 248, 0.08);
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+        transition:
+          transform 180ms ease,
+          background 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .nav-link:hover,
+      .nav-link:focus-visible {
+        transform: translateY(-1px);
+        background: rgba(56, 189, 248, 0.14);
+        border-color: rgba(56, 189, 248, 0.45);
+      }
+
+      .grid {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .card {
+        position: relative;
+        display: block;
+        padding: 28px;
+        border-radius: 28px;
+        background: var(--surface-strong);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: inherit;
+        text-decoration: none;
+        overflow: hidden;
+        transition:
+          transform 200ms ease,
+          border-color 200ms ease,
+          box-shadow 200ms ease;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at top left,
+          rgba(56, 189, 248, 0.14),
+          transparent 25%
+        );
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      .card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .card:hover,
+      .card:focus-visible {
+        transform: translateY(-4px);
+        border-color: rgba(56, 189, 248, 0.45);
+        box-shadow: 0 26px 60px rgba(0, 0, 0, 0.22);
+      }
+
+      .card h2 {
+        margin: 0 0 12px;
+        font-size: 1.55rem;
+        line-height: 1.2;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.85;
+      }
+
+      footer {
+        margin-top: 44px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 720px) {
+        .container {
+          padding: 32px 18px 48px;
+        }
+
+        header {
+          padding: 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="hero-top">
+          <div>
+            <h1>Online Latu</h1>
+            <p class="subtitle">
+              Verken snelle webgames, knoppen met stijl en een moderne
+              interface. Klik op een titel om te spelen.
+            </p>
+          </div>
+          <a class="nav-link" href="legal.html">Legal</a>
+        </div>
+      </header>
+
+      <main>
+        <div class="grid">
+          <a class="card" href="BasketballCicker.html">
+            <h2>Basketball Clicker</h2>
+            <p>
+              Speel een korte basketbalklikker met vloeiende animaties en
+              uitdagende scores.
+            </p>
+          </a>
+          <a class="card" href="Pulse-Runner.html">
+            <h2>Pulse Runner</h2>
+            <p>
+              Ren door neonlandschappen in deze snelle, minimale
+              runner-ervaring.
+            </p>
+          </a>
+        </div>
+      </main>
+
+      <footer>&copy; 2026 Online Latu. Alle rechten voorbehouden.</footer>
+    </div>
+  </body>
 </html>
