@@ -29,7 +29,7 @@
         .bg-cyber { background: linear-gradient(135deg, #1a0b2e 0%, #4a148c 100%); }
         .bg-ocean { background: linear-gradient(135deg, #001f3f 0%, #0074D9 100%); }
 
-        /* --- COIN DISPLAY --- */
+        /* --- MUNTEN TELLER (Rechtsboven) --- */
         #coin-display {
             position: fixed;
             top: 20px;
@@ -40,7 +40,7 @@
             padding: 10px 20px;
             border-radius: 25px;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.2em;
             z-index: 1000;
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
             backdrop-filter: blur(5px);
@@ -55,7 +55,7 @@
 
         header {
             text-align: center;
-            padding: 60px 20px 40px;
+            padding: 60px 20px 20px;
         }
 
         h1 {
@@ -113,7 +113,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
 
         .feature-card {
@@ -146,18 +146,26 @@
             color: #ffd700;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
             margin-top: 0;
+            text-align: center;
+        }
+
+        .shop-section > p {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 25px;
         }
 
         .shop-grid {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
-            margin-top: 20px;
+            justify-content: center;
         }
 
         .shop-item {
             flex: 1;
             min-width: 250px;
+            max-width: 300px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             padding: 20px;
@@ -169,20 +177,22 @@
         .shop-item:hover {
             border-color: #ffd700;
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            transform: translateY(-3px);
         }
 
-        .shop-item h3 { margin-top: 0; }
-        .price { color: #ffd700; font-weight: bold; font-size: 1.1em; margin: 15px 0; }
+        .shop-item h3 { margin-top: 0; color: #fff; }
+        .price { color: #ffd700; font-weight: bold; font-size: 1.2em; margin: 15px 0; }
 
         .shop-btn {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background: rgba(255, 215, 0, 0.1);
             color: #ffd700;
             border: 1px solid #ffd700;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 1em;
             transition: all 0.3s ease;
         }
 
@@ -196,6 +206,7 @@
             text-align: center;
             margin-bottom: 30px;
             color: var(--accent-color);
+            font-size: 2em;
         }
 
         .games-grid {
@@ -264,7 +275,7 @@
 </head>
 <body class="bg-default">
 
-    <!-- COIN DISPLAY (Zichtbaar op elke pagina) -->
+    <!-- MUNTEN TELLER (Altijd zichtbaar) -->
     <div id="coin-display">🪙 <span id="coin-balance">0</span></div>
 
     <div class="container">
@@ -300,7 +311,7 @@
         <!-- NIEUW: WINKEL & AANPASSINGEN -->
         <section class="shop-section">
             <h2>🛒 Winkel & Aanpassingen</h2>
-            <p>Gebruik je verdiende munten om je ervaring te verbeteren! Je verdient automatisch 1 munt per minuut speeltijd, of door te scoren in games.</p>
+            <p>Verdien munten door te spelen (1 munt per minuut) of door te scoren in games. Gebruik ze om je omgeving aan te passen!</p>
             
             <div class="shop-grid">
                 <div class="shop-item">
@@ -457,12 +468,14 @@
         }
     };
 
-    // Playtime Tracker: 1 munt per 60 seconden
+    // Playtime Tracker: 1 munt per 60 seconden (alleen als tabblad actief is)
     let playtimeSeconds = 0;
     setInterval(() => {
-        playtimeSeconds++;
-        if (playtimeSeconds % 60 === 0) {
-            CoinSystem.addCoins(1);
+        if (!document.hidden) {
+            playtimeSeconds++;
+            if (playtimeSeconds % 60 === 0) {
+                CoinSystem.addCoins(1);
+            }
         }
     }, 1000);
 
