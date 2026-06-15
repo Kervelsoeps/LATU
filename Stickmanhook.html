@@ -1,40 +1,277 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    
+<html lang="en">
+<head>
     <meta charset="utf-8" />
-    <title>Masked's Game Hub 2.0 - Stickman Hook</title>
-    <link rel="shortcut icon" href="../../images/ico.ico">
-    <script src="../../storage/js/cloak.js"></script>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
-    />
-
+    <title>Stickman Hook - 1 HTML Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <style>
-      html,
-      body {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        margin: 0;
-        padding: 0;
-        border: 0;
-        overflow: hidden;
-        width: 100vw;
-        height: 100vh;
-        background-color: black;
-      }
-      canvas {
-        width: 100%;
-      }
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            background-color: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            pointer-events: none;
+            text-align: center;
+        }
+        #screen-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 32px;
+            font-weight: bold;
+            background: rgba(15, 15, 26, 0.85);
+            padding: 20px 40px;
+            border-radius: 15px;
+            border: 2px solid #e94560;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+            display: none;
+            text-align: center;
+            pointer-events: none;
+        }
     </style>
+</head>
+<body>
 
-    <!-- Poki SDK -->
-    <script src="poki3.js"></script>
-  </head>
-  <body>
+    <div id="ui-overlay">Level 1</div>
+    <div id="screen-msg">CLICK TO RESTART</div>
+    <canvas id="gameCanvas"></canvas>
 
-    <script src="bundle.js"></script>
-  </body>
-</html>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const uiOverlay = document.getElementById("ui-overlay");
+        const screenMsg = document.getElementById("screen-msg");
+
+        // Resize Canvas dynamically
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resize);
+        resize();
+
+        // Game Configuration & State
+        const GRAVITY = 0.4;
+        const AIR_RESISTANCE = 0.995;
+        const ROPE_ELASTICITY = 1.0; 
+
+        let player, hooks, platforms, finishLine;
+        let isPointerDown = false;
+        let currentLevel = 1;
+        let gameState = "PLAYING"; // PLAYING, WIN, FAIL
+        let cameraX = 0;
+
+        // Level Design Parameters
+        function initLevel(levelNum) {
+            gameState = "PLAYING";
+            screenMsg.style.display = "none";
+            uiOverlay.innerText = "Level " + levelNum;
+            isPointerDown = false;
+            cameraX = 0;
+
+            // Generate Player
+            player = {
+                x: 100,
+                y: 250,
+                vx: 5,
+                vy: 0,
+                radius: 16,
+                attachedHook: null,
+                ropeLength: 0,
+                angle: 0,
+                rotationSpeed: 0.05
+            };
+
+            hooks = [];
+            platforms = [];
+
+            // Procedural/Pattern Level Generation based on Level Number
+            let totalLength = 3000 + levelNum * 1000;
+            
+            // Build Hooks
+            for (let x = 300; x < totalLength - 400; x += 250 + Math.random() * 100) {
+                let y = 150 + Math.sin(x * 0.005) * 100 + (Math.random() * 60 - 30);
+                hooks.push({ x: x, y: y, radius: 10 });
+            }
+
+            // Build Trampoline Platforms at the base
+            for (let x = 200; x < totalLength; x += 600) {
+                platforms.push({
+                    x: x + Math.random() * 100,
+                    y: canvas.height - 80 - Math.random() * 50,
+                    w: 120,
+                    h: 20
+                });
+            }
+
+            // Define Finish Line
+            finishLine = totalLength;
+        }
+
+        // Physics & Game Loop Logic
+        function update() {
+            if (gameState === "PLAYING") {
+                // 1. Rope Physics (Pendulum Motion Simulation)
+                if (isPointerDown && player.attachedHook) {
+                    let hk = player.attachedHook;
+                    
+                    // Calculate vector from hook to player
+                    let dx = player.x - hk.x;
+                    let dy = player.y - hk.y;
+                    let currentDist = Math.sqrt(dx * dx + dy * dy);
+
+                    // Apply standard environmental gravity
+                    player.vy += GRAVITY;
+
+                    // Constrain player position to the length of the rope
+                    if (currentDist > player.ropeLength) {
+                        let nx = dx / currentDist;
+                        let ny = dy / currentDist;
+
+                        // Bring player back to circumference boundary
+                        player.x = hk.x + nx * player.ropeLength;
+                        player.y = hk.y + ny * player.ropeLength;
+
+                        // Calculate relative incoming velocity vector projection
+                        let velAlongNormal = player.vx * nx + player.vy * ny;
+
+                        // Cancel out outbound centrifugal energy, maintaining forward tangential momentum
+                        player.vx -= velAlongNormal * nx * ROPE_ELASTICITY;
+                        player.vy -= velAlongNormal * ny * ROPE_ELASTICITY;
+
+                        // Add subtle rotational acceleration assist when hanging low
+                        let tangentX = -ny;
+                        player.vx += tangentX * 0.1;
+                    }
+                } else {
+                    // 2. Freefall Physics
+                    player.vy += GRAVITY;
+                    player.vx *= AIR_RESISTANCE;
+                    player.vy *= AIR_RESISTANCE;
+                }
+
+                // Apply velocity updates to spatial position
+                player.x += player.vx;
+                player.y += player.vy;
+
+                // 3. Platform Elastic Bounce Collisions
+                platforms.forEach(p => {
+                    if (player.x + player.radius > p.x && 
+                        player.x - player.radius < p.x + p.w &&
+                        player.y + player.radius > p.y && 
+                        player.y - player.radius < p.y + p.h) {
+                        
+                        // Bounce upward cleanly
+                        player.y = p.y - player.radius;
+                        player.vy = -14; 
+                        player.vx += 2; // Forward push boost
+                        if (player.attachedHook) {
+                            isPointerDown = false;
+                            player.attachedHook = null;
+                        }
+                    }
+                });
+
+                // 4. Smooth Camera Tracking
+                let targetCamX = player.x - canvas.width * 0.3;
+                cameraX += (targetCamX - cameraX) * 0.1;
+
+                // 5. Game Constraints & Win/Loss Evaluation
+                if (player.y > canvas.height + 100) {
+                    gameState = "FAIL";
+                    screenMsg.innerText = "GAME OVER\nCLICK TO RESTART";
+                    screenMsg.style.display = "block";
+                }
+
+                if (player.x >= finishLine) {
+                    gameState = "WIN";
+                    screenMsg.innerText = "LEVEL CLEAR!\nCLICK FOR NEXT LEVEL";
+                    screenMsg.style.display = "block";
+                }
+
+                // Passive character visual flip rotation
+                player.angle += player.vx * 0.015;
+            }
+        }
+
+        // Render Canvas Entities
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Save state for linear camera translations
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+
+            // Draw Background Parallax Grid Elements
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+            ctx.lineWidth = 2;
+            let startGridX = Math.floor(cameraX / 100) * 100;
+            for (let gX = startGridX; gX < startGridX + canvas.width + 100; gX += 100) {
+                ctx.beginPath();
+                ctx.moveTo(gX, 0);
+                ctx.lineTo(gX, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw Checkered Finish Line Zone
+            ctx.fillStyle = "#e94560";
+            ctx.fillRect(finishLine, 0, 20, canvas.height);
+            ctx.fillStyle = "#ffffff";
+            for (let fY = 0; fY < canvas.height; fY += 40) {
+                ctx.fillRect(finishLine, fY, 10, 20);
+                ctx.fillRect(finishLine + 10, fY + 20, 10, 20);
+            }
+
+            // Draw Trampoline Platforms
+            platforms.forEach(p => {
+                ctx.fillStyle = "#0f3460";
+                ctx.fillRect(p.x, p.y, p.w, p.h);
+                ctx.strokeStyle = "#e94560";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(p.x, p.y, p.w, p.h);
+                
+                // Elastic neon core
+                ctx.fillStyle = "#e94560";
+                ctx.fillRect(p.x + 5, p.y + 2, p.w - 10, 4);
+            });
+
+            // Draw Grapple Hook Pins
+            hooks.forEach(hk => {
+                // Outer glow rings
+                ctx.beginPath();
+                ctx.arc(hk.x, hk.y, hk.radius * 2.2, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(22, 160, 133, 0.15)";
+                ctx.fill();
+
+                // Core anchor point
+                ctx.beginPath();
+                ctx.arc(hk.x, hk.y, hk.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#16a085";
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#ffffff";
+                ctx.stroke();
+            });
+
