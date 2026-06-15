@@ -1,73 +1,99 @@
 <!doctype html>
 <html lang="nl">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pulse Runner</title>
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <main class="game-shell">
-      <canvas id="game" aria-label="Pulse Runner spelveld"></canvas>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulse Runner</title>
 
-      <section class="hud" aria-label="Spelinformatie">
-        <div class="brand">
-          <span class="mark"></span>
-          <strong>Pulse Runner</strong>
-        </div>
-        <div class="stat">
-          <span>Score</span>
-          <strong id="score">0</strong>
-        </div>
-        <div class="stat">
-          <span>Combo</span>
-          <strong id="combo">x1</strong>
-        </div>
-        <div class="stat">
-          <span>Shield</span>
-          <strong id="shield">100</strong>
-        </div>
-      </section>
+<style>
+/* PLAK HIER DE VOLLEDIGE CSS DIE JE ZOJUIST STUURDE */
+</style>
 
-      <section class="ability-bar" aria-label="Vaardigheden">
-        <button id="dashButton" type="button" title="Dash">
-          <span class="key">Space</span>
+</head>
+<body>
+
+<main class="game-shell">
+  <canvas id="game" aria-label="Pulse Runner spelveld"></canvas>
+
+  <section class="hud" aria-label="Spelinformatie">
+    <div class="brand">
+      <span class="mark"></span>
+      <strong>Pulse Runner</strong>
+    </div>
+
+    <div class="stat">
+      <span>Score</span>
+      <strong id="score">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Combo</span>
+      <strong id="combo">x1</strong>
+    </div>
+
+    <div class="stat">
+      <span>Shield</span>
+      <strong id="shield">100</strong>
+    </div>
+  </section>
+
+  <section class="ability-bar" aria-label="Vaardigheden">
+    <button id="dashButton" type="button">
+      <span class="key">Space</span>
+      <span>Dash</span>
+      <i id="dashFill"></i>
+    </button>
+
+    <button id="slowButton" type="button">
+      <span class="key">F</span>
+      <span>Focus</span>
+      <i id="slowFill"></i>
+    </button>
+  </section>
+
+  <section id="overlay" class="overlay">
+    <div class="panel">
+      <p class="eyebrow">
+        High score: <span id="bestScore">0</span>
+      </p>
+
+      <h1>Pulse Runner</h1>
+
+      <p class="intro">
+        Verzamel lichtkernen, ontwijk rifts en overleef de pulsgolven.
+        Beweeg met WASD, pijltjes, muis of touch.
+      </p>
+
+      <div class="upgrade-grid">
+        <div>
           <span>Dash</span>
-          <i id="dashFill"></i>
-        </button>
-        <button id="slowButton" type="button" title="Focus">
-          <span class="key">F</span>
-          <span>Focus</span>
-          <i id="slowFill"></i>
-        </button>
-      </section>
-
-      <section id="overlay" class="overlay">
-        <div class="panel">
-          <p class="eyebrow">High score: <span id="bestScore">0</span></p>
-          <h1>Pulse Runner</h1>
-          <p class="intro">
-            Verzamel lichtkernen, ontwijk rifts en overleef de pulsgolven. Beweeg met WASD,
-            pijltjes, muis of touch.
-          </p>
-          <div class="upgrade-grid">
-            <div>
-              <span>Dash</span>
-              <strong>Door vijanden heen</strong>
-            </div>
-            <div>
-              <span>Focus</span>
-              <strong>Tijd vertragen</strong>
-            </div>
-            <div>
-              <span>Kernen</span>
-              <strong>Combo groeit snel</strong>
-            </div>
-          </div>
-          <button id="startButton" class="primary" type="button">Start spel</button>
+          <strong>Door vijanden heen</strong>
         </div>
-      </section>
-    </main>
-    <script src="game.js"></script>
-  </body>
+
+        <div>
+          <span>Focus</span>
+          <strong>Tijd vertragen</strong>
+        </div>
+
+        <div>
+          <span>Kernen</span>
+          <strong>Combo groeit snel</strong>
+        </div>
+      </div>
+
+      <button id="startButton" class="primary" type="button">
+        Start spel
+      </button>
+    </div>
+  </section>
+</main>
+
+<script>
+/*
+PLAK HIER DE VOLLEDIGE JAVASCRIPT DIE JE EERDER STUURDE
+(BEGINNEND MET (() => { EN EINDIGEND MET })(); )
+*/
+</script>
+
+</body>
 </html>
