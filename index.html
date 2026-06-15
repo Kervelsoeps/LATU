@@ -1,163 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Online Latu</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --card: #121c34;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      font-family: Inter, system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.16), transparent 18%),
+        radial-gradient(circle at 100% 80%, rgba(168, 85, 247, 0.14), transparent 20%),
+        linear-gradient(180deg, #08111d 0%, #050814 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
+
+    header {
+      padding: 32px;
+      background: rgba(11, 18, 37, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.05;
+    }
+
+    p {
+      margin: 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .card {
+      display: block;
+      padding: 24px;
+      border-radius: 22px;
+      background: var(--card);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      color: inherit;
+      text-decoration: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(31, 41, 55, 0.95);
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    footer {
+      margin-top: 40px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 32px 16px 48px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="side-nav" aria-label="Game categories">
-      <a class="brand" href="#" aria-label="Online Latu home">
-        <span class="brand-mark">OL</span>
-        <span>Online Latu</span>
-      </a>
+  <div class="container">
+    <header>
+      <h1>Online Latu</h1>
+      <p>Hier staan de links naar de games die je nog zelf gaat maken. Voeg later gewoon nieuwe HTML-bestanden toe en pas de links aan.</p>
+    </header>
 
-      <nav class="side-links">
-        <a href="#popular" class="active">Popular</a>
-        <a href="#new">New</a>
-        <a href="#categories">Categories</a>
-        <a href="#favorites">Favorites</a>
-      </nav>
-    </aside>
+    <main>
+      <div class="grid">
+        <a class="card" href="MonsterManagement.html">
+          <h2>Monster Management</h2>
+        </a>
+      </div>
+    </main>
 
-    <div class="page">
-      <header class="topbar">
-        <div class="search-wrap">
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            <path d="M10.8 18.1a7.3 7.3 0 1 1 0-14.6 7.3 7.3 0 0 1 0 14.6Zm0-2a5.3 5.3 0 1 0 0-10.6 5.3 5.3 0 0 0 0 10.6Zm5.4.5 4 4-1.5 1.4-4-4 1.5-1.4Z"/>
-          </svg>
-          <input type="search" placeholder="Search games" aria-label="Search games" id="searchInput">
-        </div>
-
-        <nav class="quick-nav" aria-label="Quick links">
-          <a href="#popular">Popular</a>
-          <a href="#new">New</a>
-          <a href="#categories">Categories</a>
-        </nav>
-      </header>
-
-      <main>
-        <section class="hero" aria-labelledby="hero-title">
-          <div class="hero-copy">
-            <p class="kicker">Free online games</p>
-            <h1 id="hero-title">Online Latu</h1>
-            <p class="hero-text">Pick a game, press play, and jump in. This homepage is ready for your own games when you add them later.</p>
-          </div>
-
-          <a class="hero-card featured-card" href="games/grasmaaier-upgraded/index.html" aria-label="Play Grasmaaier UPgraded">
-            <span class="card-badge">Featured</span>
-            <span class="play-button" aria-hidden="true"></span>
-            <span class="hero-card-title">Grasmaaier UPgraded</span>
-          </a>
-        </section>
-
-        <section class="category-strip" id="categories" aria-label="Filter games">
-          <button type="button" class="category-pill active">All</button>
-          <button type="button" class="category-pill">Action</button>
-          <button type="button" class="category-pill">Racing</button>
-          <button type="button" class="category-pill">Puzzle</button>
-          <button type="button" class="category-pill">Adventure</button>
-          <button type="button" class="category-pill">Sports</button>
-        </section>
-
-        <section class="section-heading" id="popular">
-          <div>
-            <p class="eyebrow">Most played</p>
-            <h2>Popular games</h2>
-          </div>
-        </section>
-
-        <section class="game-grid" aria-label="Popular game slots">
-          <a class="game-card game-card-large" href="games/grasmaaier-upgraded/index.html" data-category="Action">
-            <div class="thumb thumb-grass">
-              <span class="play-button small" aria-hidden="true"></span>
-            </div>
-            <div class="game-info">
-              <h3>Grasmaaier UPgraded</h3>
-              <p>3D mowing game</p>
-            </div>
-          </a>
-
-          <a class="game-card" href="#" data-category="Racing">
-            <div class="thumb thumb-racing">
-              <span class="play-button small" aria-hidden="true"></span>
-            </div>
-            <div class="game-info">
-              <h3>Racing Game</h3>
-              <p>Game slot</p>
-            </div>
-          </a>
-
-          <a class="game-card" href="#" data-category="Puzzle">
-            <div class="thumb thumb-puzzle">
-              <span class="play-button small" aria-hidden="true"></span>
-            </div>
-            <div class="game-info">
-              <h3>Puzzle Game</h3>
-              <p>Game slot</p>
-            </div>
-          </a>
-
-          <a class="game-card" href="#" data-category="Adventure">
-            <div class="thumb thumb-adventure">
-              <span class="play-button small" aria-hidden="true"></span>
-            </div>
-            <div class="game-info">
-              <h3>Adventure Game</h3>
-              <p>Game slot</p>
-            </div>
-          </a>
-
-          <a class="game-card" href="#" data-category="Sports">
-            <div class="thumb thumb-sports">
-              <span class="play-button small" aria-hidden="true"></span>
-            </div>
-            <div class="game-info">
-              <h3>Sports Game</h3>
-              <p>Game slot</p>
-            </div>
-          </a>
-
-          <a class="game-card" href="#" data-category="Action">
-            <div class="thumb thumb-neon">
-              <span class="play-button small" aria-hidden="true"></span>
-            </div>
-            <div class="game-info">
-              <h3>Neon Runner</h3>
-              <p>Game slot</p>
-            </div>
-          </a>
-
-          <a class="game-card" href="#" data-category="Puzzle">
-            <div class="thumb thumb-candy">
-              <span class="play-button small" aria-hidden="true"></span>
-            </div>
-            <div class="game-info">
-              <h3>Brain Match</h3>
-              <p>Game slot</p>
-            </div>
-          </a>
-        </section>
-
-        <section class="section-heading compact" id="new">
-          <div>
-            <p class="eyebrow">Fresh picks</p>
-            <h2>New games</h2>
-          </div>
-        </section>
-
-        <section class="mini-grid" id="favorites" aria-label="New game slots">
-          <a class="mini-card" href="#" data-category="Action">Shadow Dash</a>
-          <a class="mini-card" href="#" data-category="Racing">Turbo Track</a>
-          <a class="mini-card" href="#" data-category="Adventure">Sky Quest</a>
-          <a class="mini-card" href="#" data-category="Sports">Street Ball</a>
-        </section>
-      </main>
-    </div>
+    <footer>
+      &copy; 2026 Online Latu. Alle rechten voorbehouden.
+    </footer>
   </div>
-
-  <script src="script.js"></script>
 </body>
 </html>
