@@ -3,348 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stickman Hook - Fair Play</title>
+    <title>Stickman Hook - Long Swings</title>
     <style>
-        body, html {
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+        
+        body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
             overflow: hidden;
-            background-color: #161625; /* Dark navy background */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none; /* Prevent scrolling on mobile */
+            background: #1a1a2e;
+            font-family: 'Fredoka One', cursive, sans-serif;
+            touch-action: none;
             user-select: none;
+            -webkit-user-select: none;
         }
         canvas {
             display: block;
+        }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            pointer-events: none;
+            z-index: 10;
+        }
+        #score {
+            font-size: 36px;
+            color: #fff;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+        #high-score {
+            font-size: 18px;
+            color: #00f2ff;
+            margin-top: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        #instructions {
+            position: absolute;
+            bottom: 40px;
             width: 100%;
-            height: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 22px;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: opacity 0.5s;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
+            z-index: 20;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 30px 50px;
+            border-radius: 20px;
+            border: 2px solid #ff2a6d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #game-over h1 {
+            font-size: 42px;
+            color: #ff2a6d;
+            margin: 0 0 10px 0;
+        }
+        #game-over p {
+            font-size: 20px;
+            color: #fff;
+            margin: 0;
+        }
+        #mode-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ffd700;
+            color: #1a1a2e;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
         }
     </style>
 </head>
 <body>
+    <div id="ui">
+        <div id="score">0m</div>
+        <div id="high-score">BEST: 0m</div>
+    </div>
+    <div id="mode-badge">🚀 LONG SWINGS MODE</div>
+    <div id="instructions">HOLD to Hook • RELEASE to Fly</div>
+    <div id="game-over">
+        <h1>Almost!</h1>
+        <p>Tap anywhere to retry</p>
+    </div>
     <canvas id="gameCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        let width, height;
+        
+        let width, height, dpr;
         function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
+            dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
         }
         window.addEventListener('resize', resize);
         resize();
 
-        // Game State
-        let gameState = 'playing'; // 'playing', 'gameover'
-        let distance = 0;
-        let bestDistance = parseInt(localStorage.getItem('stickmanBest')) || 0;
-        let cameraX = 0;
-
-        // Physics constants
-        const GRAVITY = 0.4;
-        const ROPE_LENGTH = 120;
-        const HOOK_RADIUS = 12;
-        const HOOK_SPACING_X = 250;
-        const HOOK_SPACING_Y = 150;
-
-        // Player
-        const player = {
+        // TWEAKED FOR LONG, DOABLE SWINGS
+        const GRAVITY = 0.28;          // Lower gravity for floatier, longer arcs
+        const AIR_RESISTANCE = 0.999;  // Minimal drag to preserve momentum over long distances
+        const SWING_BOOST = 1.025;     // Slight energy conservation to keep long swings going
+        const MIN_FORWARD_SPEED = 6.5; // Guarantees you keep moving forward, preventing straight drops
+        const MAX_ROPE_DIST = 550;     // Generous range to catch distant hooks
+        
+        let player = {
             x: 100,
-            y: 300,
-            vx: 8, // Initial forward velocity
+            y: 200,
+            vx: 8,
             vy: 0,
-            radius: 10,
-            isHooked: false,
-            currentHook: null,
-            trail: []
+            radius: 12,
+            hooked: false,
+            anchor: null,
+            ropeLength: 0,
+            scarf: []
         };
 
-        // Hooks generation
-        let hooks = [];
-        function generateHooks() {
-            // Generate hooks ahead of the camera
-            const rightEdge = cameraX + width + 500;
-            let lastHook = hooks[hooks.length - 1];
-            let startX = lastHook ? lastHook.x : 300;
-            let startY = lastHook ? lastHook.y : height / 2;
+        let camera = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        let anchors = [];
+        let particles = [];
+        let score = 0;
+        let highScore = localStorage.getItem('stickman_highscore_long') || 0;
+        let lastAnchorX = 0;
+        let isMouseDown = false;
+        let isGameOver = false;
+        let gameTime = 0;
+        let targetedAnchor = null;
 
-            while (startX < rightEdge) {
-                startX += HOOK_SPACING_X + (Math.random() * 100 - 50);
-                startY += (Math.random() * HOOK_SPACING_Y * 2 - HOOK_SPACING_Y);
-                // Keep within reasonable vertical bounds
-                startY = Math.max(100, Math.min(height - 100, startY));
-                hooks.push({ x: startX, y: startY });
-            }
+        document.getElementById('high-score').textContent = `BEST: ${highScore}m`;
+
+        function initGame() {
+            player.x = 150;
+            player.y = height * 0.4;
+            player.vx = 8; // Higher starting speed for long swings
+            player.vy = 0;
+            player.hooked = false;
+            player.anchor = null;
+            player.scarf = [];
             
-            // Remove hooks far behind
-            hooks = hooks.filter(h => h.x > cameraX - 500);
+            camera.x = 0;
+            camera.y = 0;
+            camera.targetX = 0;
+            camera.targetY = 0;
+            
+            anchors = [];
+            // Starting hooks spaced out to teach the long-swing rhythm
+            anchors.push({ x: 400, y: height * 0.35, type: 'normal' });
+            anchors.push({ x: 800, y: height * 0.40, type: 'normal' });
+            anchors.push({ x: 1200, y: height * 0.30, type: 'normal' });
+            lastAnchorX = 1200;
+            
+            score = 0;
+            particles = [];
+            isGameOver = false;
+            targetedAnchor = null;
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('instructions').style.opacity = '1';
         }
 
-        // Input handling
-        let isHolding = false;
-        function handleInputStart(e) {
-            if (e) e.preventDefault();
-            if (gameState === 'gameover') {
-                resetGame();
+        function spawnParticles(x, y, color, count, speed = 5) {
+            for (let i = 0; i < count; i++) {
+                let angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+                let vel = Math.random() * speed + 2;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * vel,
+                    vy: Math.sin(angle) * vel,
+                    life: 1.0,
+                    decay: 0.02 + Math.random() * 0.03,
+                    color: color,
+                    size: 2 + Math.random() * 4
+                });
+            }
+        }
+
+        function tryHook() {
+            if (isGameOver) {
+                initGame();
                 return;
             }
-            isHolding = true;
-            findNearestHook();
-        }
-
-        function handleInputEnd(e) {
-            if (e) e.preventDefault();
-            isHolding = false;
-            player.isHooked = false;
-            player.currentHook = null;
-        }
-
-        window.addEventListener('mousedown', handleInputStart);
-        window.addEventListener('mouseup', handleInputEnd);
-        window.addEventListener('touchstart', handleInputStart, {passive: false});
-        window.addEventListener('touchend', handleInputEnd, {passive: false});
-
-        function findNearestHook() {
-            let nearest = null;
-            let minDist = Infinity;
             
-            // Only look for hooks ahead or slightly behind
-            for (let hook of hooks) {
-                if (hook.x < player.x - 50) continue; 
-                let dx = hook.x - player.x;
-                let dy = hook.y - player.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
+            let bestAnchor = null;
+            let minScore = Infinity;
+            
+            for (let a of anchors) {
+                let dx = a.x - player.x;
+                let dy = a.y - player.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
                 
-                // Must be reachable
-                if (dist < ROPE_LENGTH * 2.5 && dist < minDist) {
-                    minDist = dist;
-                    nearest = hook;
+                // Generous hitbox for long-distance grabbing
+                if (dist < MAX_ROPE_DIST && dx > -80) {
+                    let score = dist;
+                    if (dy > 150) score += 200; // Soft penalty for hooks way below
+                    if (dx < 0) score += 100;   // Soft penalty for hooks behind
+                    
+                    if (score < minScore) {
+                        minScore = score;
+                        bestAnchor = a;
+                    }
                 }
             }
-
-            if (nearest) {
-                player.isHooked = true;
-                player.currentHook = nearest;
+            
+            if (bestAnchor) {
+                player.hooked = true;
+                player.anchor = bestAnchor;
+                targetedAnchor = bestAnchor;
+                player.ropeLength = Math.sqrt((player.x - bestAnchor.x)**2 + (player.y - bestAnchor.y)**2);
+                spawnParticles(player.x, player.y, '#00f2ff', 8, 3);
+                document.getElementById('instructions').style.opacity = '0';
             }
         }
 
-        function resetGame() {
-            player.x = 100;
-            player.y = 300;
-            player.vx = 8;
-            player.vy = 0;
-            player.isHooked = false;
-            player.currentHook = null;
-            player.trail = [];
-            cameraX = 0;
-            distance = 0;
-            hooks = [];
-            generateHooks();
-            gameState = 'playing';
+        function releaseHook() {
+            if (player.hooked) {
+                player.hooked = false;
+                player.anchor = null;
+                targetedAnchor = null;
+                spawnParticles(player.x, player.y, '#ff2a6d', 10, 4);
+                
+                // FAIRNESS: Guarantee minimum forward speed so long gaps are always reachable
+                if (player.vx < MIN_FORWARD_SPEED) {
+                    player.vx = MIN_FORWARD_SPEED;
+                }
+                // Slight momentum boost on release
+                player.vx *= 1.05;
+                player.vy *= 1.05;
+            }
         }
+
+        function handleStart(e) {
+            if (e.type === 'touchstart') e.preventDefault();
+            isMouseDown = true;
+            tryHook();
+        }
+        function handleEnd(e) {
+            if (e.type === 'touchend') e.preventDefault();
+            isMouseDown = false;
+            releaseHook();
+        }
+
+        window.addEventListener('mousedown', handleStart);
+        window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchend', handleEnd, { passive: false });
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { isMouseDown = true; tryHook(); }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') { isMouseDown = false; releaseHook(); }
+        });
 
         function update() {
-            if (gameState !== 'playing') return;
+            if (isGameOver) return;
+            gameTime += 0.016;
 
-            // Apply gravity
             player.vy += GRAVITY;
-
-            if (player.isHooked && player.currentHook) {
-                // Pendulum physics / Constraint
-                let dx = player.x - player.currentHook.x;
-                let dy = player.y - player.currentHook.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-
-                if (dist > ROPE_LENGTH) {
-                    // Constrain position
-                    player.x = player.currentHook.x + (dx / dist) * ROPE_LENGTH;
-                    player.y = player.currentHook.y + (dy / dist) * ROPE_LENGTH;
-
-                    // Project velocity to be tangential (remove radial component)
-                    let dot = player.vx * (dx / dist) + player.vy * (dy / dist);
-                    player.vx -= dot * (dx / dist);
-                    player.vy -= dot * (dy / dist);
-                    
-                    // Add a little boost to keep momentum
-                    player.vx *= 1.01; 
-                }
-            } else {
-                // Normal movement
-                player.x += player.vx;
-                player.y += player.vy;
+            player.vx *= AIR_RESISTANCE;
+            player.vy *= AIR_RESISTANCE;
+            
+            player.x += player.vx;
+            player.y += player.vy;
+            
+            // Pendulum physics
+            if (player.hooked && player.anchor) {
+                let dx = player.x - player.anchor.x;
+                let dy = player.y - player.anchor.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
                 
-                // Air resistance
-                player.vx *= 0.999;
-            }
-
-            // Update trail
-            player.trail.push({x: player.x, y: player.y});
-            if (player.trail.length > 20) player.trail.shift();
-
-            // Camera follow
-            cameraX = player.x - width * 0.3;
-
-            // Distance calculation
-            distance = Math.max(distance, Math.floor((player.x - 100) / 10));
-
-            // Game Over check (falling off screen)
-            if (player.y > height + 100) {
-                gameState = 'gameover';
-                if (distance > bestDistance) {
-                    bestDistance = distance;
-                    localStorage.setItem('stickmanBest', bestDistance);
+                if (dist > player.ropeLength) {
+                    let nx = dx / dist;
+                    let ny = dy / dist;
+                    
+                    player.x = player.anchor.x + nx * player.ropeLength;
+                    player.y = player.anchor.y + ny * player.ropeLength;
+                    
+                    let tx = -ny;
+                    let ty = nx;
+                    let dot = player.vx * tx + player.vy * ty;
+                    
+                    player.vx = tx * dot * SWING_BOOST;
+                    player.vy = ty * dot * SWING_BOOST;
                 }
             }
-
-            generateHooks();
+            
+            // Scarf trail
+            player.scarf.push({ x: player.x, y: player.y - 10 });
+            if (player.scarf.length > 30) player.scarf.shift();
+            
+            // LONG SWING GENERATION: Further apart, but highly predictable and doable
+            while (lastAnchorX < player.x + width * 1.5) {
+                let prevAnchor = anchors.length > 0 ? anchors[anchors.length - 1] : { x: 150, y: height * 0.4 };
+                
+                // TIGHTER height variance for predictable long arcs (max 100px up or down)
+                let variance = (Math.random() - 0.45) * 100; // Slight downward trend is easier for long swings
+                let nextY = prevAnchor.y + variance;
+                
+                // Clamp to keep it on screen and reachable
+                nextY = Math.max(100, Math.min(height - 120, nextY));
+                
+                // LONGER gap: 380 to 500 pixels apart
+                let gap = 380 + Math.random() * 120; 
+                let nextX = prevAnchor.x + gap;
+                
+                let type = Math.random() > 0.85 ? 'bonus' : 'normal';
+                if (type === 'bonus') nextY -= 50; // Bonus hooks are slightly higher for a bigger swing
+                
+                anchors.push({ x: nextX, y: nextY, type: type });
+                lastAnchorX = nextX;
+            }
+            
+            anchors = anchors.filter(a => a.x > player.x - width * 0.5);
+            
+            // EXTENDED camera lookahead for long swings
+            let lookahead = player.vx * 25; // Look much further ahead
+            camera.targetX = player.x - width * 0.35 + lookahead;
+            camera.targetY = player.y - height * 0.45;
+            
+            if (camera.targetY > 150) camera.targetY = 150;
+            
+            camera.x += (camera.targetX - camera.x) * 0.1;
+            camera.y += (camera.targetY - camera.y) * 0.1;
+            
+            let currentDist = Math.floor(player.x / 10);
+            if (currentDist > score) {
+                score = currentDist;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('stickman_highscore_long', highScore);
+                    document.getElementById('high-score').textContent = `BEST: ${highScore}m`;
+                }
+            }
+            
+            // Forgiving death threshold
+            if (player.y > camera.y + height + 150) {
+                isGameOver = true;
+                document.getElementById('game-over').style.display = 'block';
+                spawnParticles(player.x, player.y - 50, '#fff', 20, 6);
+            }
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.life -= p.decay;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
         }
 
         function draw() {
-            // Clear background
-            ctx.fillStyle = '#161625';
+            ctx.fillStyle = '#1a1a2e';
             ctx.fillRect(0, 0, width, height);
-
+            
             ctx.save();
-            ctx.translate(-cameraX, 0);
-
-            // Draw Hooks
-            for (let hook of hooks) {
-                // Glow
+            ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
+            
+            // Background stars (parallax)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            for (let i = 0; i < 40; i++) {
+                let px = (Math.floor(camera.x / 600) * 600) + (i * 137) % 600;
+                let py = (Math.floor(camera.y / 600) * 600) + (i * 89) % 600;
                 ctx.beginPath();
-                ctx.arc(hook.x, hook.y, HOOK_RADIUS + 5, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 0, 85, 0.2)';
-                ctx.fill();
-                
-                // Outer ring
-                ctx.beginPath();
-                ctx.arc(hook.x, hook.y, HOOK_RADIUS, 0, Math.PI * 2);
-                ctx.strokeStyle = '#ff0055';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-                
-                // Inner dot
-                ctx.beginPath();
-                ctx.arc(hook.x, hook.y, 4, 0, Math.PI * 2);
-                ctx.fillStyle = '#ffffff';
+                ctx.arc(px, py, 1.5, 0, Math.PI * 2);
                 ctx.fill();
             }
-
-            // Draw Rope / Trail
-            if (player.trail.length > 1) {
+            
+            // Draw anchors
+            for (let a of anchors) {
+                let pulse = Math.sin(gameTime * 3 + a.x * 0.01) * 3;
+                let color = a.type === 'bonus' ? '#ffd700' : '#ff2a6d';
+                let glow = a.type === 'bonus' ? '#ffaa00' : '#ff2a6d';
+                
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = glow;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.moveTo(player.trail[0].x, player.trail[0].y);
-                for (let i = 1; i < player.trail.length; i++) {
-                    ctx.lineTo(player.trail[i].x, player.trail[i].y);
-                }
-                ctx.lineTo(player.x, player.y);
-                ctx.strokeStyle = 'rgba(255, 0, 85, 0.5)';
+                ctx.arc(a.x, a.y, 10 + pulse, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(a.x, a.y - 15);
+                ctx.stroke();
+            }
+            
+            // Aim assist line when holding but not yet hooked
+            if (isMouseDown && !player.hooked && targetedAnchor) {
+                ctx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([10, 10]);
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y - 10);
+                ctx.lineTo(targetedAnchor.x, targetedAnchor.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Draw rope
+            if (player.hooked && player.anchor) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00f2ff';
+                ctx.strokeStyle = '#00f2ff';
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
-                ctx.stroke();
-            }
-
-            // Draw active rope to hook
-            if (player.isHooked && player.currentHook) {
+                
+                let midX = (player.x + player.anchor.x) / 2;
+                let midY = (player.y + player.anchor.y) / 2;
+                let dx = player.anchor.x - player.x;
+                let dy = player.anchor.y - player.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                let sag = Math.min(20, dist * 0.04);
+                let perpX = -dy / dist;
+                let perpY = dx / dist;
+                
                 ctx.beginPath();
-                ctx.moveTo(player.currentHook.x, player.currentHook.y);
-                ctx.lineTo(player.x, player.y);
-                ctx.strokeStyle = '#ff0055';
-                ctx.lineWidth = 6;
-                ctx.lineCap = 'round';
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#ff0055';
+                ctx.moveTo(player.x, player.y - 5);
+                ctx.quadraticCurveTo(midX + perpX * sag, midY + perpY * sag, player.anchor.x, player.anchor.y);
                 ctx.stroke();
                 ctx.shadowBlur = 0;
             }
-
+            
+            // Draw Scarf
+            if (player.scarf.length > 1) {
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                for (let i = 0; i < player.scarf.length - 1; i++) {
+                    let alpha = (i / player.scarf.length) * 0.7;
+                    let w = (i / player.scarf.length) * 14;
+                    ctx.strokeStyle = `rgba(233, 69, 96, ${alpha})`;
+                    ctx.lineWidth = w;
+                    ctx.beginPath();
+                    ctx.moveTo(player.scarf[i].x, player.scarf[i].y);
+                    ctx.lineTo(player.scarf[i+1].x, player.scarf[i+1].y);
+                    ctx.stroke();
+                }
+            }
+            
             // Draw Stickman
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 3;
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            
+            let tilt = Math.atan2(player.vy, player.vx) * 0.3;
+            if (player.hooked && player.anchor) {
+                let ropeAngle = Math.atan2(player.anchor.y - player.y, player.anchor.x - player.x);
+                tilt = ropeAngle + Math.PI/2 + (player.vx > 0 ? 0.15 : -0.15);
+            }
+            ctx.rotate(tilt);
+            
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3.5;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-
-            // Body
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+            
+            ctx.fillStyle = '#1a1a2e';
             ctx.beginPath();
-            ctx.moveTo(player.x, player.y);
-            ctx.lineTo(player.x - 5, player.y + 20);
-            ctx.stroke();
-
-            // Head
-            ctx.beginPath();
-            ctx.arc(player.x, player.y - 5, 6, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffff';
+            ctx.arc(0, -18, 9, 0, Math.PI * 2);
             ctx.fill();
-
-            // Arms/Legs (simple animation based on velocity)
-            let swing = Math.sin(Date.now() / 100) * 10;
-            if (player.isHooked) swing = 0;
-
-            ctx.beginPath();
-            ctx.moveTo(player.x - 2, player.y + 10);
-            ctx.lineTo(player.x - 15 + swing, player.y + 25);
-            ctx.moveTo(player.x - 2, player.y + 10);
-            ctx.lineTo(player.x + 10 - swing, player.y + 25);
             ctx.stroke();
-
+            
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 0;
+            let lookX = player.vx > 0 ? 3 : -3;
+            ctx.beginPath();
+            ctx.arc(lookX, -20, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(0, -9);
+            ctx.lineTo(0, 12);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            if (player.hooked && player.anchor) {
+                let dx = player.anchor.x - player.x;
+                let dy = player.anchor.y - player.y;
+                let len = Math.sqrt(dx*dx + dy*dy);
+                ctx.moveTo(0, -5);
+                ctx.lineTo((dx / len) * 18, (dy / len) * 18 - 5);
+            } else {
+                ctx.moveTo(0, -5);
+                ctx.lineTo(-12, 2);
+                ctx.moveTo(0, -5);
+                ctx.lineTo(-8, 8);
+            }
+            ctx.stroke();
+            
+            ctx.beginPath();
+            let speed = Math.sqrt(player.vx**2 + player.vy**2);
+            let legSwing = Math.sin(gameTime * 15) * Math.min(15, speed * 2);
+            ctx.moveTo(0, 12);
+            ctx.lineTo(-8 + legSwing, 28);
+            ctx.moveTo(0, 12);
+            ctx.lineTo(8 - legSwing, 28);
+            ctx.stroke();
+            
             ctx.restore();
-
-            // Draw UI (Fixed to screen)
-            drawUI();
-        }
-
-        function drawUI() {
-            // Top Left: Distance
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 32px sans-serif';
-            ctx.textAlign = 'left';
-            ctx.fillText(`${distance}m`, 20, 40);
-
-            ctx.fillStyle = '#00f0ff';
-            ctx.font = 'bold 16px sans-serif';
-            ctx.fillText(`BEST: ${bestDistance}m`, 20, 65);
-
-            // Top Right: Badge
-            const badgeText = "✓ FAIR & ACHIEVABLE";
-            ctx.font = 'bold 14px sans-serif';
-            const textWidth = ctx.measureText(badgeText).width;
-            const badgeX = width - textWidth - 30;
-            const badgeY = 10;
             
-            ctx.fillStyle = '#00f0ff';
-            ctx.beginPath();
-            ctx.roundRect(badgeX, badgeY, textWidth + 20, 30, 15);
-            ctx.fill();
+            // Particles
+            for (let p of particles) {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+            ctx.shadowBlur = 0;
             
-            ctx.fillStyle = '#000000';
-            ctx.textAlign = 'left';
-            ctx.fillText(badgeText, badgeX + 10, badgeY + 20);
-
-            // Bottom Center: Instructions
-            if (gameState === 'playing') {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.font = 'bold 18px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText("HOLD to Hook • RELEASE to Fly", width / 2, height - 40);
-            }
-
-            // Game Over Screen
-            if (gameState === 'gameover') {
-                ctx.fillStyle = 'rgba(22, 22, 37, 0.8)';
-                ctx.fillRect(0, 0, width, height);
-
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 48px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText("Almost!", width / 2, height / 2 - 20);
-
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-                ctx.font = '20px sans-serif';
-                ctx.fillText("Tap anywhere to retry", width / 2, height / 2 + 30);
-            }
+            ctx.restore();
+            
+            document.getElementById('score').textContent = `${score}m`;
         }
 
         function loop() {
@@ -353,8 +563,7 @@
             requestAnimationFrame(loop);
         }
 
-        // Start
-        generateHooks();
+        initGame();
         loop();
     </script>
 </body>
