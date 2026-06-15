@@ -866,3 +866,27 @@
 
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Premium Blackjack</title>
+    <!-- Include the Step 1 Coin System Script Here -->
+</head>
+<body class="bg-default">
+    <h1>Premium Blackjack</h1>
+    <p>♠ Blackjack Balance: $<span id="game-balance">1000</span> | Site Munten: 🪙 <span id="coin-balance">0</span></p>
+    
+    <!-- Your game UI here -->
+    <button onclick="playerWins()">Simuleer Winst (Test)</button>
+
+    <script>
+    function playerWins() {
+        // ... your existing blackjack win logic ...
+        
+        // REWARD: Give 10 site coins for winning a hand
+        CoinSystem.addCoins(10);
+        console.log("Hand gewonnen! +10 munten toegevoegd.");
+    }
+    </script>
+</body>
+</html>
