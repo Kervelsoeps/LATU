@@ -1058,6 +1058,8 @@
                 Een fris, modern platform voor je favoriete browsergames en
                 arcade-uitdagingen. Elk spel is geoptimaliseerd voor snelheid,
                 interface en plezier.
+                <br><br>
+                Wil jij je game toevoegen aan deze collectie? Bekijk onze <a href="legal.html" style="color: var(--accent); text-decoration: underline;">legal</a> en neem contact op met lauran.calliauw@gmail.com.
               </p>
               <div class="hero-actions">
                 <a class="button button-primary" href="#games">Start spelen</a>
@@ -1079,6 +1081,16 @@
                 <p class="recommended-description">
                   De beste snelstart-games met visuele frictie, belangrijke
                   scores en een digitale glow die uitnodigt om direct te spelen.
+                </p>
+                <p
+                  class="recommended-creator"
+                  style="
+                    margin: 0.75rem 0 0;
+                    color: var(--accent);
+                    font-weight: 700;
+                  "
+                >
+                  Maker: onbekend
                 </p>
                 <div class="preview-thumb">
                   <img
@@ -1160,10 +1172,7 @@
           <section class="section cards-section" id="games">
             <h2 class="section-heading">Game collectie</h2>
             <div class="cards-grid">
-              <a
-                class="card card--basketball"
-                href="BasketballClicker.html"
-              >
+              <a class="card card--basketball" href="BasketballClicker.html">
                 <span class="card-badge">Basketball</span>
                 <div class="card-img-wrap">
                   <img src="BasketBall.png" alt="Basketball Clicker preview" />
@@ -1174,14 +1183,11 @@
                   animaties, scores en een neon-esthetiek.
                 </p>
                 <div class="card-meta">
+                  <span>Maker: Vince Wauters</span>
                   <span>Rustige controls</span>
-                  <span>Snelle updates</span>
                 </div>
               </a>
-              <a
-                class="card card--pulse"
-                href="Pulse-Runner.html"
-              >
+              <a class="card card--pulse" href="Pulse-Runner.html">
                 <span class="card-badge">Runner</span>
                 <div class="card-img-wrap">
                   <img src="Pusle-runner.png" alt="Pulse Runner preview" />
@@ -1192,14 +1198,11 @@
                   heldere visuals en stijlvolle feedback.
                 </p>
                 <div class="card-meta">
+                  <span>Maker: Tuur Depuyd</span>
                   <span>Neon-speed</span>
-                  <span>Vloeiende gameplay</span>
                 </div>
               </a>
-              <a
-                class="card card--flappy"
-                href="FlappyBird.html"
-              >
+              <a class="card card--flappy" href="FlappyBird.html">
                 <span class="card-badge">Retro</span>
                 <div class="card-img-wrap">
                   <img src="Flappy-Bird.png" alt="Flappy Bird preview" />
@@ -1210,8 +1213,8 @@
                   heldere pixel-art twist.
                 </p>
                 <div class="card-meta">
+                  <span>Maker: Tuur Depuyd</span>
                   <span>Snelle reflexen</span>
-                  <span>Modern design</span>
                 </div>
               </a>
               <a class="card card--tetris" href="Tetris.html">
@@ -1225,14 +1228,11 @@
                   vloeiende blokanimaties.
                 </p>
                 <div class="card-meta">
+                  <span>Maker: Tuur Depuyd</span>
                   <span>Strategisch</span>
-                  <span>Verslavend</span>
                 </div>
               </a>
-              <a
-                class="card card--blackjack"
-                href="Blackjack.html"
-              >
+              <a class="card card--blackjack" href="Blackjack.html">
                 <span class="card-badge">Kaartspel</span>
                 <div class="card-img-wrap">
                   <img src="Blackjack.png" alt="Blackjack preview" />
@@ -1243,8 +1243,8 @@
                   en een rustige nachtlook.
                 </p>
                 <div class="card-meta">
+                  <span>Maker: Tuur Depuyd</span>
                   <span>Classic</span>
-                  <span>Bold UI</span>
                 </div>
               </a>
             </div>
@@ -1304,6 +1304,7 @@
             image: "BasketBall.png",
             alt: "Basketball Clicker preview",
             link: "BasketballClicker.html",
+            creator: "Vince Wauters",
           },
           {
             title: "Pulse Runner",
@@ -1312,6 +1313,7 @@
             image: "Pusle-runner.png",
             alt: "Pulse Runner preview",
             link: "Pulse-Runner.html",
+            creator: "Tuur Depuyd",
           },
           {
             title: "Flappy Bird",
@@ -1320,6 +1322,7 @@
             image: "Flappy-Bird.png",
             alt: "Flappy Bird preview",
             link: "FlappyBird.html",
+            creator: "Tuur Depuyd",
           },
           {
             title: "Tetris",
@@ -1328,6 +1331,7 @@
             image: "Tetris.png",
             alt: "Tetris preview",
             link: "Tetris.html",
+            creator: "Tuur Depuyd",
           },
           {
             title: "Blackjack",
@@ -1336,6 +1340,7 @@
             image: "Blackjack.png",
             alt: "Blackjack preview",
             link: "Blackjack.html",
+            creator: "Tuur Depuyd",
           },
         ];
 
@@ -1366,11 +1371,15 @@
         const recommendedDescription = recommendedCard.querySelector(
           ".recommended-description",
         );
+        const recommendedCreator = recommendedCard.querySelector(
+          ".recommended-creator",
+        );
         const recommendedImage =
           recommendedCard.querySelector(".recommended-image");
 
         recommendedTitle.textContent = selectedGame.title;
         recommendedDescription.textContent = selectedGame.description;
+        recommendedCreator.textContent = `Maker: ${selectedGame.creator}`;
         recommendedImage.src = selectedGame.image;
         recommendedImage.alt = selectedGame.alt;
 
