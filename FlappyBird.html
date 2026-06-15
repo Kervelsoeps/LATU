@@ -375,3 +375,39 @@ gameLoop();
 
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flappy Bird - Deluxe Edition</title>
+    <!-- Include the Step 1 Coin System Script Here -->
+</head>
+<body class="bg-default"> <!-- Class will be updated by CoinSystem.applyTheme() -->
+    <h1>Flappy Bird - Deluxe Edition</h1>
+    <p>Score: <span id="score">0</span> | Best: <span id="best">0</span></p>
+    
+    <!-- Your game canvas/logic here -->
+
+    <script>
+    // Example game logic integration
+    let score = 0;
+    
+    function onScorePoint() {
+        score++;
+        document.getElementById('score').textContent = score;
+        
+        // REWARD: Give 5 coins per point!
+        CoinSystem.addCoins(5); 
+    }
+
+    function gameOver() {
+        // Optional: Give a bonus for beating best score
+        let best = parseInt(localStorage.getItem('flappy_best')) || 0;
+        if (score > best) {
+            localStorage.setItem('flappy_best', score);
+            CoinSystem.addCoins(50); // 50 coin bonus for new high score!
+            alert("Nieuw record! +50 munten bonus!");
+        }
+    }
+    </script>
+</body>
+</html>
