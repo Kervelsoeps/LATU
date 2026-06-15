@@ -174,9 +174,11 @@
         align-items: start;
       }
 
-      .hero-copy {
-        position: relative;
-        z-index: 1;
+      .hero-top {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 32px;
+        align-items: start;
       }
 
       .hero-eyebrow {
@@ -422,6 +424,14 @@
         z-index: 1;
       }
 
+      @media (min-width: 1040px) {
+        .hero-stats {
+          position: sticky;
+          top: 28px;
+          align-self: start;
+        }
+      }
+
       .stat-card {
         display: flex;
         flex-direction: column;
@@ -497,6 +507,30 @@
         font-size: clamp(1.75rem, 3vw, 2.65rem);
         letter-spacing: -0.03em;
         line-height: 1.05;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(28px) rotateX(3deg);
+        filter: blur(4px);
+        will-change: opacity, transform, filter;
+        transition:
+          opacity 0.85s ease,
+          transform 0.85s ease,
+          filter 0.85s ease;
+      }
+
+      .reveal-visible {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+        filter: blur(0);
+      }
+
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        z-index: 1;
       }
 
       .feature-grid {
@@ -929,11 +963,17 @@
       .preview-badge,
       .card-badge,
       .meta-pill {
-        transition: transform var(--transition), opacity var(--transition), background var(--transition), box-shadow var(--transition);
+        transition:
+          transform var(--transition),
+          opacity var(--transition),
+          background var(--transition),
+          box-shadow var(--transition);
       }
 
       .feature-icon {
-        transition: transform 260ms ease, background var(--transition);
+        transition:
+          transform 260ms ease,
+          background var(--transition);
       }
 
       .preview-badge,
@@ -1120,7 +1160,10 @@
           <section class="section cards-section" id="games">
             <h2 class="section-heading">Game collectie</h2>
             <div class="cards-grid">
-              <a class="card" href="BasketballClicker.html">
+              <a
+                class="card card--basketball"
+                href="BasketballClicker.html"
+              >
                 <span class="card-badge">Basketball</span>
                 <div class="card-img-wrap">
                   <img src="BasketBall.png" alt="Basketball Clicker preview" />
@@ -1135,7 +1178,10 @@
                   <span>Snelle updates</span>
                 </div>
               </a>
-              <a class="card" href="Pulse-Runner.html">
+              <a
+                class="card card--pulse"
+                href="Pulse-Runner.html"
+              >
                 <span class="card-badge">Runner</span>
                 <div class="card-img-wrap">
                   <img src="Pusle-runner.png" alt="Pulse Runner preview" />
@@ -1150,7 +1196,10 @@
                   <span>Vloeiende gameplay</span>
                 </div>
               </a>
-              <a class="card" href="FlappyBird.html">
+              <a
+                class="card card--flappy"
+                href="FlappyBird.html"
+              >
                 <span class="card-badge">Retro</span>
                 <div class="card-img-wrap">
                   <img src="Flappy-Bird.png" alt="Flappy Bird preview" />
@@ -1165,7 +1214,7 @@
                   <span>Modern design</span>
                 </div>
               </a>
-              <a class="card" href="Tetris.html">
+              <a class="card card--tetris" href="Tetris.html">
                 <span class="card-badge">Puzzel</span>
                 <div class="card-img-wrap">
                   <img src="Tetris.png" alt="Tetris preview" />
@@ -1180,7 +1229,10 @@
                   <span>Verslavend</span>
                 </div>
               </a>
-              <a class="card" href="Blackjack.html">
+              <a
+                class="card card--blackjack"
+                href="Blackjack.html"
+              >
                 <span class="card-badge">Kaartspel</span>
                 <div class="card-img-wrap">
                   <img src="Blackjack.png" alt="Blackjack preview" />
@@ -1330,6 +1382,30 @@
         previewLink.style.textDecoration = "none";
         previewLink.style.color = "inherit";
         recommendedCard.appendChild(previewLink);
+
+        const revealTargets = document.querySelectorAll(
+          "section, .card, .feature-card, .preview-card, .spotlight-panel, .visual-block, .hero-stats",
+        );
+
+        revealTargets.forEach((el) => el.classList.add("reveal"));
+
+        const revealObserver = new IntersectionObserver(
+          (entries, observer) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) {
+                return;
+              }
+
+              entry.target.classList.add("reveal-visible");
+              observer.unobserve(entry.target);
+            });
+          },
+          {
+            threshold: 0.15,
+          },
+        );
+
+        revealTargets.forEach((el) => revealObserver.observe(el));
 
         localStorage.setItem("recommendedGameIndex", selectedIndex);
       })();
