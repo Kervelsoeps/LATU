@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Latu - Game Hub</title>
     <style>
-        /* Keep your existing CSS here. I'm adding the specific styles for the game cards to ensure it looks good. */
         :root {
             --bg-dark: #0f0f13;
             --bg-card: #1a1a24;
@@ -35,19 +34,25 @@
         .game-card {
             background: var(--bg-card);
             border-radius: 15px;
-            padding: 20px;
+            overflow: hidden;
             text-decoration: none;
             color: inherit;
             border: 1px solid #2a2a35;
             transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
         }
         .game-card:hover {
             transform: translateY(-5px);
             border-color: var(--neon-cyan);
             box-shadow: 0 10px 20px rgba(0, 240, 255, 0.1);
         }
+        .game-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 2px solid var(--neon-pink);
+        }
+        .game-card-content { padding: 20px; }
         .game-card h3 { margin: 10px 0 5px; color: var(--neon-cyan); }
         .game-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.4; }
         .game-meta { display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.8rem; color: var(--text-muted); }
@@ -79,7 +84,7 @@
             <p>Alle games openen direct, zonder overbodige tussenstappen.</p>
         </div>
         <div class="feature">
-            <div class="feature-icon"></div>
+            <div class="feature-icon">🎮</div>
             <h3>Strakke presentatie</h3>
             <p>Een moderne interface met neonaccenten en zachte glows.</p>
         </div>
@@ -93,64 +98,75 @@
     <h2 id="games" style="text-align: center; margin-top: 40px;">Game collectie</h2>
     <div class="game-grid">
         
-        <!-- NEW GAME ADDED HERE -->
         <a href="Stickmanhook.html" class="game-card">
-            <div style="font-size: 2rem;">🪝</div>
-            <h3>Stickman Hook</h3>
-            <p>Zwaai door neonlandschappen in dit verslavende hook-swing spel. Houd ingedrukt om te haken, laat los om te vliegen!</p>
-            <div class="game-meta">
-                <span>Maker: Online Latu</span>
-                <span class="tag">Neon-swing</span>
+            <img src="stickmanhook-preview.png" alt="Stickman Hook Game Preview">
+            <div class="game-card-content">
+                <h3>Stickman Hook</h3>
+                <p>Zwaai door neonlandschappen in dit verslavende hook-swing spel. Houd ingedrukt om te haken, laat los om te vliegen!</p>
+                <div class="game-meta">
+                    <span>Maker: Online Latu</span>
+                    <span class="tag">Neon-swing</span>
+                </div>
             </div>
         </a>
 
         <a href="BasketballClicker.html" class="game-card">
-            <div style="font-size: 2rem;">🏀</div>
-            <h3>Basketball Clicker</h3>
-            <p>Speel een interactieve basketbalklikker met vloeiende animaties, scores en een neon-esthetiek.</p>
-            <div class="game-meta">
-                <span>Maker: Vince Wauters</span>
-                <span class="tag">Rustige controls</span>
+            <img src="basketball-preview.png" alt="Basketball Clicker Preview">
+            <div class="game-card-content">
+                <h3>Basketball Clicker</h3>
+                <p>Speel een interactieve basketbalklikker met vloeiende animaties, scores en een neon-esthetiek.</p>
+                <div class="game-meta">
+                    <span>Maker: Vince Wauters</span>
+                    <span class="tag">Rustige controls</span>
+                </div>
             </div>
         </a>
 
         <a href="Pulse-Runner.html" class="game-card">
-            <div style="font-size: 2rem;"></div>
-            <h3>Pulse Runner</h3>
-            <p>Ren door neonlandschappen in een snelle runner-ervaring met heldere visuals en stijlvolle feedback.</p>
-            <div class="game-meta">
-                <span>Maker: Tuur Depuyd</span>
-                <span class="tag">Neon-speed</span>
+            <img src="runner-preview.png" alt="Pulse Runner Preview">
+            <div class="game-card-content">
+                <h3>Pulse Runner</h3>
+                <p>Ren door neonlandschappen in een snelle runner-ervaring met heldere visuals en stijlvolle feedback.</p>
+                <div class="game-meta">
+                    <span>Maker: Tuur Depuyd</span>
+                    <span class="tag">Neon-speed</span>
+                </div>
             </div>
         </a>
 
         <a href="FlappyBird.html" class="game-card">
-            <div style="font-size: 2rem;">🐦</div>
-            <h3>Flappy Bird</h3>
-            <p>Een frisse versie van het bekende klassiekerspel met een heldere pixel-art twist.</p>
-            <div class="game-meta">
-                <span>Maker: Tuur Depuyd</span>
-                <span class="tag">Snelle reflexen</span>
+            <img src="flappy-preview.png" alt="Flappy Bird Preview">
+            <div class="game-card-content">
+                <h3>Flappy Bird</h3>
+                <p>Een frisse versie van het bekende klassiekerspel met een heldere pixel-art twist.</p>
+                <div class="game-meta">
+                    <span>Maker: Tuur Depuyd</span>
+                    <span class="tag">Snelle reflexen</span>
+                </div>
             </div>
         </a>
 
         <a href="Tetris.html" class="game-card">
-            <div style="font-size: 2rem;"></div>
-            <h3>Tetris</h3>
-            <p>Speel het klassieke puzzelspel met moderne styling en vloeiende blokanimaties.</p>
-            <div class="game-meta">
-                <span>Maker: Tuur Depuyd</span>
-                <span class="tag">Strategisch</span>
+            <img src="tetris-preview.png" alt="Tetris Preview">
+            <div class="game-card-content">
+                <h3>Tetris</h3>
+                <p>Speel het klassieke puzzelspel met moderne styling en vloeiende blokanimaties.</p>
+                <div class="game-meta">
+                    <span>Maker: Tuur Depuyd</span>
+                    <span class="tag">Strategisch</span>
+                </div>
             </div>
         </a>
 
         <a href="Blackjack.html" class="game-card">
-            <div style="font-size: 2rem;"></div>
-            <h3>Blackjack</h3>
-            <p>Een moderne blackjack-ervaring met stijlvolle kaartanimaties en een rustige nachtlook.</p>
-            <div class="game-meta">
-                <span>Maker: Tuur Depuyd</span>
-                <span class="tag">Classic</span>
+            <img src="blackjack-preview.png" alt="Blackjack Preview">
+            <div class="game-card-content">
+                <h3>Blackjack</h3>
+                <p>Een moderne blackjack-ervaring met stijlvolle kaartanimaties en een rustige nachtlook.</p>
+                <div class="game-meta">
+                    <span>Maker: Tuur Depuyd</span>
+                    <span class="tag">Classic</span>
+                </div>
             </div>
         </a>
 
