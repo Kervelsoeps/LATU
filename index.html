@@ -7,15 +7,26 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #0b1220;
+        --bg: #07101f;
         --surface: rgba(10, 17, 32, 0.92);
+        --surface-soft: rgba(12, 20, 37, 0.84);
         --surface-strong: rgba(15, 23, 42, 0.98);
+        --surface-glow: rgba(56, 189, 248, 0.12);
         --text: #f8fafc;
         --muted: #94a3b8;
         --accent: #38bdf8;
-        --accent-soft: rgba(56, 189, 248, 0.16);
-        --radius: 28px;
-        font-family: Inter, system-ui, sans-serif;
+        --accent-strong: #7c3aed;
+        --accent-soft: rgba(56, 189, 248, 0.18);
+        --danger: #f97316;
+        --radius: 30px;
+        --shadow: 0 32px 90px rgba(0, 0, 0, 0.25);
+        --transition: 220ms ease;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
       }
 
       * {
@@ -31,118 +42,565 @@
         min-height: 100vh;
         background:
           radial-gradient(
-            circle at top left,
-            rgba(56, 189, 248, 0.18),
-            transparent 18%
+            circle at 0% 10%,
+            rgba(56, 189, 248, 0.16),
+            transparent 16%
           ),
           radial-gradient(
-            circle at top right,
-            rgba(168, 85, 247, 0.12),
-            transparent 22%
+            circle at 100% 0%,
+            rgba(168, 85, 247, 0.16),
+            transparent 18%
           ),
-          linear-gradient(180deg, #08111d 0%, #050814 100%);
+          linear-gradient(180deg, #09121f 0%, #050711 45%, #04030a 100%);
         color: var(--text);
         text-rendering: optimizeLegibility;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
 
-      .container {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 48px 24px 64px;
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(56, 189, 248, 0.09),
+            transparent 20%
+          ),
+          radial-gradient(
+            circle at 82% 10%,
+            rgba(168, 85, 247, 0.08),
+            transparent 18%
+          ),
+          linear-gradient(
+            180deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.25) 65%,
+            rgba(0, 0, 0, 0.65) 100%
+          );
+        pointer-events: none;
       }
 
-      header {
+      .page-shell {
+        position: relative;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .page-shell::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.04) 1px,
+          transparent 1px
+        );
+        background-size: 60px 60px;
+        opacity: 0.14;
+        pointer-events: none;
+      }
+
+      .background-orbit {
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        top: -80px;
+        right: -80px;
+        box-shadow: 0 0 120px rgba(56, 189, 248, 0.16);
+        filter: blur(24px);
+        animation: drift 18s linear infinite alternate;
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .background-orbit:nth-child(2) {
+        left: -100px;
+        top: 30vh;
+        width: 240px;
+        height: 240px;
+        box-shadow: 0 0 90px rgba(168, 85, 247, 0.14);
+        animation-duration: 22s;
+      }
+
+      .container {
+        position: relative;
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 64px 28px 90px;
+      }
+
+      header.hero-panel {
+        position: relative;
         display: grid;
-        gap: 24px;
-        padding: 36px;
-        background: var(--surface);
-        border: 1px solid rgba(148, 163, 184, 0.12);
-        border-radius: var(--radius);
-        backdrop-filter: blur(16px);
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
-        margin-bottom: 36px;
+        gap: 32px;
+        padding: 40px;
+        background: linear-gradient(
+          180deg,
+          rgba(8, 16, 32, 0.96),
+          rgba(10, 17, 32, 0.82)
+        );
+        border-radius: 36px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(24px);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .hero-panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            circle at 10% 25%,
+            rgba(56, 189, 248, 0.14),
+            transparent 18%
+          ),
+          radial-gradient(
+            circle at 90% 10%,
+            rgba(168, 85, 247, 0.12),
+            transparent 20%
+          );
+        pointer-events: none;
       }
 
       .hero-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 20px;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 32px;
+        align-items: start;
+      }
+
+      .hero-copy {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-eyebrow {
+        display: inline-flex;
+        margin-bottom: 22px;
+        padding: 0.9rem 1.25rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.1);
+        color: var(--accent);
+        text-transform: uppercase;
+        font-size: 0.82rem;
+        letter-spacing: 0.22em;
+        font-weight: 700;
+        animation: float 10s ease-in-out infinite;
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(2.4rem, 5vw, 4rem);
-        line-height: 1.02;
-        letter-spacing: -0.03em;
+        font-size: clamp(3rem, 6vw, 5.4rem);
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+        max-width: 12ch;
+        background: linear-gradient(90deg, #ffffff, #a4d8ff 48%, #d8b4fe 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
       }
 
       .subtitle {
-        margin: 0;
+        margin: 24px 0 0;
         color: var(--muted);
         max-width: 720px;
-        line-height: 1.9;
-        font-size: 1rem;
+        line-height: 1.85;
+        font-size: 1.08rem;
       }
 
-      .nav-link {
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 28px;
+      }
+
+      .button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.9rem 1.4rem;
+        min-height: 52px;
+        padding: 0 1.65rem;
         border-radius: 999px;
-        border: 1px solid rgba(56, 189, 248, 0.25);
-        background: rgba(56, 189, 248, 0.08);
-        color: var(--accent);
+        border: 1px solid transparent;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 700;
+        letter-spacing: 0.02em;
         transition:
-          transform 180ms ease,
-          background 180ms ease,
-          border-color 180ms ease;
+          transform var(--transition),
+          box-shadow var(--transition),
+          background var(--transition),
+          border-color var(--transition);
       }
 
-      .nav-link:hover,
-      .nav-link:focus-visible {
-        transform: translateY(-1px);
-        background: rgba(56, 189, 248, 0.14);
-        border-color: rgba(56, 189, 248, 0.45);
+      .button-primary {
+        background: linear-gradient(
+          135deg,
+          rgba(56, 189, 248, 0.96),
+          rgba(168, 85, 247, 0.98)
+        );
+        background-size: 200% 200%;
+        background-position: 0 0;
+        color: #fff;
+        box-shadow: 0 20px 40px rgba(56, 189, 248, 0.18);
       }
 
-      .grid {
+      .button-secondary {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .button:hover,
+      .button:focus-visible {
+        transform: translateY(-2px);
+      }
+
+      .button-primary:hover,
+      .button-primary:focus-visible {
+        background-position: 100% 0;
+      }
+
+      .button-primary:hover,
+      .button-primary:focus-visible {
+        box-shadow: 0 28px 48px rgba(56, 189, 248, 0.26);
+      }
+
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.85rem 1rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--muted);
+        font-size: 0.95rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .hero-aside {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-preview {
+        position: relative;
         display: grid;
-        gap: 24px;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+
+      .preview-card {
+        position: relative;
+        padding: 24px;
+        border-radius: 32px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      }
+
+      .preview-card::before {
+        content: "";
+        position: absolute;
+        inset: -40% -40%;
+        background: radial-gradient(
+          circle,
+          rgba(56, 189, 248, 0.15),
+          transparent 58%
+        );
+        opacity: 0.8;
+        filter: blur(22px);
+        pointer-events: none;
+      }
+
+      .preview-card .preview-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.15rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--accent);
+        font-size: 0.88rem;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      .preview-card h2 {
+        margin: 0 0 12px;
+        font-size: 1.65rem;
+        line-height: 1.18;
+      }
+
+      .preview-card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.85;
+      }
+
+      .preview-thumb {
+        position: relative;
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 26px;
+        margin-top: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .preview-thumb img {
+        width: 100%;
+        display: block;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+
+      .preview-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 0 28px 90px rgba(56, 189, 248, 0.12);
+      }
+
+      .preview-card:hover .preview-badge {
+        transform: translateX(4px);
+        opacity: 0.95;
+      }
+
+      .preview-card:hover .preview-thumb img {
+        transform: scale(1.06);
+      }
+
+      .feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 24px 68px rgba(56, 189, 248, 0.1);
+      }
+
+      .feature-card:hover .feature-icon {
+        transform: rotate(-6deg) scale(1.03);
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 40px 90px rgba(56, 189, 248, 0.12);
+      }
+
+      .visual-block:hover {
+        transform: translateY(-8px);
+      }
+
+      .visual-block img {
+        transition: transform 0.8s ease;
+      }
+
+      .visual-block:hover img {
+        transform: scale(1.06) rotate(-0.8deg);
+      }
+
+      .card:hover .card-badge {
+        background: rgba(56, 189, 248, 0.18);
+      }
+
+      .card:hover .card-meta span::before {
+        transform: scale(1.35);
+      }
+
+      .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        z-index: 1;
+      }
+
+      .stat-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: 22px 24px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 26px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.18);
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(56, 189, 248, 0.12),
+          transparent 40%
+        );
+        opacity: 0.8;
+        pointer-events: none;
+      }
+
+      .stat-card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .stat-title {
+        margin: 0;
+        color: var(--accent);
+        font-size: 0.92rem;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-weight: 700;
+      }
+
+      .stat-value {
+        margin: 0;
+        font-size: 2.1rem;
+        line-height: 1.05;
+      }
+
+      .stat-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.7;
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
+      }
+
+      .section {
+        margin-top: 48px;
+        padding: 34px 32px;
+        background: rgba(11, 18, 32, 0.78);
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+      }
+
+      .section + .section {
+        margin-top: 32px;
+      }
+
+      .section-heading {
+        margin: 0 0 24px;
+        font-size: clamp(1.75rem, 3vw, 2.65rem);
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+      }
+
+      .feature-card {
+        position: relative;
+        display: grid;
+        gap: 18px;
+        padding: 28px;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .feature-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 0% 0%,
+          rgba(56, 189, 248, 0.14),
+          transparent 25%
+        );
+        opacity: 0.4;
+        pointer-events: none;
+      }
+
+      .feature-card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(56, 189, 248, 0.14);
+        color: var(--accent);
+        font-size: 1.35rem;
+      }
+
+      .feature-card h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        line-height: 1.25;
+      }
+
+      .feature-card p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.9;
+      }
+
+      .cards-grid {
+        display: grid;
+        gap: 26px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       }
 
       .card {
         position: relative;
-        display: block;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         padding: 28px;
-        border-radius: 28px;
-        background: var(--surface-strong);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 30px;
+        background: linear-gradient(
+          180deg,
+          rgba(12, 18, 32, 0.92),
+          rgba(10, 16, 30, 0.98)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.08);
         color: inherit;
         text-decoration: none;
         overflow: hidden;
         transition:
-          transform 200ms ease,
-          border-color 200ms ease,
-          box-shadow 200ms ease;
+          transform 260ms ease,
+          border-color 260ms ease,
+          box-shadow 260ms ease;
       }
 
       .card::before {
         content: "";
         position: absolute;
         inset: 0;
-        background: radial-gradient(
-          circle at top left,
-          rgba(56, 189, 248, 0.14),
-          transparent 25%
-        );
+        background-image:
+          radial-gradient(
+            circle at top left,
+            rgba(56, 189, 248, 0.14),
+            transparent 26%
+          ),
+          radial-gradient(
+            circle at bottom right,
+            rgba(168, 85, 247, 0.1),
+            transparent 28%
+          );
         opacity: 0.6;
         pointer-events: none;
       }
@@ -154,105 +612,727 @@
 
       .card:hover,
       .card:focus-visible {
-        transform: translateY(-4px);
-        border-color: rgba(56, 189, 248, 0.45);
-        box-shadow: 0 26px 60px rgba(0, 0, 0, 0.22);
+        transform: translateY(-6px);
+        border-color: rgba(56, 189, 248, 0.36);
+        box-shadow: 0 30px 85px rgba(0, 0, 0, 0.28);
+      }
+
+      .card .card-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--accent);
+        font-size: 0.88rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 16px;
       }
 
       .card h2 {
-        margin: 0 0 12px;
+        margin: 0 0 14px;
         font-size: 1.55rem;
-        line-height: 1.2;
+        line-height: 1.15;
+      }
+
+      .card .card-img-wrap {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        margin: 0 0 18px;
+        min-height: 200px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
       .card img {
         display: block;
         width: 100%;
-        max-height: 220px;
+        height: 100%;
         object-fit: cover;
-        border-radius: 18px;
-        margin: 0 0 18px;
+        transition: transform 0.55s ease;
+      }
+
+      .card:hover img,
+      .card:focus-visible img {
+        transform: scale(1.07);
       }
 
       .card p {
         margin: 0;
         color: var(--muted);
-        line-height: 1.85;
+        line-height: 1.9;
       }
 
-      footer {
-        margin-top: 44px;
+      .card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 22px;
         color: var(--muted);
-        text-align: center;
-        font-size: 0.95rem;
+        font-size: 0.94rem;
       }
 
-      @media (max-width: 720px) {
-        .container {
-          padding: 32px 18px 48px;
+      .card-meta span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .card-meta span::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .spotlight {
+        display: grid;
+        grid-template-columns: 1fr 0.85fr;
+        gap: 28px;
+        align-items: center;
+      }
+
+      .spotlight-panel {
+        padding: 30px;
+        border-radius: 32px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.18);
+      }
+
+      .spotlight-panel h3 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.95rem;
+        line-height: 1.08;
+      }
+
+      .spotlight-panel p {
+        color: var(--muted);
+        line-height: 1.9;
+        margin-bottom: 22px;
+      }
+
+      .spotlight-panel ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 14px;
+      }
+
+      .spotlight-panel li {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+      }
+
+      .spotlight-panel li::before {
+        content: "✓";
+        color: var(--accent);
+        font-size: 0.95rem;
+        line-height: 1.3;
+        margin-top: 3px;
+      }
+
+      .spotlight-visual {
+        display: grid;
+        gap: 20px;
+      }
+
+      .visual-block {
+        position: relative;
+        overflow: hidden;
+        border-radius: 30px;
+        min-height: 280px;
+        background:
+          radial-gradient(
+            circle at 20% 20%,
+            rgba(56, 189, 248, 0.14),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 80% 10%,
+            rgba(168, 85, 247, 0.12),
+            transparent 40%
+          );
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .visual-block::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.03),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .visual-block img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .footer-panel {
+        margin-top: 54px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 0.94rem;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .footer-links a {
+        color: var(--muted);
+        text-decoration: none;
+        transition: color var(--transition);
+      }
+
+      .footer-links a:hover,
+      .footer-links a:focus-visible {
+        color: var(--text);
+      }
+
+      .glow-orb {
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        filter: blur(24px);
+        opacity: 0.6;
+        pointer-events: none;
+        animation: float 9s ease-in-out infinite;
+      }
+
+      .glow-orb.one {
+        top: 20vh;
+        right: 14vw;
+        background: rgba(56, 189, 248, 0.18);
+      }
+
+      .glow-orb.two {
+        bottom: 14vh;
+        left: 12vw;
+        background: rgba(168, 85, 247, 0.16);
+        animation-duration: 11s;
+      }
+
+      .floating-spark {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: rgba(255, 255, 255, 0.65);
+        border-radius: 50%;
+        opacity: 0.8;
+        animation: sparkle 5s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      .floating-spark.one {
+        top: 45vh;
+        left: 52%;
+        animation-delay: 0s;
+      }
+
+      .floating-spark.two {
+        top: 16vh;
+        left: 18%;
+        animation-delay: 1.8s;
+      }
+
+      .floating-spark.three {
+        top: 68vh;
+        right: 18%;
+        animation-delay: 3.4s;
+      }
+
+      @keyframes drift {
+        0% {
+          transform: translate(0px, 0px) scale(1);
+        }
+        50% {
+          transform: translate(18px, -32px) scale(1.05);
+        }
+        100% {
+          transform: translate(-24px, 18px) scale(0.95);
+        }
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0px) scale(1);
+        }
+        50% {
+          transform: translateY(-14px) scale(1.05);
+        }
+        100% {
+          transform: translateY(0px) scale(1);
+        }
+      }
+
+      @keyframes sparkle {
+        0%,
+        100% {
+          opacity: 0.8;
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          opacity: 0.3;
+          transform: translateY(-18px) scale(1.3);
+        }
+      }
+
+      @keyframes pop-in {
+        0% {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          box-shadow: 0 20px 40px rgba(56, 189, 248, 0.18);
+        }
+        50% {
+          box-shadow: 0 24px 58px rgba(56, 189, 248, 0.28);
+        }
+      }
+
+      .section-heading {
+        animation: pop-in 0.75s ease both;
+      }
+
+      .feature-icon,
+      .card-meta span::before,
+      .preview-badge,
+      .card-badge,
+      .meta-pill {
+        transition: transform var(--transition), opacity var(--transition), background var(--transition), box-shadow var(--transition);
+      }
+
+      .feature-icon {
+        transition: transform 260ms ease, background var(--transition);
+      }
+
+      .preview-badge,
+      .card-badge {
+        opacity: 0.92;
+      }
+
+      .feature-card:hover .feature-icon,
+      .card:hover .card-badge,
+      .preview-card:hover .preview-badge {
+        box-shadow: 0 0 24px rgba(56, 189, 248, 0.18);
+      }
+
+      @media (max-width: 1040px) {
+        .hero-top {
+          grid-template-columns: 1fr;
         }
 
-        header {
+        .hero-stats {
+          grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        }
+
+        .spotlight {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 780px) {
+        .container {
+          padding: 38px 18px 64px;
+        }
+
+        .hero-panel {
           padding: 28px;
+        }
+
+        .section,
+        .hero-preview,
+        .preview-card,
+        .feature-card,
+        .spotlight-panel,
+        .visual-block {
+          border-radius: 24px;
+        }
+
+        .hero-actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .button {
+          width: 100%;
+        }
+
+        .hero-meta {
+          justify-content: flex-start;
+        }
+
+        .cards-grid {
+          grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <div class="hero-top">
-          <div>
-            <h1>Online Latu</h1>
-            <p class="subtitle">
-              Verken snelle webgames, knoppen met stijl en een moderne
-              interface. Klik op een titel om te spelen.
-            </p>
+    <div class="page-shell">
+      <div class="background-orbit"></div>
+      <div class="background-orbit"></div>
+      <div class="glow-orb one"></div>
+      <div class="glow-orb two"></div>
+      <div class="floating-spark one"></div>
+      <div class="floating-spark two"></div>
+      <div class="floating-spark three"></div>
+
+      <div class="container">
+        <header class="hero-panel">
+          <div class="hero-top">
+            <div class="hero-copy">
+              <span class="hero-eyebrow">Online game hub</span>
+              <h1>Online Latu: speel slim, speel snel</h1>
+              <p class="subtitle">
+                Een fris, modern platform voor je favoriete browsergames en
+                arcade-uitdagingen. Elk spel is geoptimaliseerd voor snelheid,
+                interface en plezier.
+              </p>
+              <div class="hero-actions">
+                <a class="button button-primary" href="#games">Start spelen</a>
+                <a class="button button-secondary" href="legal.html"
+                  >Bekijk legal</a
+                >
+              </div>
+              <div class="hero-meta">
+                <span class="meta-pill">5 spellen</span>
+                <span class="meta-pill">neon UI</span>
+                <span class="meta-pill">geanimeerd</span>
+              </div>
+            </div>
+
+            <aside class="hero-aside">
+              <article class="preview-card" id="recommended-card">
+                <span class="preview-badge">Aanbevolen</span>
+                <h2 class="recommended-title">Nieuwe Arcade Collectie</h2>
+                <p class="recommended-description">
+                  De beste snelstart-games met visuele frictie, belangrijke
+                  scores en een digitale glow die uitnodigt om direct te spelen.
+                </p>
+                <div class="preview-thumb">
+                  <img
+                    class="recommended-image"
+                    src="BasketBall.png"
+                    alt="Preview van een game"
+                  />
+                </div>
+              </article>
+
+              <article class="preview-card">
+                <span class="preview-badge">Top keuze</span>
+                <h2>Speel, verbeter en win</h2>
+                <p>
+                  Van clickers tot klassieke puzzels: iedere game voelt snel,
+                  scherp en aantrekkelijk dankzij onze strakke styling en
+                  progressieve animaties.
+                </p>
+              </article>
+            </aside>
           </div>
-          <a class="nav-link" href="legal.html">Legal</a>
-        </div>
-      </header>
 
-      <main>
-        <div class="grid">
-          <a class="card" href="BasketballClicker.html">
-            <h2>Basketball Clicker</h2>
-            <img src="BasketBall.png" alt="Basketball Clicker preview" />
-            <p>
-              Speel een korte basketbalklikker met vloeiende animaties en
-              uitdagende scores.
-            </p>
-          </a>
-          <a class="card" href="Pulse-Runner.html">
-            <h2>Pulse Runner</h2>
-            <img src="Pusle-runner.png" alt="Pulse Runner preview" />
-            <p>
-              Ren door neonlandschappen in deze snelle, minimale
-              runner-ervaring.
-            </p>
-          </a>
-          <a class="card" href="FlappyBird.html">
-            <h2>Flappy Bird</h2>
-            <img src="Flappy-Bird.png" alt="Flappy Bird preview" />
-            <p>
-              Ren door neonlandschappen in deze snelle, minimale
-              runner-ervaring.
-            </p>
-          </a>
-          <a class="card" href="Tetris.html">
-            <h2>Tetris</h2>
-            <img src="Tetris.png" alt="Tetris preview" />
-            <p>Speel het klassieke puzzelspel met een moderne uitstraling.</p>
-          </a>
-          <a class="card" href="Blackjack.html">
-            <h2>Blackjack</h2>
-            <img src="Blackjack.png" alt="Blackjack preview" />
-            <p>Speel het klassieke kaartspel met een moderne uitstraling.</p>
-          </a>
-        </div>
-      </main>
+          <div class="hero-stats">
+            <div class="stat-card">
+              <p class="stat-title">Snel geladen</p>
+              <p class="stat-value"><strong>100%</strong></p>
+              <p class="stat-note">
+                Direct spelen zonder wachttijden, ook op mobiel.
+              </p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-title">Volledig responsive</p>
+              <p class="stat-value"><strong>Alle schermen</strong></p>
+              <p class="stat-note">
+                Gestroomlijnd ontwerp dat werkt op telefoon, tablet en desktop.
+              </p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-title">Gebruikersgericht</p>
+              <p class="stat-value"><strong>Vandaag</strong></p>
+              <p class="stat-note">
+                Een ervaring die uitnodigt tot ontdekken, spelen en herhalen.
+              </p>
+            </div>
+          </div>
+        </header>
 
-      <footer>&copy; 2026 Online Latu. Alle rechten voorbehouden.</footer>
+        <main>
+          <section class="section intro">
+            <h2 class="section-heading">Wat je kunt doen</h2>
+            <div class="feature-grid">
+              <article class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3>Snelle opzet</h3>
+                <p>
+                  Alle games openen direct, zonder overbodige tussenstappen.
+                  Klik, speel en geniet.
+                </p>
+              </article>
+              <article class="feature-card">
+                <span class="feature-icon">🎮</span>
+                <h3>Strakke presentatie</h3>
+                <p>
+                  Een moderne interface met neonaccenten, zachte glows en een
+                  donkere gaming-sfeer.
+                </p>
+              </article>
+              <article class="feature-card">
+                <span class="feature-icon">✨</span>
+                <h3>Levendige animaties</h3>
+                <p>
+                  Vloeiende hover-effecten, achtergrondbeweging en subtiele
+                  illusies voor een dynamische beleving.
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section class="section cards-section" id="games">
+            <h2 class="section-heading">Game collectie</h2>
+            <div class="cards-grid">
+              <a class="card" href="BasketballClicker.html">
+                <span class="card-badge">Basketball</span>
+                <div class="card-img-wrap">
+                  <img src="BasketBall.png" alt="Basketball Clicker preview" />
+                </div>
+                <h2>Basketball Clicker</h2>
+                <p>
+                  Speel een interactieve basketbalklikker met vloeiende
+                  animaties, scores en een neon-esthetiek.
+                </p>
+                <div class="card-meta">
+                  <span>Rustige controls</span>
+                  <span>Snelle updates</span>
+                </div>
+              </a>
+              <a class="card" href="Pulse-Runner.html">
+                <span class="card-badge">Runner</span>
+                <div class="card-img-wrap">
+                  <img src="Pusle-runner.png" alt="Pulse Runner preview" />
+                </div>
+                <h2>Pulse Runner</h2>
+                <p>
+                  Ren door neonlandschappen in een snelle runner-ervaring met
+                  heldere visuals en stijlvolle feedback.
+                </p>
+                <div class="card-meta">
+                  <span>Neon-speed</span>
+                  <span>Vloeiende gameplay</span>
+                </div>
+              </a>
+              <a class="card" href="FlappyBird.html">
+                <span class="card-badge">Retro</span>
+                <div class="card-img-wrap">
+                  <img src="Flappy-Bird.png" alt="Flappy Bird preview" />
+                </div>
+                <h2>Flappy Bird</h2>
+                <p>
+                  Een frisse versie van het bekende klassiekerspel met een
+                  heldere pixel-art twist.
+                </p>
+                <div class="card-meta">
+                  <span>Snelle reflexen</span>
+                  <span>Modern design</span>
+                </div>
+              </a>
+              <a class="card" href="Tetris.html">
+                <span class="card-badge">Puzzel</span>
+                <div class="card-img-wrap">
+                  <img src="Tetris.png" alt="Tetris preview" />
+                </div>
+                <h2>Tetris</h2>
+                <p>
+                  Speel het klassieke puzzelspel met moderne styling en
+                  vloeiende blokanimaties.
+                </p>
+                <div class="card-meta">
+                  <span>Strategisch</span>
+                  <span>Verslavend</span>
+                </div>
+              </a>
+              <a class="card" href="Blackjack.html">
+                <span class="card-badge">Kaartspel</span>
+                <div class="card-img-wrap">
+                  <img src="Blackjack.png" alt="Blackjack preview" />
+                </div>
+                <h2>Blackjack</h2>
+                <p>
+                  Een moderne blackjack-ervaring met stijlvolle kaartanimaties
+                  en een rustige nachtlook.
+                </p>
+                <div class="card-meta">
+                  <span>Classic</span>
+                  <span>Bold UI</span>
+                </div>
+              </a>
+            </div>
+          </section>
+
+          <section class="section spotlight">
+            <article class="spotlight-panel">
+              <h3>Waarom Online Latu eruit springt</h3>
+              <p>
+                De opmaak is ontworpen om te voelen als een volwassen platform:
+                overzichtelijk, interactief en visueel rijk. Iedere sectie is
+                zorgvuldig gebalanceerd met ruimte, contrast en aandacht voor
+                typografie.
+              </p>
+              <ul>
+                <li>
+                  Geoptimaliseerde donkere styling met koper- en neonaccenten.
+                </li>
+                <li>
+                  Animaties die de site levendiger maken zonder af te leiden.
+                </li>
+                <li>
+                  Een heldere structuur met een duidelijke games-collectie en
+                  call-to-action.
+                </li>
+              </ul>
+            </article>
+            <div class="spotlight-visual">
+              <div class="visual-block">
+                <img src="BasketBall.png" alt="Visuele presentatie van games" />
+              </div>
+              <div class="visual-block">
+                <img src="Tetris.png" alt="Visuele presentatie van games" />
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer class="footer-panel">
+          <span>&copy; 2026 Online Latu. Alle rechten voorbehouden.</span>
+          <nav class="footer-links">
+            <a href="legal.html">Legal</a>
+            <a href="#games">Games</a>
+            <a href="mailto:info@onlinelatu.example">Contact</a>
+          </nav>
+        </footer>
+      </div>
     </div>
+
+    <script>
+      (function () {
+        const games = [
+          {
+            title: "Basketball Clicker",
+            description:
+              "Speel een interactieve basketbalklikker met vloeiende animaties, scores en een neon-esthetiek.",
+            image: "BasketBall.png",
+            alt: "Basketball Clicker preview",
+            link: "BasketballClicker.html",
+          },
+          {
+            title: "Pulse Runner",
+            description:
+              "Ren door neonlandschappen in een snelle runner-ervaring met heldere visuals en stijlvolle feedback.",
+            image: "Pusle-runner.png",
+            alt: "Pulse Runner preview",
+            link: "Pulse-Runner.html",
+          },
+          {
+            title: "Flappy Bird",
+            description:
+              "Een frisse versie van het bekende klassiekerspel met een heldere pixel-art twist.",
+            image: "Flappy-Bird.png",
+            alt: "Flappy Bird preview",
+            link: "FlappyBird.html",
+          },
+          {
+            title: "Tetris",
+            description:
+              "Speel het klassieke puzzelspel met moderne styling en vloeiende blokanimaties.",
+            image: "Tetris.png",
+            alt: "Tetris preview",
+            link: "Tetris.html",
+          },
+          {
+            title: "Blackjack",
+            description:
+              "Een moderne blackjack-ervaring met stijlvolle kaartanimaties en een rustige nachtlook.",
+            image: "Blackjack.png",
+            alt: "Blackjack preview",
+            link: "Blackjack.html",
+          },
+        ];
+
+        function getPreviousIndex() {
+          try {
+            return parseInt(localStorage.getItem("recommendedGameIndex"), 10);
+          } catch (error) {
+            return null;
+          }
+        }
+
+        function getRandomIndex(excludeIndex) {
+          const indices = games
+            .map((_, index) => index)
+            .filter((index) => index !== excludeIndex);
+          return indices[Math.floor(Math.random() * indices.length)];
+        }
+
+        const previousIndex = getPreviousIndex();
+        const selectedIndex = getRandomIndex(
+          isNaN(previousIndex) ? -1 : previousIndex,
+        );
+        const selectedGame = games[selectedIndex];
+
+        const recommendedCard = document.getElementById("recommended-card");
+        const recommendedTitle =
+          recommendedCard.querySelector(".recommended-title");
+        const recommendedDescription = recommendedCard.querySelector(
+          ".recommended-description",
+        );
+        const recommendedImage =
+          recommendedCard.querySelector(".recommended-image");
+
+        recommendedTitle.textContent = selectedGame.title;
+        recommendedDescription.textContent = selectedGame.description;
+        recommendedImage.src = selectedGame.image;
+        recommendedImage.alt = selectedGame.alt;
+
+        const previewLink = document.createElement("a");
+        previewLink.href = selectedGame.link;
+        previewLink.style.position = "absolute";
+        previewLink.style.inset = "0";
+        previewLink.style.zIndex = "0";
+        previewLink.style.textDecoration = "none";
+        previewLink.style.color = "inherit";
+        recommendedCard.appendChild(previewLink);
+
+        localStorage.setItem("recommendedGameIndex", selectedIndex);
+      })();
+    </script>
   </body>
 </html>
