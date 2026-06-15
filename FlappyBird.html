@@ -5,409 +5,555 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flappy Bird - Deluxe Edition</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background: #222;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #4ec0ca 0%, #87d8e8 100%);
+            font-family: 'Arial', sans-serif;
             overflow: hidden;
-            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
         #gameContainer {
             position: relative;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
-            border-radius: 15px;
-            overflow: hidden;
-            border: 4px solid #333;
+            margin-top: 20px;
         }
+
         canvas {
-            display: block;
-            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            border: 3px solid #000;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        #scoreBoard {
+
+        #score {
             position: absolute;
             top: 20px;
-            width: 100%;
-            text-align: center;
-            pointer-events: none;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             z-index: 10;
         }
-        .score-text {
-            color: white;
-            font-size: 50px;
-            font-weight: 900;
-            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-            margin-bottom: -10px;
-        }
-        .highscore-text {
-            color: #FFD700;
+
+        #bestScore {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 20px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        #coinDisplay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 215, 0, 0.9);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 20px;
             font-weight: bold;
-            text-shadow: 2px 2px 0 #000;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        #skinShop {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            z-index: 100;
+            max-width: 90%;
+            width: 600px;
+        }
+
+        #skinShop h2 {
+            margin: 0 0 15px 0;
+            text-align: center;
+            color: #ffd700;
+        }
+
+        .skins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .skin-item {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .skin-item:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .skin-item.owned {
+            border-color: #4CAF50;
+        }
+
+        .skin-item.equipped {
+            border-color: #ffd700;
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        .skin-preview {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 5px;
+            border-radius: 5px;
+        }
+
+        .skin-name {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .skin-price {
+            font-size: 14px;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .skin-btn {
+            margin-top: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .buy-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .equip-btn {
+            background: #2196F3;
+            color: white;
+        }
+
+        .equipped-label {
+            color: #ffd700;
+            font-size: 11px;
+        }
+
+        #startScreen, #gameOverScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0,0,0,0.8);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            z-index: 20;
+        }
+
+        #gameOverScreen {
+            display: none;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        #backToMenu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        #backToMenu:hover {
+            background: rgba(0,0,0,0.9);
         }
     </style>
 </head>
 <body>
-
-<div id="gameContainer">
-    <div id="scoreBoard">
-        <div class="score-text" id="scoreDisplay">0</div>
-        <div class="highscore-text" id="highScoreDisplay">Best: 0</div>
-    </div>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-</div>
-
-<script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const scoreDisplay = document.getElementById("scoreDisplay");
-const highScoreDisplay = document.getElementById("highScoreDisplay");
-
-// Game Settings
-const GRAVITY = 0.28;
-const FLAP_STRENGTH = -6;
-const SPAWN_RATE = 100;
-const PIPE_SPEED = 3.5;
-const PIPE_GAP = 145;
-const GROUND_HEIGHT = 50;
-
-// Ophalen van highscore uit LocalStorage
-let highScore = localStorage.getItem("flappyHighScore") || 0;
-highScoreDisplay.innerText = "Best: " + highScore;
-
-// Entiteiten
-let bird = { x: 60, y: 250, velocity: 0, radius: 15, angle: 0, wingY: 0 };
-let pipes = [];
-let particles = [];
-let clouds = [];
-let groundX = 0;
-
-let frameCount = 0;
-let score = 0;
-let gameOver = false;
-let gameStarted = false;
-
-// Genereer beginwolken
-for(let i=0; i<5; i++) {
-    clouds.push({ x: Math.random() * canvas.width, y: Math.random() * 200 + 20, speed: Math.random() * 0.5 + 0.2, size: Math.random() * 30 + 20 });
-}
-
-// Controls
-window.addEventListener("keydown", (e) => { if (e.code === "Space") handleJump(); });
-canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleJump(); });
-canvas.addEventListener("mousedown", () => handleJump());
-
-function handleJump() {
-    if (gameOver) {
-        resetGame();
-        return;
-    }
-    if (!gameStarted) gameStarted = true;
-    bird.velocity = FLAP_STRENGTH;
-    createParticles(bird.x, bird.y + 10, "white", 5); // Flap stofwolkje
-}
-
-function resetGame() {
-    bird.y = 250;
-    bird.velocity = 0;
-    bird.angle = 0;
-    pipes = [];
-    particles = [];
-    score = 0;
-    frameCount = 0;
-    scoreDisplay.innerText = score;
-    gameOver = false;
-    gameStarted = true;
-}
-
-function createParticles(x, y, color, amount) {
-    for (let i = 0; i < amount; i++) {
-        particles.push({
-            x: x, y: y,
-            vx: (Math.random() - 0.5) * 4,
-            vy: (Math.random() - 0.5) * 4,
-            life: 1,
-            color: color
-        });
-    }
-}
-
-function update() {
-    // Beweeg wolken en grond altijd
-    clouds.forEach(c => {
-        c.x -= c.speed;
-        if (c.x + c.size < 0) { c.x = canvas.width + c.size; c.y = Math.random() * 200 + 20; }
-    });
+    <div id="coinDisplay">🪙 <span id="coinBalance">0</span></div>
+    <a href="index.html" id="backToMenu">← Terug naar Menu</a>
     
-    if (!gameOver) {
-        groundX -= PIPE_SPEED;
-        if (groundX <= -canvas.width) groundX = 0;
-    }
-
-    // Update particles
-    for (let i = particles.length - 1; i >= 0; i--) {
-        let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life -= 0.02;
-        if (p.life <= 0) particles.splice(i, 1);
-    }
-
-    if (!gameStarted || gameOver) return;
-    frameCount++;
-
-    // Vogel Physics & Animatie
-    bird.velocity += GRAVITY;
-    bird.y += bird.velocity;
-    bird.angle = Math.min(Math.PI / 4, Math.max(-Math.PI / 6, bird.velocity * 0.1));
-    bird.wingY = Math.sin(frameCount * 0.4) * 5; // Flappende vleugel
-
-    // Collision Grond of Plafond
-    if (bird.y + bird.radius >= canvas.height - GROUND_HEIGHT || bird.y - bird.radius <= 0) {
-        die();
-    }
-
-    // Spawn Buizen
-    if (frameCount % SPAWN_RATE === 0) {
-        let minHeight = 60;
-        let maxHeight = canvas.height - GROUND_HEIGHT - PIPE_GAP - 60;
-        let topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
-        pipes.push({ x: canvas.width, top: topHeight, bottom: canvas.height - GROUND_HEIGHT - topHeight - PIPE_GAP, passed: false });
-    }
-
-    // Buizen Logic
-    for (let i = pipes.length - 1; i >= 0; i--) {
-        let p = pipes[i];
-        p.x -= PIPE_SPEED;
-
-        // Collision Check
-        if (bird.x + bird.radius - 2 > p.x && bird.x - bird.radius + 2 < p.x + 65) {
-            if (bird.y - bird.radius + 2 < p.top || bird.y + bird.radius - 2 > canvas.height - GROUND_HEIGHT - p.bottom) {
-                die();
-            }
-        }
-
-        // Score
-        if (!p.passed && p.x + 32 < bird.x) {
-            p.passed = true;
-            score++;
-            scoreDisplay.innerText = score;
-            createParticles(p.x + 32, p.top + (PIPE_GAP/2), "#FFD700", 20); // Gouden confetti
-            
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem("flappyHighScore", highScore);
-                highScoreDisplay.innerText = "Best: " + highScore;
-            }
-        }
-
-        // Verwijder oude buizen
-        if (p.x < -70) pipes.splice(i, 1);
-    }
-}
-
-function die() {
-    gameOver = true;
-    createParticles(bird.x, bird.y, "#f7dc6f", 30); // Explosie van veren
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Teken Wolken
-    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-    clouds.forEach(c => {
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
-        ctx.arc(c.x + c.size*0.8, c.y - c.size*0.2, c.size*0.8, 0, Math.PI * 2);
-        ctx.arc(c.x + c.size*1.5, c.y, c.size*0.6, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    // Teken Buizen
-    pipes.forEach(p => {
-        let grad = ctx.createLinearGradient(p.x, 0, p.x + 65, 0);
-        grad.addColorStop(0, "#74c02c");
-        grad.addColorStop(0.5, "#95e843");
-        grad.addColorStop(1, "#5a9622");
-
-        ctx.fillStyle = grad;
-        ctx.strokeStyle = "#406e16";
-        ctx.lineWidth = 3;
-
-        // Bovenbuis
-        ctx.fillRect(p.x, 0, 65, p.top);
-        ctx.strokeRect(p.x, 0, 65, p.top);
-        ctx.fillRect(p.x - 4, p.top - 25, 73, 25);
-        ctx.strokeRect(p.x - 4, p.top - 25, 73, 25);
-
-        // Onderbuis
-        let bottomY = canvas.height - GROUND_HEIGHT - p.bottom;
-        ctx.fillRect(p.x, bottomY, 65, p.bottom);
-        ctx.strokeRect(p.x, bottomY, 65, p.bottom);
-        ctx.fillRect(p.x - 4, bottomY, 73, 25);
-        ctx.strokeRect(p.x - 4, bottomY, 73, 25);
-    });
-
-    // Teken Grond
-    ctx.fillStyle = "#ded895";
-    ctx.fillRect(groundX, canvas.height - GROUND_HEIGHT, canvas.width * 2, GROUND_HEIGHT);
-    ctx.fillStyle = "#73bf2e"; // Grasrand
-    ctx.fillRect(groundX, canvas.height - GROUND_HEIGHT, canvas.width * 2, 12);
-    ctx.strokeStyle = "#5a9622";
-    ctx.beginPath();
-    ctx.moveTo(0, canvas.height - GROUND_HEIGHT);
-    ctx.lineTo(canvas.width, canvas.height - GROUND_HEIGHT);
-    ctx.stroke();
-
-    // Teken Particles
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
-        ctx.fill();
-    });
-    ctx.globalAlpha = 1.0;
-
-    // Teken Vogel
-    if (!gameOver || bird.y < canvas.height - GROUND_HEIGHT) {
-        ctx.save();
-        ctx.translate(bird.x, bird.y);
-        ctx.rotate(bird.angle);
+    <div id="gameContainer">
+        <div id="score">0</div>
+        <div id="bestScore">Best: 0</div>
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
         
-        // Lichaam
-        ctx.fillStyle = "#f1c40f";
-        ctx.strokeStyle = "#c0392b";
+        <div id="startScreen">
+            <h1>🐦 Flappy Bird</h1>
+            <p>Klik of druk op spatie om te vliegen!</p>
+            <button onclick="startGame()">Start Game</button>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h1>Game Over!</h1>
+            <p>Score: <span id="finalScore">0</span></p>
+            <p>Best: <span id="finalBest">0</span></p>
+            <p id="coinReward" style="color: #ffd700;"></p>
+            <button onclick="resetGame()">Opnieuw Spelen</button>
+        </div>
+    </div>
+
+    <div id="skinShop">
+        <h2>🎨 Skin Winkel</h2>
+        <div class="skins-grid" id="skinsGrid"></div>
+    </div>
+
+    <script>
+    // Coin System
+    const CoinSystem = {
+        getCoins: function() {
+            return parseInt(localStorage.getItem('latu_coins')) || 0;
+        },
+        addCoins: function(amount) {
+            let current = this.getCoins();
+            localStorage.setItem('latu_coins', current + amount);
+            this.updateDisplay();
+        },
+        spendCoins: function(amount) {
+            let current = this.getCoins();
+            if (current >= amount) {
+                localStorage.setItem('latu_coins', current - amount);
+                this.updateDisplay();
+                return true;
+            }
+            return false;
+        },
+        updateDisplay: function() {
+            document.getElementById('coinBalance').textContent = this.getCoins();
+        },
+        getInventory: function() {
+            return JSON.parse(localStorage.getItem('latu_inventory')) || [];
+        },
+        addItemToInventory: function(itemId) {
+            let inv = this.getInventory();
+            if (!inv.includes(itemId)) {
+                inv.push(itemId);
+                localStorage.setItem('latu_inventory', JSON.stringify(inv));
+            }
+        },
+        getEquippedSkin: function() {
+            return localStorage.getItem('latu_equipped_flappy_skin') || 'default';
+        },
+        equipSkin: function(skinId) {
+            localStorage.setItem('latu_equipped_flappy_skin', skinId);
+            loadSkin();
+        }
+    };
+
+    // Skins data
+    const skins = [
+        { id: 'default', name: 'Classic', color: '#F4D03F', price: 0, emoji: '🐦' },
+        { id: 'red', name: 'Red Bird', color: '#E74C3C', price: 50, emoji: '🐦' },
+        { id: 'blue', name: 'Blue Bird', color: '#3498DB', price: 50, emoji: '🐦' },
+        { id: 'green', name: 'Green Bird', color: '#2ECC71', price: 50, emoji: '🐦' },
+        { id: 'purple', name: 'Purple Bird', color: '#9B59B6', price: 100, emoji: '🐦' },
+        { id: 'gold', name: 'Golden Bird', color: '#FFD700', price: 200, emoji: '👑' },
+        { id: 'rainbow', name: 'Rainbow', color: 'rainbow', price: 300, emoji: '🌈' },
+        { id: 'dark', name: 'Dark Knight', color: '#2C3E50', price: 150, emoji: '🦇' }
+    ];
+
+    // Game variables
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let bird = { x: 50, y: 300, velocity: 0, width: 40, height: 30 };
+    let pipes = [];
+    let score = 0;
+    let bestScore = parseInt(localStorage.getItem('flappy_best')) || 0;
+    let gameRunning = false;
+    let gameLoop;
+    let frameCount = 0;
+    let currentSkin = 'default';
+    let skinColor = '#F4D03F';
+
+    document.getElementById('bestScore').textContent = 'Best: ' + bestScore;
+
+    function loadSkin() {
+        currentSkin = CoinSystem.getEquippedSkin();
+        const skin = skins.find(s => s.id === currentSkin);
+        if (skin) {
+            skinColor = skin.color;
+        }
+    }
+
+    function drawBird() {
+        ctx.save();
+        ctx.translate(bird.x + bird.width/2, bird.y + bird.height/2);
+        ctx.rotate(Math.min(bird.velocity * 0.1, 0.5));
+        
+        if (skinColor === 'rainbow') {
+            const rainbowColors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
+            const colorIndex = Math.floor(frameCount / 10) % rainbowColors.length;
+            ctx.fillStyle = rainbowColors[colorIndex];
+        } else {
+            ctx.fillStyle = skinColor;
+        }
+        
+        // Bird body
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bird.width/2, bird.height/2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
-        ctx.fill();
         ctx.stroke();
-
-        // Oog
-        ctx.fillStyle = "white";
-        ctx.beginPath(); ctx.arc(6, -5, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "black";
-        ctx.beginPath(); ctx.arc(8, -5, 2.5, 0, Math.PI * 2); ctx.fill();
-
-        // Vleugel
-        ctx.fillStyle = "#f39c12";
+        
+        // Eye
+        ctx.fillStyle = '#FFF';
         ctx.beginPath();
-        ctx.ellipse(-4, bird.wingY, 8, 5, 0, 0, Math.PI*2);
+        ctx.arc(10, -5, 8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.stroke();
-
-        // Snavel
-        ctx.fillStyle = "#e67e22";
+        ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.moveTo(10, 0);
-        ctx.lineTo(24, 3);
-        ctx.lineTo(10, 8);
+        ctx.arc(12, -5, 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Beak
+        ctx.fillStyle = '#FFA500';
+        ctx.beginPath();
+        ctx.moveTo(15, 0);
+        ctx.lineTo(25, 5);
+        ctx.lineTo(15, 10);
         ctx.closePath();
+        ctx.fill();
+        
+        // Wing
+        ctx.fillStyle = skinColor === 'rainbow' ? '#FFF' : adjustColor(skinColor, -20);
+        ctx.beginPath();
+        ctx.ellipse(-5, 5, 12, 8, 0.2, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
         
         ctx.restore();
     }
 
-    // UI Overlays
-    if (!gameStarted) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "white";
-        ctx.font = "bold 26px sans-serif";
-        ctx.textAlign = "center";
-        ctx.shadowColor = "black"; ctx.shadowBlur = 4;
-        ctx.fillText("TAP OF SPATIE OM", canvas.width / 2, canvas.height / 2 - 15);
-        ctx.fillText("TE STARTEN", canvas.width / 2, canvas.height / 2 + 20);
-        ctx.shadowBlur = 0; // reset
+    function adjustColor(color, amount) {
+        if (color.startsWith('#')) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        return color;
     }
 
-    if (gameOver) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Game Over Paneel
-        ctx.fillStyle = "#f4f4f4";
-        ctx.roundRect(canvas.width/2 - 100, canvas.height/2 - 80, 200, 150, 10);
-        ctx.fill();
-        ctx.strokeStyle = "#555"; ctx.lineWidth = 3;
-        ctx.stroke();
-
-        ctx.fillStyle = "#e74c3c";
-        ctx.font = "bold 28px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 40);
-        
-        ctx.fillStyle = "#333";
-        ctx.font = "20px sans-serif";
-        ctx.fillText("Score: " + score, canvas.width / 2, canvas.height / 2);
-        ctx.fillText("Best: " + highScore, canvas.width / 2, canvas.height / 2 + 30);
+    function drawPipes() {
+        ctx.fillStyle = '#73BF2E';
+        pipes.forEach(pipe => {
+            ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
+            ctx.fillRect(pipe.x, pipe.bottom, pipe.width, canvas.height - pipe.bottom);
+            ctx.strokeStyle = '#558B22';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(pipe.x, 0, pipe.width, pipe.top);
+            ctx.strokeRect(pipe.x, pipe.bottom, pipe.width, canvas.height - pipe.bottom);
+        });
     }
-}
 
-// Custom roundRect functie voor bredere browser support
-CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-  if (w < 2 * r) r = w / 2;
-  if (h < 2 * r) r = h / 2;
-  this.beginPath();
-  this.moveTo(x + r, y);
-  this.arcTo(x + w, y, x + w, y + h, r);
-  this.arcTo(x + w, y + h, x, y + h, r);
-  this.arcTo(x, y + h, x, y, r);
-  this.arcTo(x, y, x + r, y, r);
-  this.closePath();
-  return this;
-}
+    function update() {
+        bird.velocity += 0.5;
+        bird.y += bird.velocity;
 
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
+        if (frameCount % 100 === 0) {
+            const gap = 150;
+            const topHeight = Math.random() * (canvas.height - gap - 100) + 50;
+            pipes.push({
+                x: canvas.width,
+                width: 60,
+                top: topHeight,
+                bottom: topHeight + gap,
+                passed: false
+            });
+        }
 
-gameLoop();
-</script>
+        pipes.forEach(pipe => {
+            pipe.x -= 3;
+            
+            if (!pipe.passed && pipe.x + pipe.width < bird.x) {
+                score++;
+                pipe.passed = true;
+                document.getElementById('score').textContent = score;
+                CoinSystem.addCoins(5); // 5 coins per point
+            }
 
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Flappy Bird - Deluxe Edition</title>
-    <!-- Include the Step 1 Coin System Script Here -->
-</head>
-<body class="bg-default"> <!-- Class will be updated by CoinSystem.applyTheme() -->
-    <h1>Flappy Bird - Deluxe Edition</h1>
-    <p>Score: <span id="score">0</span> | Best: <span id="best">0</span></p>
-    
-    <!-- Your game canvas/logic here -->
+            if (bird.x < pipe.x + pipe.width && bird.x + bird.width > pipe.x &&
+                (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)) {
+                gameOver();
+            }
+        });
 
-    <script>
-    // Example game logic integration
-    let score = 0;
-    
-    function onScorePoint() {
-        score++;
-        document.getElementById('score').textContent = score;
+        pipes = pipes.filter(pipe => pipe.x + pipe.width > 0);
+
+        if (bird.y + bird.height > canvas.height || bird.y < 0) {
+            gameOver();
+        }
+
+        frameCount++;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // REWARD: Give 5 coins per point!
-        CoinSystem.addCoins(5); 
+        // Background clouds
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        for (let i = 0; i < 5; i++) {
+            const x = ((frameCount * 0.5 + i * 100) % (canvas.width + 100)) - 50;
+            const y = 50 + i * 30;
+            ctx.beginPath();
+            ctx.arc(x, y, 30, 0, Math.PI * 2);
+            ctx.arc(x + 25, y - 10, 35, 0, Math.PI * 2);
+            ctx.arc(x + 50, y, 30, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        drawPipes();
+        drawBird();
+    }
+
+    function gameStep() {
+        if (gameRunning) {
+            update();
+            draw();
+            gameLoop = requestAnimationFrame(gameStep);
+        }
+    }
+
+    function startGame() {
+        document.getElementById('startScreen').style.display = 'none';
+        gameRunning = true;
+        gameStep();
     }
 
     function gameOver() {
-        // Optional: Give a bonus for beating best score
-        let best = parseInt(localStorage.getItem('flappy_best')) || 0;
-        if (score > best) {
-            localStorage.setItem('flappy_best', score);
-            CoinSystem.addCoins(50); // 50 coin bonus for new high score!
-            alert("Nieuw record! +50 munten bonus!");
+        gameRunning = false;
+        cancelAnimationFrame(gameLoop);
+        
+        if (score > bestScore) {
+            bestScore = score;
+            localStorage.setItem('flappy_best', bestScore);
+            CoinSystem.addCoins(50); // Bonus for new high score
+        }
+        
+        const coinsEarned = score * 5;
+        document.getElementById('finalScore').textContent = score;
+        document.getElementById('finalBest').textContent = bestScore;
+        document.getElementById('coinReward').textContent = `+${coinsEarned} 🪙 verdiend!`;
+        document.getElementById('gameOverScreen').style.display = 'block';
+    }
+
+    function resetGame() {
+        bird.y = 300;
+        bird.velocity = 0;
+        pipes = [];
+        score = 0;
+        frameCount = 0;
+        document.getElementById('score').textContent = '0';
+        document.getElementById('gameOverScreen').style.display = 'none';
+        gameRunning = true;
+        gameStep();
+    }
+
+    function jump() {
+        if (gameRunning) {
+            bird.velocity = -8;
         }
     }
+
+    canvas.addEventListener('click', jump);
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            jump();
+        }
+    });
+
+    // Skin shop
+    function renderSkins() {
+        const grid = document.getElementById('skinsGrid');
+        grid.innerHTML = '';
+        const inventory = CoinSystem.getInventory();
+        const equipped = CoinSystem.getEquippedSkin();
+
+        skins.forEach(skin => {
+            const item = document.createElement('div');
+            item.className = 'skin-item';
+            
+            const isOwned = inventory.includes(skin.id) || skin.price === 0;
+            const isEquipped = equipped === skin.id;
+            
+            if (isOwned) item.classList.add('owned');
+            if (isEquipped) item.classList.add('equipped');
+            
+            item.innerHTML = `
+                <div class="skin-preview" style="background: ${skin.color === 'rainbow' ? 'linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #9400D3)' : skin.color}"></div>
+                <div class="skin-name">${skin.emoji} ${skin.name}</div>
+                ${isOwned ? (
+                    isEquipped ? '<div class="equipped-label">✓ Uitgerust</div>' : 
+                    `<button class="skin-btn equip-btn" onclick="CoinSystem.equipSkin('${skin.id}')">Uitrusten</button>`
+                ) : (
+                    `<div class="skin-price">${skin.price} 🪙</div>
+                    <button class="skin-btn buy-btn" onclick="buySkin('${skin.id}', ${skin.price})">Kopen</button>`
+                )}
+            `;
+            
+            grid.appendChild(item);
+        });
+    }
+
+    function buySkin(skinId, price) {
+        if (CoinSystem.spendCoins(price)) {
+            CoinSystem.addItemToInventory(skinId);
+            CoinSystem.equipSkin(skinId);
+            renderSkins();
+            alert(`Skin gekocht en uitgerust: ${skins.find(s => s.id === skinId).name}!`);
+        } else {
+            alert('Niet genoeg munten!');
+        }
+    }
+
+    // Initialize
+    CoinSystem.updateDisplay();
+    loadSkin();
+    renderSkins();
+    draw(); // Initial draw
     </script>
 </body>
 </html>
