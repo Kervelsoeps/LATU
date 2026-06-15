@@ -1,0 +1,1836 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rim Rush Clicker</title>
+  <style>
+    :root {
+      --ink: #f9fbff;
+      --muted: #aeb8c8;
+      --panel: rgba(8, 12, 22, 0.78);
+      --panel-strong: rgba(14, 20, 35, 0.94);
+      --line: rgba(255, 255, 255, 0.16);
+      --orange: #ff7a1a;
+      --orange-2: #ffb04d;
+      --cyan: #39e7ff;
+      --pink: #ff3ca6;
+      --green: #aaff40;
+      --purple: #8f62ff;
+      --gold: #ffd45c;
+      --danger: #ff4d5e;
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        linear-gradient(110deg, rgba(255, 122, 26, 0.18), transparent 28%),
+        linear-gradient(250deg, rgba(57, 231, 255, 0.16), transparent 34%),
+        #05070d;
+      color: var(--ink);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.055) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 72px),
+        linear-gradient(135deg, #0e1222 0%, #05070d 36%, #15101d 66%, #071617 100%);
+      transform-origin: center;
+      animation: courtSweep 18s linear infinite;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(90deg, transparent 0 42%, rgba(57, 231, 255, 0.08) 42% 43%, transparent 43% 57%, rgba(255, 60, 166, 0.08) 57% 58%, transparent 58%),
+        radial-gradient(ellipse at 50% 18%, transparent 0 24%, rgba(255, 255, 255, 0.07) 25% 25.35%, transparent 26%),
+        radial-gradient(ellipse at 50% 82%, transparent 0 24%, rgba(255, 122, 26, 0.08) 25% 25.35%, transparent 26%);
+      opacity: 0.72;
+      pointer-events: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    .app {
+      position: relative;
+      min-height: 100vh;
+      padding: clamp(14px, 2vw, 26px);
+      isolation: isolate;
+    }
+
+    .arena-light {
+      position: fixed;
+      inset: auto -10vw -26vh -10vw;
+      z-index: -1;
+      height: 52vh;
+      background:
+        conic-gradient(from 0deg at 50% 100%, rgba(255, 122, 26, 0.24), rgba(57, 231, 255, 0.16), rgba(255, 60, 166, 0.18), rgba(170, 255, 64, 0.15), rgba(255, 122, 26, 0.24));
+      filter: blur(24px);
+      opacity: 0.64;
+      transform: translateZ(0);
+      animation: floorPulse 5.4s ease-in-out infinite;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      max-width: 1420px;
+      margin: 0 auto 16px;
+    }
+
+    .brand {
+      min-width: 0;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 26px;
+      padding: 4px 8px;
+      border: 1px solid rgba(57, 231, 255, 0.32);
+      background: rgba(57, 231, 255, 0.08);
+      color: #d5f9ff;
+      text-transform: uppercase;
+      font-size: 0.73rem;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      box-shadow: 0 0 16px var(--green);
+    }
+
+    h1 {
+      margin: 8px 0 0;
+      font-size: clamp(2.2rem, 6vw, 5.8rem);
+      line-height: 0.9;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      text-shadow:
+        0 0 12px rgba(255, 122, 26, 0.5),
+        0 10px 0 rgba(255, 60, 166, 0.16);
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .icon-button,
+    .pill-button,
+    .primary-button,
+    .danger-button {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.08);
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .icon-button {
+      width: 42px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .icon-button svg {
+      width: 19px;
+      height: 19px;
+      stroke-width: 2.4;
+    }
+
+    .pill-button:hover,
+    .icon-button:hover,
+    .primary-button:hover,
+    .danger-button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.32);
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .primary-button {
+      background: linear-gradient(135deg, rgba(255, 122, 26, 0.92), rgba(255, 60, 166, 0.84));
+      color: #101018;
+      border-color: rgba(255, 255, 255, 0.32);
+      box-shadow: 0 12px 36px rgba(255, 122, 26, 0.25);
+    }
+
+    .danger-button {
+      background: rgba(255, 77, 94, 0.14);
+      border-color: rgba(255, 77, 94, 0.42);
+      color: #ffdbe0;
+    }
+
+    .layout {
+      max-width: 1420px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(280px, 0.88fr) minmax(360px, 1.32fr) minmax(300px, 0.9fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .panel,
+    .upgrade-card,
+    .mini-dialog,
+    .toast {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .panel {
+      border-radius: 8px;
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .stats-panel {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .stat-hero {
+      position: relative;
+      padding: 16px;
+      min-height: 128px;
+      border: 1px solid rgba(255, 122, 26, 0.28);
+      background:
+        linear-gradient(140deg, rgba(255, 122, 26, 0.18), transparent 40%),
+        rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+    }
+
+    .stat-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(-18deg, transparent 0 12px, rgba(255, 255, 255, 0.055) 12px 13px);
+      opacity: 0.8;
+      transform: translateX(var(--stripe, 0px));
+      animation: stripeSlide 1.6s linear infinite;
+      pointer-events: none;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .score {
+      position: relative;
+      z-index: 1;
+      margin-top: 8px;
+      font-size: clamp(2.2rem, 5.6vw, 4.8rem);
+      font-weight: 950;
+      line-height: 0.9;
+      font-variant-numeric: tabular-nums;
+      word-break: break-word;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      min-height: 88px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.055);
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      font-size: clamp(1.15rem, 2vw, 1.55rem);
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .rebirth-panel {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      border-color: rgba(255, 212, 92, 0.28);
+    }
+
+    .progress-shell {
+      height: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--green), var(--cyan));
+      box-shadow: 0 0 18px rgba(255, 212, 92, 0.42);
+      transition: width 260ms ease;
+    }
+
+    .stage-panel {
+      position: relative;
+      min-height: min(72vh, 760px);
+      display: grid;
+      grid-template-rows: auto minmax(360px, 1fr) auto;
+      gap: 12px;
+      padding: clamp(12px, 2vw, 18px);
+    }
+
+    .combo-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .combo-tile {
+      min-height: 72px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.055);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .combo-tile::after {
+      content: "";
+      position: absolute;
+      left: -20%;
+      right: -20%;
+      bottom: -22px;
+      height: 44px;
+      background: linear-gradient(90deg, transparent, rgba(57, 231, 255, 0.18), transparent);
+      transform: skewY(-4deg);
+      animation: scanner 3s ease-in-out infinite;
+    }
+
+    .combo-tile strong {
+      position: relative;
+      z-index: 1;
+      display: block;
+      margin-top: 7px;
+      font-size: clamp(1.05rem, 2vw, 1.45rem);
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .court {
+      position: relative;
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background:
+        radial-gradient(ellipse at center, rgba(255, 122, 26, 0.18) 0 15%, transparent 16%),
+        linear-gradient(90deg, transparent 0 49.7%, rgba(255, 255, 255, 0.16) 49.7% 50.3%, transparent 50.3%),
+        linear-gradient(0deg, transparent 0 49.7%, rgba(255, 255, 255, 0.1) 49.7% 50.3%, transparent 50.3%),
+        rgba(255, 255, 255, 0.035);
+    }
+
+    .court::before,
+    .court::after {
+      content: "";
+      position: absolute;
+      inset: 9%;
+      border: 2px solid rgba(255, 255, 255, 0.13);
+      pointer-events: none;
+    }
+
+    .court::after {
+      inset: 22% 18%;
+      border-color: rgba(57, 231, 255, 0.18);
+      transform: skewX(-10deg);
+    }
+
+    .hoop-display {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      width: 128px;
+      height: 92px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      filter: drop-shadow(0 10px 24px rgba(255, 60, 166, 0.24));
+    }
+
+    .backboard {
+      position: absolute;
+      left: 24px;
+      top: 0;
+      width: 80px;
+      height: 50px;
+      border: 4px solid rgba(249, 251, 255, 0.86);
+      background: linear-gradient(135deg, rgba(57, 231, 255, 0.14), rgba(255, 255, 255, 0.08));
+    }
+
+    .rim {
+      position: absolute;
+      left: 38px;
+      top: 45px;
+      width: 52px;
+      height: 16px;
+      border: 5px solid var(--orange);
+      border-top: 0;
+      box-shadow: 0 0 18px rgba(255, 122, 26, 0.84);
+    }
+
+    .net {
+      position: absolute;
+      left: 45px;
+      top: 58px;
+      width: 38px;
+      height: 33px;
+      background:
+        linear-gradient(60deg, transparent 0 45%, rgba(255, 255, 255, 0.5) 46% 53%, transparent 54%),
+        linear-gradient(-60deg, transparent 0 45%, rgba(255, 255, 255, 0.5) 46% 53%, transparent 54%);
+      background-size: 12px 16px;
+      clip-path: polygon(8% 0, 92% 0, 70% 100%, 30% 100%);
+      opacity: 0.74;
+    }
+
+    .ball-button {
+      position: relative;
+      width: clamp(204px, 32vw, 355px);
+      aspect-ratio: 1;
+      border: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 32% 24%, rgba(255, 225, 142, 0.95) 0 9%, transparent 10%),
+        radial-gradient(circle at 62% 70%, rgba(132, 39, 0, 0.72) 0 12%, transparent 13%),
+        radial-gradient(circle at 50% 50%, var(--orange-2), var(--orange) 62%, #b33b00 100%);
+      box-shadow:
+        0 38px 50px rgba(0, 0, 0, 0.48),
+        inset -34px -30px 38px rgba(73, 17, 0, 0.38),
+        inset 24px 20px 24px rgba(255, 255, 255, 0.2),
+        0 0 36px rgba(255, 122, 26, 0.36);
+      cursor: pointer;
+      transform: translateZ(0);
+      animation: idleBall 2.35s ease-in-out infinite;
+      transition: transform 130ms ease, filter 130ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ball-button::before,
+    .ball-button::after,
+    .ball-lines,
+    .ball-lines::before,
+    .ball-lines::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .ball-button::before {
+      border: clamp(5px, 0.9vw, 10px) solid rgba(64, 24, 6, 0.72);
+      transform: scaleX(0.38);
+    }
+
+    .ball-button::after {
+      border: clamp(5px, 0.9vw, 10px) solid rgba(64, 24, 6, 0.72);
+      transform: scaleY(0.38);
+    }
+
+    .ball-lines {
+      transform: rotate(34deg);
+      border-left: clamp(5px, 0.9vw, 10px) solid rgba(64, 24, 6, 0.7);
+      border-right: clamp(5px, 0.9vw, 10px) solid rgba(64, 24, 6, 0.7);
+    }
+
+    .ball-lines::before {
+      border-top: clamp(5px, 0.9vw, 10px) solid rgba(64, 24, 6, 0.56);
+      transform: translateY(24%) rotate(-12deg);
+    }
+
+    .ball-lines::after {
+      border-bottom: clamp(5px, 0.9vw, 10px) solid rgba(64, 24, 6, 0.56);
+      transform: translateY(-24%) rotate(-12deg);
+    }
+
+    .ball-button:active,
+    .ball-button.slam {
+      transform: scale(0.94) rotate(-5deg);
+      filter: saturate(1.4) brightness(1.1);
+    }
+
+    .click-ring {
+      position: absolute;
+      width: 68px;
+      height: 68px;
+      margin-left: -34px;
+      margin-top: -34px;
+      border: 3px solid rgba(57, 231, 255, 0.86);
+      box-shadow: 0 0 24px rgba(57, 231, 255, 0.56);
+      pointer-events: none;
+      animation: ringOut 640ms ease-out forwards;
+    }
+
+    .float-number {
+      position: absolute;
+      z-index: 8;
+      color: #fff7cf;
+      font-weight: 950;
+      text-shadow: 0 3px 0 rgba(0, 0, 0, 0.4), 0 0 16px rgba(255, 212, 92, 0.76);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      animation: floatUp 980ms ease-out forwards;
+      white-space: nowrap;
+    }
+
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: var(--spark, var(--gold));
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      animation: spark 720ms ease-out forwards;
+    }
+
+    .boost-ribbon {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(170, 255, 64, 0.24);
+      background: rgba(170, 255, 64, 0.075);
+    }
+
+    .boost-ribbon strong {
+      display: block;
+      font-size: 0.96rem;
+    }
+
+    .boost-ribbon span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .boost-timer {
+      min-width: 70px;
+      text-align: right;
+      color: var(--green);
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .upgrade-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      min-height: min(72vh, 760px);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 1.26rem;
+      line-height: 1.05;
+      text-transform: uppercase;
+    }
+
+    .upgrade-list {
+      display: grid;
+      gap: 10px;
+      overflow: auto;
+      padding-right: 4px;
+      scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    }
+
+    .upgrade-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 10px;
+      min-height: 104px;
+      padding: 12px;
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(var(--tone), 0.18), transparent 42%),
+        var(--panel);
+    }
+
+    .upgrade-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-top: 3px solid rgba(var(--tone), 0.82);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .upgrade-icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(var(--tone), 0.54);
+      background: rgba(var(--tone), 0.14);
+      color: rgb(var(--tone));
+    }
+
+    .upgrade-icon svg {
+      width: 23px;
+      height: 23px;
+      stroke-width: 2.5;
+    }
+
+    .upgrade-main {
+      min-width: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .upgrade-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .upgrade-name {
+      font-weight: 950;
+      text-transform: uppercase;
+      line-height: 1.08;
+    }
+
+    .upgrade-level {
+      color: rgb(var(--tone));
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .upgrade-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.25;
+    }
+
+    .buy-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .cost {
+      color: #fff3bd;
+      font-weight: 950;
+      font-size: 0.88rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .buy-button {
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid rgba(var(--tone), 0.5);
+      background: rgba(var(--tone), 0.16);
+      color: var(--ink);
+      border-radius: 8px;
+      font-weight: 950;
+      cursor: pointer;
+      transition: transform 150ms ease, background 150ms ease;
+    }
+
+    .buy-button:hover {
+      transform: translateY(-1px);
+      background: rgba(var(--tone), 0.24);
+    }
+
+    .buy-button:disabled,
+    .primary-button:disabled {
+      opacity: 0.46;
+      cursor: not-allowed;
+      transform: none;
+      filter: grayscale(0.5);
+    }
+
+    .mini-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background:
+        linear-gradient(135deg, rgba(5, 7, 13, 0.82), rgba(14, 8, 24, 0.9)),
+        repeating-linear-gradient(90deg, transparent 0 35px, rgba(255, 255, 255, 0.04) 35px 36px);
+      backdrop-filter: blur(10px);
+    }
+
+    .mini-overlay.open {
+      display: flex;
+      animation: fadeIn 180ms ease-out;
+    }
+
+    .mini-dialog {
+      width: min(920px, 100%);
+      border-radius: 8px;
+      padding: clamp(12px, 2vw, 18px);
+      background: var(--panel-strong);
+    }
+
+    .mini-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mini-head h2 {
+      margin: 0;
+      font-size: clamp(1.4rem, 4vw, 3rem);
+      line-height: 0.94;
+      text-transform: uppercase;
+    }
+
+    .mini-timer {
+      min-width: 74px;
+      text-align: right;
+      color: var(--gold);
+      font-weight: 950;
+      font-size: 1.36rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mini-court {
+      position: relative;
+      height: min(54vh, 430px);
+      min-height: 300px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background:
+        radial-gradient(ellipse at 50% 80%, transparent 0 22%, rgba(255, 255, 255, 0.12) 22.5% 23%, transparent 23.5%),
+        linear-gradient(0deg, rgba(255, 122, 26, 0.1), transparent 52%),
+        rgba(255, 255, 255, 0.04);
+    }
+
+    .mini-court::before {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.11);
+      pointer-events: none;
+    }
+
+    .moving-hoop {
+      position: absolute;
+      top: 38px;
+      left: calc(var(--hoop-x, 50) * 1%);
+      width: 138px;
+      height: 94px;
+      transform: translateX(-50%);
+      transition: left 40ms linear;
+      filter: drop-shadow(0 10px 24px rgba(57, 231, 255, 0.28));
+    }
+
+    .moving-hoop .backboard {
+      left: 28px;
+    }
+
+    .moving-hoop .rim {
+      left: 43px;
+    }
+
+    .moving-hoop .net {
+      left: 50px;
+    }
+
+    .shot-ball {
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 31% 23%, rgba(255, 226, 150, 0.96) 0 10%, transparent 11%),
+        radial-gradient(circle at 50% 50%, var(--orange-2), var(--orange) 64%, #a33a00 100%);
+      box-shadow: inset -8px -8px 12px rgba(72, 18, 0, 0.42), 0 12px 20px rgba(0, 0, 0, 0.42);
+      transform: translateX(-50%);
+      transition: none;
+    }
+
+    .shot-ball::before,
+    .shot-ball::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 3px solid rgba(64, 24, 6, 0.72);
+    }
+
+    .shot-ball::before {
+      transform: scaleX(0.42);
+    }
+
+    .shot-ball::after {
+      transform: scaleY(0.42);
+    }
+
+    .aim-lane {
+      position: absolute;
+      left: 9%;
+      right: 9%;
+      bottom: 22px;
+      height: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background:
+        linear-gradient(90deg, transparent 0 38%, rgba(255, 77, 94, 0.5) 38% 44%, rgba(170, 255, 64, 0.7) 44% 56%, rgba(255, 77, 94, 0.5) 56% 62%, transparent 62%),
+        rgba(255, 255, 255, 0.08);
+    }
+
+    .aim-marker {
+      position: absolute;
+      left: calc(var(--aim-x, 50) * 1%);
+      bottom: 13px;
+      width: 4px;
+      height: 28px;
+      background: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan);
+      transform: translateX(-50%);
+    }
+
+    .mini-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .shot-status {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .toast-stack {
+      position: fixed;
+      z-index: 40;
+      right: 16px;
+      bottom: 16px;
+      display: grid;
+      gap: 10px;
+      width: min(360px, calc(100vw - 32px));
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 12px;
+      border-radius: 8px;
+      animation: toastIn 220ms ease-out, toastOut 220ms ease-in 2.65s forwards;
+    }
+
+    .toast strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .toast span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .screen-shake {
+      animation: screenShake 280ms linear;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @keyframes courtSweep {
+      0% { background-position: 0 0, 0 0, 0 0; }
+      100% { background-position: 144px 0, 0 144px, 0 0; }
+    }
+
+    @keyframes floorPulse {
+      0%, 100% { opacity: 0.46; transform: scaleX(1); }
+      50% { opacity: 0.78; transform: scaleX(1.05); }
+    }
+
+    @keyframes stripeSlide {
+      to { transform: translateX(22px); }
+    }
+
+    @keyframes idleBall {
+      0%, 100% { translate: 0 0; rotate: -2deg; }
+      50% { translate: 0 -10px; rotate: 3deg; }
+    }
+
+    @keyframes ringOut {
+      from { opacity: 0.86; transform: scale(0.25); }
+      to { opacity: 0; transform: scale(2.8); }
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 0; transform: translate(-50%, -18%) scale(0.82); }
+      12% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -160%) scale(1.18); }
+    }
+
+    @keyframes spark {
+      to {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(250deg) scale(0.2);
+      }
+    }
+
+    @keyframes scanner {
+      0%, 100% { transform: translateX(-18%) skewY(-4deg); }
+      50% { transform: translateX(18%) skewY(-4deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateY(12px); }
+    }
+
+    @keyframes screenShake {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(-4px, 3px); }
+      40% { transform: translate(5px, -2px); }
+      60% { transform: translate(-3px, -4px); }
+      80% { transform: translate(4px, 2px); }
+    }
+
+    @media (max-width: 1120px) {
+      .layout {
+        grid-template-columns: minmax(280px, 0.85fr) minmax(360px, 1.15fr);
+      }
+
+      .upgrade-panel {
+        grid-column: 1 / -1;
+        min-height: 0;
+      }
+
+      .upgrade-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding: 12px;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .stage-panel {
+        min-height: auto;
+      }
+
+      .combo-row,
+      .metric-grid,
+      .upgrade-list,
+      .mini-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .court {
+        min-height: 320px;
+      }
+
+      .boost-ribbon,
+      .panel-header,
+      .mini-head,
+      .upgrade-top {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .mini-timer {
+        text-align: left;
+      }
+
+      .shot-status {
+        min-height: 48px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <div class="arena-light"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="kicker"><span class="pulse-dot"></span><span>Arcade Clicker</span></div>
+        <h1>Rim Rush</h1>
+      </div>
+      <div class="top-actions" aria-label="Game actions">
+        <button class="icon-button" id="soundBtn" type="button" title="Sound">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path d="M11 5 6 9H3v6h3l5 4V5Z"></path>
+            <path d="M15 9a5 5 0 0 1 0 6"></path>
+            <path d="M17.5 6.5a9 9 0 0 1 0 11"></path>
+          </svg>
+        </button>
+        <button class="pill-button" id="miniNowBtn" type="button">Clutch Shot</button>
+        <button class="danger-button" id="resetBtn" type="button">Reset</button>
+      </div>
+    </header>
+
+    <section class="layout" aria-label="Rim Rush game">
+      <aside class="panel stats-panel">
+        <div class="stat-hero">
+          <div class="label">Basketballs</div>
+          <div class="score" id="score">0</div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="label">Per Click</div>
+            <strong id="perClick">1</strong>
+          </div>
+          <div class="metric">
+            <div class="label">Per Second</div>
+            <strong id="perSecond">0</strong>
+          </div>
+          <div class="metric">
+            <div class="label">Combo</div>
+            <strong id="combo">x1.00</strong>
+          </div>
+          <div class="metric">
+            <div class="label">Rings</div>
+            <strong id="rings">0</strong>
+          </div>
+        </div>
+
+        <div class="panel rebirth-panel">
+          <div class="panel-header">
+            <div>
+              <div class="label">Rebirth</div>
+              <h2 class="panel-title">Hall of Fame</h2>
+            </div>
+            <strong id="rebirthGain">+1</strong>
+          </div>
+          <div class="progress-shell" aria-label="Rebirth progress">
+            <div class="progress-fill" id="rebirthProgress"></div>
+          </div>
+          <div class="label" id="rebirthNeed">Need 10,000</div>
+          <button class="primary-button" id="rebirthBtn" type="button">Rebirth</button>
+        </div>
+      </aside>
+
+      <section class="panel stage-panel">
+        <div class="combo-row">
+          <div class="combo-tile">
+            <div class="label">Hype</div>
+            <strong id="hype">0</strong>
+          </div>
+          <div class="combo-tile">
+            <div class="label">Best Burst</div>
+            <strong id="bestBurst">0</strong>
+          </div>
+          <div class="combo-tile">
+            <div class="label">Next Shot</div>
+            <strong id="shotClock">0:25</strong>
+          </div>
+        </div>
+
+        <div class="court" id="court">
+          <div class="hoop-display" aria-hidden="true">
+            <div class="backboard"></div>
+            <div class="rim"></div>
+            <div class="net"></div>
+          </div>
+          <button class="ball-button" id="ballBtn" type="button" aria-label="Basketball">
+            <span class="ball-lines"></span>
+          </button>
+        </div>
+
+        <div class="boost-ribbon">
+          <div>
+            <strong id="boostName">No active boost</strong>
+            <span id="boostCopy">Build hype and sink clutch shots.</span>
+          </div>
+          <div class="boost-timer" id="boostTimer">--</div>
+        </div>
+      </section>
+
+      <aside class="panel upgrade-panel">
+        <div class="panel-header">
+          <div>
+            <div class="label">Shop</div>
+            <h2 class="panel-title">Upgrades</h2>
+          </div>
+          <button class="pill-button" id="buyMaxBtn" type="button">Buy Max</button>
+        </div>
+        <div class="upgrade-list" id="upgradeList"></div>
+      </aside>
+    </section>
+
+    <section class="mini-overlay" id="miniOverlay" aria-modal="true" role="dialog" aria-labelledby="miniTitle">
+      <div class="mini-dialog">
+        <div class="mini-head">
+          <div>
+            <div class="label">Minigame</div>
+            <h2 id="miniTitle">Clutch Shot</h2>
+          </div>
+          <div class="mini-timer" id="miniTimer">12.0</div>
+        </div>
+
+        <div class="mini-court" id="miniCourt">
+          <div class="moving-hoop" id="movingHoop" aria-hidden="true">
+            <div class="backboard"></div>
+            <div class="rim"></div>
+            <div class="net"></div>
+          </div>
+          <div class="shot-ball" id="shotBall" aria-hidden="true"></div>
+          <div class="aim-lane" aria-hidden="true"></div>
+          <div class="aim-marker" id="aimMarker" aria-hidden="true"></div>
+        </div>
+
+        <div class="mini-actions">
+          <div class="shot-status" id="shotStatus">Ready</div>
+          <button class="primary-button" id="shootBtn" type="button">Shoot</button>
+          <button class="pill-button" id="skipMiniBtn" type="button">Skip</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const SAVE_KEY = "rim-rush-clicker-v1";
+      const format = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+      const short = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
+
+      const upgrades = [
+        {
+          id: "grip",
+          name: "Grip Tape",
+          desc: "+1 base click power.",
+          base: 18,
+          scale: 1.18,
+          tone: "255, 122, 26",
+          icon: "bolt",
+          effect: (level) => level
+        },
+        {
+          id: "sneakers",
+          name: "Rocket Sneakers",
+          desc: "+4 click power and stronger combos.",
+          base: 92,
+          scale: 1.22,
+          tone: "57, 231, 255",
+          icon: "shoe",
+          effect: (level) => level * 4
+        },
+        {
+          id: "drone",
+          name: "Dunk Drones",
+          desc: "+2 basketballs per second.",
+          base: 140,
+          scale: 1.2,
+          tone: "170, 255, 64",
+          icon: "drone",
+          effect: (level) => level * 2
+        },
+        {
+          id: "mascot",
+          name: "Mascot Hype",
+          desc: "+8 per second and more shot popups.",
+          base: 460,
+          scale: 1.24,
+          tone: "255, 60, 166",
+          icon: "star",
+          effect: (level) => level * 8
+        },
+        {
+          id: "neon",
+          name: "Neon Court",
+          desc: "+8% global production each level.",
+          base: 1200,
+          scale: 1.28,
+          tone: "143, 98, 255",
+          icon: "court",
+          effect: (level) => 1 + level * 0.08
+        },
+        {
+          id: "broadcast",
+          name: "Broadcast Deal",
+          desc: "+45 basketballs per second.",
+          base: 4200,
+          scale: 1.3,
+          tone: "255, 212, 92",
+          icon: "signal",
+          effect: (level) => level * 45
+        }
+      ];
+
+      const defaultState = {
+        score: 0,
+        total: 0,
+        rings: 0,
+        rebirths: 0,
+        bestBurst: 0,
+        hype: 0,
+        combo: 1,
+        comboUntil: 0,
+        boost: null,
+        nextMiniAt: Date.now() + 25000,
+        muted: false,
+        upgrades: Object.fromEntries(upgrades.map((u) => [u.id, 0]))
+      };
+
+      let state = load();
+      let lastTick = performance.now();
+      let lastSecondSave = 0;
+      let clickWindow = [];
+      let mini = null;
+      let audioCtx = null;
+
+      const $ = (id) => document.getElementById(id);
+      const el = {
+        app: $("app"),
+        score: $("score"),
+        perClick: $("perClick"),
+        perSecond: $("perSecond"),
+        combo: $("combo"),
+        rings: $("rings"),
+        hype: $("hype"),
+        bestBurst: $("bestBurst"),
+        shotClock: $("shotClock"),
+        ballBtn: $("ballBtn"),
+        court: $("court"),
+        upgradeList: $("upgradeList"),
+        rebirthBtn: $("rebirthBtn"),
+        rebirthProgress: $("rebirthProgress"),
+        rebirthNeed: $("rebirthNeed"),
+        rebirthGain: $("rebirthGain"),
+        buyMaxBtn: $("buyMaxBtn"),
+        miniNowBtn: $("miniNowBtn"),
+        resetBtn: $("resetBtn"),
+        soundBtn: $("soundBtn"),
+        boostName: $("boostName"),
+        boostCopy: $("boostCopy"),
+        boostTimer: $("boostTimer"),
+        miniOverlay: $("miniOverlay"),
+        miniTimer: $("miniTimer"),
+        miniCourt: $("miniCourt"),
+        movingHoop: $("movingHoop"),
+        shotBall: $("shotBall"),
+        aimMarker: $("aimMarker"),
+        shotStatus: $("shotStatus"),
+        shootBtn: $("shootBtn"),
+        skipMiniBtn: $("skipMiniBtn"),
+        toastStack: $("toastStack")
+      };
+
+      function load() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(SAVE_KEY));
+          if (!parsed || typeof parsed !== "object") return structuredClone(defaultState);
+          const merged = {
+            ...structuredClone(defaultState),
+            ...parsed,
+            upgrades: { ...defaultState.upgrades, ...(parsed.upgrades || {}) }
+          };
+          if (!Number.isFinite(merged.nextMiniAt)) merged.nextMiniAt = Date.now() + 25000;
+          return merged;
+        } catch {
+          return structuredClone(defaultState);
+        }
+      }
+
+      function save() {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      }
+
+      function number(value) {
+        if (value >= 1e9) return short.format(value / 1e9) + "B";
+        if (value >= 1e6) return short.format(value / 1e6) + "M";
+        if (value >= 1e3) return short.format(value / 1e3) + "K";
+        return format.format(value);
+      }
+
+      function level(id) {
+        return state.upgrades[id] || 0;
+      }
+
+      function cost(upgrade, extra = 0) {
+        return Math.floor(upgrade.base * Math.pow(upgrade.scale, level(upgrade.id) + extra));
+      }
+
+      function rebirthTarget() {
+        return Math.floor(10000 * Math.pow(2.35, state.rebirths));
+      }
+
+      function rebirthGain() {
+        const target = rebirthTarget();
+        if (state.score < target) return 1;
+        return Math.max(1, Math.floor(Math.sqrt(state.score / target)));
+      }
+
+      function ringMultiplier() {
+        return 1 + state.rings * 0.22;
+      }
+
+      function neonMultiplier() {
+        return upgrades.find((u) => u.id === "neon").effect(level("neon"));
+      }
+
+      function activeBoostMultiplier(now = Date.now()) {
+        if (!state.boost || state.boost.until <= now) {
+          state.boost = null;
+          return 1;
+        }
+        return state.boost.multiplier;
+      }
+
+      function clickPower() {
+        const base = 1 + upgrades.find((u) => u.id === "grip").effect(level("grip")) + upgrades.find((u) => u.id === "sneakers").effect(level("sneakers"));
+        const comboBoost = 1 + (state.combo - 1) * (1 + level("sneakers") * 0.015);
+        return base * comboBoost * neonMultiplier() * ringMultiplier() * activeBoostMultiplier();
+      }
+
+      function perSecond() {
+        const drone = upgrades.find((u) => u.id === "drone").effect(level("drone"));
+        const mascot = upgrades.find((u) => u.id === "mascot").effect(level("mascot"));
+        const broadcast = upgrades.find((u) => u.id === "broadcast").effect(level("broadcast"));
+        return (drone + mascot + broadcast) * neonMultiplier() * ringMultiplier() * activeBoostMultiplier();
+      }
+
+      function addScore(amount) {
+        state.score += amount;
+        state.total += amount;
+        state.bestBurst = Math.max(state.bestBurst, amount);
+      }
+
+      function renderIcons(name) {
+        const icons = {
+          bolt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m13 2-9 12h7l-1 8 9-12h-7l1-8Z"></path></svg>',
+          shoe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 14c4 1 7-1 10-5l4 4c1 1 2 2 3 2v3H3c-1-2-1-3 1-4Z"></path><path d="M8 13l2 3"></path><path d="M12 11l3 3"></path></svg>',
+          drone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 12h4"></path><path d="M12 10v4"></path><path d="M5 7a3 3 0 1 0 0-1"></path><path d="M19 7a3 3 0 1 1 0-1"></path><path d="M5 18a3 3 0 1 1 0-1"></path><path d="M19 18a3 3 0 1 0 0-1"></path><path d="M8 8l2 2"></path><path d="M16 8l-2 2"></path><path d="M8 16l2-2"></path><path d="M16 16l-2-2"></path></svg>',
+          star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6Z"></path></svg>',
+          court: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="14"></rect><path d="M12 5v14"></path><path d="M7 12h10"></path><path d="M8 9a4 4 0 0 0 0 6"></path><path d="M16 9a4 4 0 0 1 0 6"></path></svg>',
+          signal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19V5"></path><path d="M4 7c5-4 11 4 16 0v12c-5 4-11-4-16 0"></path><path d="M8 11h1"></path><path d="M12 12h1"></path><path d="M16 13h1"></path></svg>'
+        };
+        return icons[name] || icons.star;
+      }
+
+      function renderUpgrades() {
+        el.upgradeList.innerHTML = upgrades.map((upgrade) => {
+          const currentCost = cost(upgrade);
+          const canBuy = state.score >= currentCost;
+          return `
+            <article class="upgrade-card" style="--tone: ${upgrade.tone}">
+              <div class="upgrade-icon" aria-hidden="true">${renderIcons(upgrade.icon)}</div>
+              <div class="upgrade-main">
+                <div class="upgrade-top">
+                  <div class="upgrade-name">${upgrade.name}</div>
+                  <div class="upgrade-level">Lv ${level(upgrade.id)}</div>
+                </div>
+                <p class="upgrade-copy">${upgrade.desc}</p>
+                <div class="buy-row">
+                  <div class="cost">${number(currentCost)}</div>
+                  <button class="buy-button" data-buy="${upgrade.id}" type="button" ${canBuy ? "" : "disabled"}>Buy</button>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join("");
+      }
+
+      function render() {
+        const now = Date.now();
+        const target = rebirthTarget();
+        const gain = rebirthGain();
+        const boost = state.boost && state.boost.until > now ? state.boost : null;
+        const miniRemaining = Math.max(0, state.nextMiniAt - now);
+        const seconds = Math.ceil(miniRemaining / 1000);
+
+        el.score.textContent = number(state.score);
+        el.perClick.textContent = number(clickPower());
+        el.perSecond.textContent = number(perSecond());
+        el.combo.textContent = "x" + state.combo.toFixed(2);
+        el.rings.textContent = number(state.rings);
+        el.hype.textContent = number(state.hype);
+        el.bestBurst.textContent = number(state.bestBurst);
+        el.shotClock.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+        el.rebirthNeed.textContent = `Need ${number(target)}`;
+        el.rebirthGain.textContent = `+${number(gain)}`;
+        el.rebirthProgress.style.width = Math.min(100, (state.score / target) * 100) + "%";
+        el.rebirthBtn.disabled = state.score < target;
+        el.soundBtn.style.borderColor = state.muted ? "rgba(255,77,94,0.46)" : "rgba(170,255,64,0.42)";
+
+        if (boost) {
+          const left = Math.max(0, Math.ceil((boost.until - now) / 1000));
+          el.boostName.textContent = boost.name;
+          el.boostCopy.textContent = `${boost.multiplier.toFixed(1)}x production`;
+          el.boostTimer.textContent = `${left}s`;
+        } else {
+          el.boostName.textContent = "No active boost";
+          el.boostCopy.textContent = "Build hype and sink clutch shots.";
+          el.boostTimer.textContent = "--";
+        }
+
+        renderUpgrades();
+      }
+
+      function tick(now) {
+        const dt = Math.min(0.08, (now - lastTick) / 1000);
+        lastTick = now;
+        activeBoostMultiplier();
+        const passive = perSecond() * dt;
+        if (passive > 0) addScore(passive);
+
+        if (Date.now() > state.comboUntil) {
+          state.combo = Math.max(1, state.combo - dt * 0.4);
+        }
+
+        if (!mini && Date.now() >= state.nextMiniAt) {
+          openMini(false);
+        }
+
+        if (mini) updateMini(now);
+
+        if (now - lastSecondSave > 1000) {
+          lastSecondSave = now;
+          save();
+          render();
+        }
+
+        requestAnimationFrame(tick);
+      }
+
+      function clickBall(event) {
+        const rect = el.court.getBoundingClientRect();
+        const x = event.clientX ? event.clientX - rect.left : rect.width / 2;
+        const y = event.clientY ? event.clientY - rect.top : rect.height / 2;
+        const now = Date.now();
+
+        clickWindow = clickWindow.filter((time) => now - time < 1600);
+        clickWindow.push(now);
+        state.combo = Math.min(7.5, 1 + clickWindow.length * 0.08 + state.hype * 0.002);
+        state.comboUntil = now + 900;
+        state.hype += 1 + level("mascot") * 0.08;
+
+        const amount = clickPower();
+        addScore(amount);
+        addClickEffects(x, y, amount);
+        playTone(165 + Math.min(400, state.combo * 42), 0.045, "triangle", 0.035);
+
+        const chance = 0.003 + level("mascot") * 0.0009;
+        if (!mini && Math.random() < chance) {
+          state.nextMiniAt = Date.now() + 800;
+        }
+
+        render();
+      }
+
+      function addClickEffects(x, y, amount) {
+        el.ballBtn.classList.add("slam");
+        window.setTimeout(() => el.ballBtn.classList.remove("slam"), 120);
+
+        const ring = document.createElement("div");
+        ring.className = "click-ring";
+        ring.style.left = x + "px";
+        ring.style.top = y + "px";
+        el.court.appendChild(ring);
+        ring.addEventListener("animationend", () => ring.remove());
+
+        const num = document.createElement("div");
+        num.className = "float-number";
+        num.textContent = "+" + number(amount);
+        num.style.left = x + "px";
+        num.style.top = y + "px";
+        el.court.appendChild(num);
+        num.addEventListener("animationend", () => num.remove());
+
+        for (let i = 0; i < 9; i += 1) {
+          const particle = document.createElement("div");
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 34 + Math.random() * 70;
+          particle.className = "particle";
+          particle.style.left = x + "px";
+          particle.style.top = y + "px";
+          particle.style.setProperty("--dx", Math.cos(angle) * distance + "px");
+          particle.style.setProperty("--dy", Math.sin(angle) * distance + "px");
+          particle.style.setProperty("--spark", ["#ffd45c", "#39e7ff", "#ff3ca6", "#aaff40"][i % 4]);
+          el.court.appendChild(particle);
+          particle.addEventListener("animationend", () => particle.remove());
+        }
+      }
+
+      function buy(id) {
+        const upgrade = upgrades.find((item) => item.id === id);
+        if (!upgrade) return false;
+        const price = cost(upgrade);
+        if (state.score < price) return false;
+        state.score -= price;
+        state.upgrades[id] += 1;
+        state.hype += 4;
+        playTone(440, 0.06, "sawtooth", 0.025);
+        render();
+        save();
+        return true;
+      }
+
+      function buyMax() {
+        let bought = 0;
+        let moved = true;
+        while (moved && bought < 500) {
+          moved = false;
+          const affordable = upgrades
+            .map((upgrade) => ({ upgrade, price: cost(upgrade) }))
+            .filter((item) => item.price <= state.score)
+            .sort((a, b) => a.price - b.price)[0];
+          if (affordable) {
+            state.score -= affordable.price;
+            state.upgrades[affordable.upgrade.id] += 1;
+            state.hype += 3;
+            bought += 1;
+            moved = true;
+          }
+        }
+        if (bought) {
+          toast("Shopping spree", `${bought} upgrades bought`);
+          playTone(520, 0.1, "square", 0.03);
+          render();
+          save();
+        }
+      }
+
+      function doRebirth() {
+        const target = rebirthTarget();
+        if (state.score < target) return;
+        const gain = rebirthGain();
+        state.rings += gain;
+        state.rebirths += 1;
+        state.score = 0;
+        state.hype = 0;
+        state.combo = 1;
+        state.comboUntil = 0;
+        state.boost = null;
+        state.nextMiniAt = Date.now() + 18000;
+        state.upgrades = { ...defaultState.upgrades };
+        screenShake();
+        burstAtCenter();
+        toast("Rebirth complete", `+${gain} rings, permanent multiplier upgraded`);
+        playTone(220, 0.12, "sine", 0.04);
+        window.setTimeout(() => playTone(330, 0.12, "sine", 0.04), 80);
+        window.setTimeout(() => playTone(495, 0.18, "sine", 0.04), 160);
+        render();
+        save();
+      }
+
+      function burstAtCenter() {
+        const rect = el.court.getBoundingClientRect();
+        addClickEffects(rect.width / 2, rect.height / 2, Math.max(1, clickPower() * 25));
+      }
+
+      function screenShake() {
+        el.app.classList.add("screen-shake");
+        window.setTimeout(() => el.app.classList.remove("screen-shake"), 300);
+      }
+
+      function toast(title, copy) {
+        const item = document.createElement("div");
+        item.className = "toast";
+        item.innerHTML = `<strong>${title}</strong><span>${copy}</span>`;
+        el.toastStack.appendChild(item);
+        window.setTimeout(() => item.remove(), 3100);
+      }
+
+      function scheduleNextMini(won = false) {
+        const base = won ? 30000 : 42000;
+        const mascotCut = Math.min(12000, level("mascot") * 850);
+        state.nextMiniAt = Date.now() + Math.max(16000, base - mascotCut + Math.random() * 13000);
+      }
+
+      function openMini(manual) {
+        if (mini) return;
+        const now = performance.now();
+        mini = {
+          startedAt: now,
+          expiresAt: now + (manual ? 14000 : 12000),
+          hoopX: 50,
+          aimX: 50,
+          shooting: false,
+          resolved: false,
+          manual
+        };
+        el.miniOverlay.classList.add("open");
+        el.shotStatus.textContent = "Ready";
+        el.shootBtn.disabled = false;
+        el.skipMiniBtn.disabled = false;
+        resetShotBall();
+        playTone(620, 0.08, "triangle", 0.03);
+        render();
+      }
+
+      function closeMini() {
+        mini = null;
+        el.miniOverlay.classList.remove("open");
+        resetShotBall();
+        render();
+        save();
+      }
+
+      function updateMini(now) {
+        if (!mini) return;
+        const t = (now - mini.startedAt) / 1000;
+        const left = Math.max(0, (mini.expiresAt - now) / 1000);
+        const hoop = 50 + Math.sin(t * 2.35) * 30 + Math.sin(t * 5.1) * 4;
+        const aim = 50 + Math.sin(t * 4.2 + 1.2) * 39;
+        mini.hoopX = Math.max(13, Math.min(87, hoop));
+        mini.aimX = Math.max(10, Math.min(90, aim));
+        el.miniCourt.style.setProperty("--hoop-x", mini.hoopX.toFixed(2));
+        el.miniCourt.style.setProperty("--aim-x", mini.aimX.toFixed(2));
+        el.miniTimer.textContent = left.toFixed(1);
+        if (left <= 0 && !mini.resolved) {
+          resolveShot(false, 0, true);
+        }
+      }
+
+      function shoot() {
+        if (!mini || mini.shooting || mini.resolved) return;
+        mini.shooting = true;
+        el.shootBtn.disabled = true;
+        el.skipMiniBtn.disabled = true;
+
+        const courtRect = el.miniCourt.getBoundingClientRect();
+        const hoopX = (mini.hoopX / 100) * courtRect.width;
+        const aimX = (mini.aimX / 100) * courtRect.width;
+        const diff = Math.abs(aimX - hoopX);
+        const perfect = diff < 20;
+        const good = diff < 42;
+        const won = good;
+        const score = Math.max(0, 1 - diff / 100);
+
+        animateShot(aimX, hoopX, won, () => resolveShot(won, score, false, perfect));
+      }
+
+      function animateShot(aimX, hoopX, won, done) {
+        const courtRect = el.miniCourt.getBoundingClientRect();
+        const startX = courtRect.width / 2 - 27;
+        const startY = courtRect.height - 78;
+        const endX = (won ? hoopX : aimX) - 27;
+        const endY = won ? 92 : 130 + Math.random() * 80;
+        const peakY = 38;
+        const duration = 720;
+        const start = performance.now();
+
+        function frame(now) {
+          const p = Math.min(1, (now - start) / duration);
+          const arc = Math.sin(p * Math.PI);
+          const x = startX + (endX - startX) * p;
+          const y = startY + (endY - startY) * p - arc * (courtRect.height * 0.38);
+          el.shotBall.style.transform = `translate(${x}px, ${y}px) rotate(${p * 720}deg)`;
+          if (p < 1) {
+            requestAnimationFrame(frame);
+          } else {
+            done();
+          }
+        }
+
+        requestAnimationFrame(frame);
+      }
+
+      function resetShotBall() {
+        el.shotBall.style.transform = "translateX(-50%)";
+      }
+
+      function resolveShot(won, accuracy, timedOut, perfect = false) {
+        if (!mini || mini.resolved) return;
+        mini.resolved = true;
+        const payout = Math.max(100, clickPower() * (perfect ? 180 : 95) + perSecond() * 18);
+        if (won) {
+          const multiplier = perfect ? 4 : 2.5;
+          const seconds = perfect ? 28 : 22;
+          addScore(payout);
+          state.hype += perfect ? 80 : 45;
+          state.boost = {
+            name: perfect ? "Perfect Swish" : "Clutch Boost",
+            multiplier,
+            until: Date.now() + seconds * 1000
+          };
+          scheduleNextMini(true);
+          screenShake();
+          burstAtCenter();
+          toast(perfect ? "Perfect swish" : "Shot scored", `+${number(payout)} and ${multiplier}x boost`);
+          el.shotStatus.textContent = perfect ? "Perfect Swish" : "Scored";
+          playTone(perfect ? 720 : 580, 0.12, "triangle", 0.04);
+          window.setTimeout(() => playTone(perfect ? 960 : 760, 0.16, "sine", 0.04), 90);
+        } else {
+          state.hype = Math.max(0, state.hype - 8);
+          scheduleNextMini(false);
+          toast(timedOut ? "Buzzer miss" : "Rimmed out", "Next shot is already loading");
+          el.shotStatus.textContent = timedOut ? "Buzzer Miss" : `Missed by ${(accuracy * 100).toFixed(0)}%`;
+          playTone(150, 0.16, "sawtooth", 0.025);
+        }
+        window.setTimeout(closeMini, won ? 900 : 780);
+        render();
+      }
+
+      function skipMini() {
+        if (!mini) return;
+        scheduleNextMini(false);
+        toast("Shot skipped", "Back to the grind");
+        closeMini();
+      }
+
+      function playTone(freq, duration, type, gain) {
+        if (state.muted) return;
+        try {
+          audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const node = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.value = freq;
+          node.gain.value = 0;
+          osc.connect(node);
+          node.connect(audioCtx.destination);
+          const now = audioCtx.currentTime;
+          node.gain.linearRampToValueAtTime(gain, now + 0.01);
+          node.gain.exponentialRampToValueAtTime(0.001, now + duration);
+          osc.start(now);
+          osc.stop(now + duration + 0.02);
+        } catch {
+          state.muted = true;
+        }
+      }
+
+      function resetGame() {
+        const ok = window.confirm("Reset Rim Rush?");
+        if (!ok) return;
+        state = structuredClone(defaultState);
+        state.nextMiniAt = Date.now() + 25000;
+        save();
+        render();
+        toast("Reset complete", "Fresh court, fresh run");
+      }
+
+      el.ballBtn.addEventListener("click", clickBall);
+      el.upgradeList.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-buy]");
+        if (button) buy(button.dataset.buy);
+      });
+      el.buyMaxBtn.addEventListener("click", buyMax);
+      el.rebirthBtn.addEventListener("click", doRebirth);
+      el.miniNowBtn.addEventListener("click", () => openMini(true));
+      el.resetBtn.addEventListener("click", resetGame);
+      el.shootBtn.addEventListener("click", shoot);
+      el.skipMiniBtn.addEventListener("click", skipMini);
+      el.soundBtn.addEventListener("click", () => {
+        state.muted = !state.muted;
+        save();
+        render();
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          event.preventDefault();
+          if (mini) shoot();
+          else el.ballBtn.click();
+        }
+      });
+
+      render();
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>
