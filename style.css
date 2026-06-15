@@ -1,1 +1,543 @@
+:root {
+  --ink: #161922;
+  --muted: #6d7280;
+  --page: #f4f6fb;
+  --panel: #ffffff;
+  --line: rgba(22, 25, 34, 0.1);
+  --blue: #3b82f6;
+  --pink: #ff4d6d;
+  --green: #22c55e;
+  --yellow: #fbbf24;
+  --purple: #8b5cf6;
+  --orange: #fb923c;
+  --shadow: 0 18px 45px rgba(22, 25, 34, 0.12);
+}
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--page);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.side-nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 24px 16px;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  font-weight: 800;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--pink), var(--blue));
+  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.22);
+}
+
+.side-links {
+  display: grid;
+  gap: 8px;
+  margin-top: 34px;
+}
+
+.side-links a,
+.quick-nav a,
+.category-pill {
+  min-height: 42px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.side-links a {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.side-links a:hover,
+.side-links a.active,
+.quick-nav a:hover,
+.category-pill:hover,
+.category-pill.active {
+  color: var(--ink);
+  background: #eef4ff;
+}
+
+.page {
+  min-width: 0;
+  padding: 22px clamp(18px, 3vw, 42px) 56px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(260px, 560px) 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 12px 0 18px;
+  background: linear-gradient(180deg, var(--page) 75%, rgba(244, 246, 251, 0));
+}
+
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  box-shadow: 0 10px 25px rgba(22, 25, 34, 0.06);
+}
+
+.search-wrap svg {
+  width: 21px;
+  height: 21px;
+  fill: var(--muted);
+  flex: 0 0 auto;
+}
+
+.search-wrap input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+}
+
+.quick-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.quick-nav a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 0.7fr);
+  gap: 22px;
+  align-items: stretch;
+  margin-top: 14px;
+}
+
+.hero-copy,
+.hero-card,
+.game-card,
+.mini-card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.hero-copy {
+  min-height: 310px;
+  padding: clamp(28px, 5vw, 54px);
+  border-radius: 30px;
+}
+
+.kicker,
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 660px;
+  margin-bottom: 18px;
+  font-size: clamp(3.7rem, 11vw, 8.6rem);
+  line-height: 0.88;
+  letter-spacing: 0;
+}
+
+.hero-text {
+  max-width: 590px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
+.hero-card {
+  position: relative;
+  display: flex;
+  min-height: 310px;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 30px;
+  color: #fff;
+  background:
+    linear-gradient(135deg, rgba(22, 25, 34, 0.1), rgba(22, 25, 34, 0.42)),
+    url("games/grasmaaier-upgraded/Grasmaaier%20UPgraded%20-%20beta.png") center / cover,
+    linear-gradient(45deg, var(--yellow), var(--green));
+}
+
+.hero-card::before,
+.hero-card::after,
+.thumb::before,
+.thumb::after {
+  content: "";
+  position: absolute;
+  border-radius: 28px;
+  transform: rotate(14deg);
+}
+
+.hero-card::before {
+  width: 46%;
+  height: 56%;
+  right: 12%;
+  top: 18%;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.hero-card::after {
+  width: 30%;
+  height: 30%;
+  left: 12%;
+  bottom: 20%;
+  background: rgba(22, 25, 34, 0.14);
+}
+
+.card-badge {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-weight: 800;
+}
+
+.hero-card-title {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.play-button {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 82px;
+  height: 82px;
+  border-radius: 28px;
+  background: #fff;
+  clip-path: polygon(36% 25%, 36% 75%, 78% 50%);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 20px 34px rgba(22, 25, 34, 0.2);
+}
+
+.play-button.small {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  opacity: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.category-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 28px 0;
+}
+
+.category-pill {
+  border: 0;
+  padding: 0 18px;
+  background: var(--panel);
+  box-shadow: 0 8px 20px rgba(22, 25, 34, 0.05);
+  cursor: pointer;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 10px 0 18px;
+}
+
+.section-heading.compact {
+  margin-top: 34px;
+}
+
+.section-heading h2 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.game-card {
+  min-height: 228px;
+  overflow: hidden;
+  border-radius: 20px;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.game-card:hover,
+.mini-card:hover,
+.hero-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 55px rgba(22, 25, 34, 0.16);
+}
+
+.game-card:hover .play-button.small {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.game-card-large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.thumb {
+  position: relative;
+  min-height: 150px;
+  overflow: hidden;
+}
+
+.game-card-large .thumb {
+  min-height: 368px;
+}
+
+.thumb::before {
+  width: 46%;
+  height: 58%;
+  right: 12%;
+  top: 18%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.thumb::after {
+  width: 34%;
+  height: 34%;
+  left: 12%;
+  bottom: 14%;
+  background: rgba(22, 25, 34, 0.14);
+}
+
+.thumb-action {
+  background: linear-gradient(135deg, #ff4d6d, #fbbf24);
+}
+
+.thumb-grass {
+  background:
+    linear-gradient(135deg, rgba(22, 25, 34, 0.08), rgba(22, 25, 34, 0.28)),
+    url("games/grasmaaier-upgraded/Grasmaaier%20UPgraded%20-%20beta.png") center / cover,
+    linear-gradient(135deg, #16a34a, #facc15);
+}
+
+.thumb-racing {
+  background: linear-gradient(135deg, #3b82f6, #22c55e);
+}
+
+.thumb-puzzle {
+  background: linear-gradient(135deg, #8b5cf6, #f472b6);
+}
+
+.thumb-adventure {
+  background: linear-gradient(135deg, #16a34a, #facc15);
+}
+
+.thumb-sports {
+  background: linear-gradient(135deg, #fb923c, #06b6d4);
+}
+
+.thumb-neon {
+  background: linear-gradient(135deg, #111827, #22d3ee);
+}
+
+.thumb-candy {
+  background: linear-gradient(135deg, #f9a8d4, #fef08a);
+}
+
+.game-info {
+  padding: 15px;
+}
+
+.game-info h3 {
+  margin-bottom: 5px;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.game-info p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mini-card {
+  display: flex;
+  align-items: flex-end;
+  min-height: 138px;
+  padding: 16px;
+  border-radius: 18px;
+  color: #fff;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.mini-card:nth-child(2) {
+  background: linear-gradient(135deg, var(--orange), var(--yellow));
+}
+
+.mini-card:nth-child(3) {
+  background: linear-gradient(135deg, var(--green), var(--blue));
+}
+
+.mini-card:nth-child(4) {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+}
+
+.is-hidden {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .side-nav {
+    position: static;
+    height: auto;
+    padding: 14px 18px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .side-links {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    margin-top: 14px;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .game-grid,
+  .mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .page {
+    padding: 14px 12px 42px;
+  }
+
+  .hero-copy,
+  .hero-card {
+    min-height: 260px;
+    border-radius: 24px;
+  }
+
+  h1 {
+    font-size: clamp(3.4rem, 19vw, 5.2rem);
+  }
+
+  .game-grid,
+  .mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-card-large {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .game-card-large .thumb {
+    min-height: 220px;
+  }
+}
