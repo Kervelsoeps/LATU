@@ -1,736 +1,569 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stickman Hook - Long Swings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stickman Hook - Fair Play</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
             overflow: hidden;
-            font-family: 'Arial', sans-serif;
+            background: #1a1a2e;
+            font-family: 'Fredoka One', cursive, sans-serif;
             touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
-
-        #gameCanvas {
+        canvas {
             display: block;
-            background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 100%);
         }
-
         #ui {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        #score {
-            position: absolute;
             top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 32px;
-            font-weight: bold;
+            left: 20px;
             color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 10;
         }
-
-        #bestScore {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
+        #score {
+            font-size: 36px;
+            color: #fff;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+        #high-score {
             font-size: 18px;
-            color: rgba(255,255,255,0.8);
+            color: #00f2ff;
+            margin-top: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-
-        #coinDisplay {
+        #instructions {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 215, 0, 0.9);
-            color: #000;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            bottom: 40px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 22px;
+            pointer-events: none;
+            animation: pulse 2s infinite;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: opacity 0.5s;
         }
-
-        #startScreen, #gameOverScreen {
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        #game-over {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            background: rgba(0,0,0,0.85);
-            padding: 40px;
-            border-radius: 20px;
             color: white;
-            pointer-events: all;
-            z-index: 100;
-        }
-
-        #gameOverScreen {
             display: none;
+            z-index: 20;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 30px 50px;
+            border-radius: 20px;
+            border: 2px solid #ff2a6d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-
-        h1 {
-            font-size: 36px;
-            margin-bottom: 15px;
-            color: #00f3ff;
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        #game-over h1 {
+            font-size: 42px;
+            color: #ff2a6d;
+            margin: 0 0 10px 0;
         }
-
-        .mode-badge {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            padding: 8px 20px;
+        #game-over p {
+            font-size: 20px;
+            color: #fff;
+            margin: 0;
+        }
+        #fair-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #00f2ff;
+            color: #1a1a2e;
+            padding: 5px 15px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: bold;
-            margin-bottom: 20px;
-            display: inline-block;
-        }
-
-        button {
-            margin-top: 20px;
-            padding: 15px 40px;
-            font-size: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
-        }
-
-        #skinShop {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.85);
-            padding: 20px;
-            border-radius: 15px;
-            color: white;
-            z-index: 100;
-            max-width: 90%;
-            width: 700px;
-            pointer-events: all;
-        }
-
-        #skinShop h2 {
-            margin: 0 0 15px 0;
-            text-align: center;
-            color: #ffd700;
-        }
-
-        .skins-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            gap: 12px;
-        }
-
-        .skin-item {
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .skin-item:hover {
-            background: rgba(255,255,255,0.2);
-            transform: scale(1.05);
-        }
-
-        .skin-item.owned {
-            border-color: #4CAF50;
-        }
-
-        .skin-item.equipped {
-            border-color: #ffd700;
-            box-shadow: 0 0 15px #ffd700;
-        }
-
-        .skin-preview {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 8px;
-            border-radius: 50%;
-            position: relative;
-        }
-
-        .skin-name {
-            font-size: 13px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .skin-price {
-            font-size: 15px;
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        .skin-btn {
-            margin-top: 8px;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            font-size: 12px;
-        }
-
-        .buy-btn {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .equip-btn {
-            background: #2196F3;
-            color: white;
-        }
-
-        .equipped-label {
-            color: #ffd700;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        #backToMenu {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            z-index: 100;
-            pointer-events: all;
-        }
-
-        #backToMenu:hover {
-            background: rgba(0,0,0,0.9);
-        }
-
-        #instructions {
-            margin: 15px 0;
-            font-size: 16px;
-            opacity: 0.9;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    
     <div id="ui">
-        <a href="index.html" id="backToMenu">← Menu</a>
-        <div id="coinDisplay">🪙 <span id="coinBalance">0</span></div>
         <div id="score">0m</div>
-        <div id="bestScore">BEST: 0m</div>
-        
-        <div id="startScreen">
-            <h1>🕷️ Stickman Hook</h1>
-            <div class="mode-badge">🚀 LONG SWINGS MODE</div>
-            <div id="instructions">HOLD om te haken • LAAT LOS om te vliegen</div>
-            <button onclick="startGame()">Start Game</button>
-        </div>
-        
-        <div id="gameOverScreen">
-            <h1>Game Over!</h1>
-            <p style="font-size: 24px;">Afstand: <span id="finalScore">0</span>m</p>
-            <p>Best: <span id="finalBest">0</span>m</p>
-            <p id="coinReward" style="color: #ffd700; font-size: 18px; margin-top: 10px;"></p>
-            <button onclick="resetGame()">Opnieuw</button>
-        </div>
+        <div id="high-score">BEST: 0m</div>
     </div>
-
-    <div id="skinShop">
-        <h2>🎨 Karakter Skins</h2>
-        <div class="skins-grid" id="skinsGrid"></div>
+    <div id="fair-badge">✓ FAIR & ACHIEVABLE</div>
+    <div id="instructions">HOLD to Hook • RELEASE to Fly</div>
+    <div id="game-over">
+        <h1>Almost!</h1>
+        <p>Tap anywhere to retry</p>
     </div>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
-    // Coin System
-    const CoinSystem = {
-        getCoins: function() {
-            return parseInt(localStorage.getItem('latu_coins')) || 0;
-        },
-        addCoins: function(amount) {
-            let current = this.getCoins();
-            localStorage.setItem('latu_coins', current + amount);
-            this.updateDisplay();
-        },
-        spendCoins: function(amount) {
-            let current = this.getCoins();
-            if (current >= amount) {
-                localStorage.setItem('latu_coins', current - amount);
-                this.updateDisplay();
-                return true;
-            }
-            return false;
-        },
-        updateDisplay: function() {
-            document.getElementById('coinBalance').textContent = this.getCoins();
-        },
-        getInventory: function() {
-            return JSON.parse(localStorage.getItem('latu_inventory')) || [];
-        },
-        addItemToInventory: function(itemId) {
-            let inv = this.getInventory();
-            if (!inv.includes(itemId)) {
-                inv.push(itemId);
-                localStorage.setItem('latu_inventory', JSON.stringify(inv));
-            }
-        },
-        getEquippedSkin: function() {
-            return localStorage.getItem('latu_equipped_stickman_skin') || 'default';
-        },
-        equipSkin: function(skinId) {
-            localStorage.setItem('latu_equipped_stickman_skin', skinId);
-            loadSkin();
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height, dpr;
+        function resize() {
+            dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
         }
-    };
+        window.addEventListener('resize', resize);
+        resize();
 
-    // Skins data
-    const skins = [
-        { id: 'default', name: 'Classic', color: '#000000', price: 0, effect: 'none' },
-        { id: 'ninja', name: 'Ninja', color: '#1a1a2e', price: 100, effect: 'trail' },
-        { id: 'gold', name: 'Golden', color: '#FFD700', price: 250, effect: 'glow' },
-        { id: 'neon', name: 'Neon Blue', color: '#00f3ff', price: 150, effect: 'glow' },
-        { id: 'fire', name: 'Inferno', color: '#ff4500', price: 200, effect: 'particles' },
-        { id: 'ice', name: 'Frost', color: '#00ffff', price: 200, effect: 'trail' },
-        { id: 'rainbow', name: 'Rainbow', color: 'rainbow', price: 400, effect: 'rainbow' },
-        { id: 'shadow', name: 'Shadow', color: '#4a0080', price: 175, effect: 'trail' }
-    ];
+        // TWEAKED FOR FAIRNESS: Lower gravity, better momentum conservation
+        const GRAVITY = 0.32; 
+        const AIR_RESISTANCE = 0.998;
+        const SWING_BOOST = 1.015; // Slight boost to keep momentum going
+        const MIN_FORWARD_SPEED = 3.5; // Prevents falling straight down
+        const MAX_ROPE_DIST = 400; // Generous hook range
+        
+        let player = {
+            x: 100,
+            y: 200,
+            vx: 5,
+            vy: 0,
+            radius: 12,
+            hooked: false,
+            anchor: null,
+            ropeLength: 0,
+            scarf: []
+        };
 
-    // Canvas setup
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+        let camera = { x: 0, y: 0, targetX: 0, targetY: 0 };
+        let anchors = [];
+        let particles = [];
+        let score = 0;
+        let highScore = localStorage.getItem('stickman_highscore_fair') || 0;
+        let lastAnchorX = 0;
+        let isMouseDown = false;
+        let isGameOver = false;
+        let gameTime = 0;
+        let targetedAnchor = null; // For aim assist visual
 
-    // Game variables
-    let gameRunning = false;
-    let score = 0;
-    let bestScore = parseInt(localStorage.getItem('stickman_best')) || 0;
-    let camera = { x: 0, y: 0 };
-    let hooking = false;
-    let hookPoint = null;
-    let currentSkin = 'default';
-    let skinColor = '#000000';
-    let skinEffect = 'none';
-    let particles = [];
-    let rainbowOffset = 0;
+        document.getElementById('high-score').textContent = `BEST: ${highScore}m`;
 
-    document.getElementById('bestScore').textContent = 'BEST: ' + bestScore + 'm';
-
-    // Stickman
-    const stickman = {
-        x: 200,
-        y: canvas.height / 2,
-        vx: 0,
-        vy: 0,
-        radius: 15,
-        angle: 0
-    };
-
-    // Generate hooks
-    let hooks = [];
-    function generateHooks() {
-        while (hooks.length === 0 || hooks[hooks.length - 1].x < camera.x + canvas.width + 500) {
-            const lastX = hooks.length > 0 ? hooks[hooks.length - 1].x : 400;
-            const gap = 300 + Math.random() * 400; // Longer gaps for long swings
-            hooks.push({
-                x: lastX + gap,
-                y: 200 + Math.random() * (canvas.height - 400),
-                radius: 12
-            });
-        }
-    }
-
-    function loadSkin() {
-        currentSkin = CoinSystem.getEquippedSkin();
-        const skin = skins.find(s => s.id === currentSkin);
-        if (skin) {
-            skinColor = skin.color;
-            skinEffect = skin.effect;
-        }
-    }
-
-    function getSkinColor() {
-        if (skinColor === 'rainbow') {
-            const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
-            return colors[Math.floor(rainbowOffset) % colors.length];
-        }
-        return skinColor;
-    }
-
-    function createParticle(x, y, color) {
-        particles.push({
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * 4,
-            vy: (Math.random() - 0.5) * 4,
-            life: 1,
-            color: color
-        });
-    }
-
-    function updateParticles() {
-        particles = particles.filter(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.life -= 0.02;
-            return p.life > 0;
-        });
-    }
-
-    function drawParticles() {
-        particles.forEach(p => {
-            ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
-            ctx.beginPath();
-            ctx.arc(p.x - camera.x, p.y, 3, 0, Math.PI * 2);
-            ctx.fill();
-        });
-        ctx.globalAlpha = 1;
-    }
-
-    function update() {
-        // Physics
-        if (hooking && hookPoint) {
-            const dx = hookPoint.x - stickman.x;
-            const dy = hookPoint.y - stickman.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const force = 0.5;
+        function initGame() {
+            player.x = 150;
+            player.y = height * 0.4;
+            player.vx = 6;
+            player.vy = 0;
+            player.hooked = false;
+            player.anchor = null;
+            player.scarf = [];
             
-            stickman.vx += (dx / dist) * force;
-            stickman.vy += (dy / dist) * force;
+            camera.x = 0;
+            camera.y = 0;
+            camera.targetX = 0;
+            camera.targetY = 0;
             
-            // Add trail particles
-            if (skinEffect === 'trail' || skinEffect === 'particles') {
-                if (Math.random() < 0.3) {
-                    createParticle(stickman.x, stickman.y, getSkinColor());
+            anchors = [];
+            // Guaranteed easy starting hooks
+            anchors.push({ x: 350, y: height * 0.35, type: 'normal' });
+            anchors.push({ x: 650, y: height * 0.45, type: 'normal' });
+            anchors.push({ x: 950, y: height * 0.30, type: 'normal' });
+            lastAnchorX = 950;
+            
+            score = 0;
+            particles = [];
+            isGameOver = false;
+            targetedAnchor = null;
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('instructions').style.opacity = '1';
+        }
+
+        function spawnParticles(x, y, color, count, speed = 5) {
+            for (let i = 0; i < count; i++) {
+                let angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+                let vel = Math.random() * speed + 2;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * vel,
+                    vy: Math.sin(angle) * vel,
+                    life: 1.0,
+                    decay: 0.02 + Math.random() * 0.03,
+                    color: color,
+                    size: 2 + Math.random() * 4
+                });
+            }
+        }
+
+        function tryHook() {
+            if (isGameOver) {
+                initGame();
+                return;
+            }
+            
+            let bestAnchor = null;
+            let minScore = Infinity;
+            
+            for (let a of anchors) {
+                let dx = a.x - player.x;
+                let dy = a.y - player.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                
+                // FAIRNESS: Generous hitbox, prioritizes hooks in front, but allows slight backward hooks if falling
+                if (dist < MAX_ROPE_DIST && dx > -50) {
+                    let score = dist;
+                    if (dy > 100) score += 150; // Soft penalty for hooks way below
+                    if (dx < 0) score += 80;    // Soft penalty for hooks behind
+                    
+                    if (score < minScore) {
+                        minScore = score;
+                        bestAnchor = a;
+                    }
                 }
             }
-        } else {
-            stickman.vy += 0.4; // Gravity
-        }
-
-        // Apply velocity
-        stickman.x += stickman.vx;
-        stickman.y += stickman.vy;
-
-        // Damping
-        stickman.vx *= 0.99;
-        stickman.vy *= 0.99;
-
-        // Update camera
-        camera.x = stickman.x - 200;
-
-        // Update score
-        const currentDistance = Math.floor(stickman.x / 10);
-        if (currentDistance > score) {
-            score = currentDistance;
-            document.getElementById('score').textContent = score + 'm';
             
-            // Earn coins based on distance
-            if (score % 50 === 0) {
-                CoinSystem.addCoins(10);
+            if (bestAnchor) {
+                player.hooked = true;
+                player.anchor = bestAnchor;
+                targetedAnchor = bestAnchor;
+                player.ropeLength = Math.sqrt((player.x - bestAnchor.x)**2 + (player.y - bestAnchor.y)**2);
+                spawnParticles(player.x, player.y, '#00f2ff', 8, 3);
+                document.getElementById('instructions').style.opacity = '0';
             }
         }
 
-        // Generate new hooks
-        generateHooks();
-
-        // Update hooks (remove old ones)
-        hooks = hooks.filter(h => h.x > camera.x - 200);
-
-        // Update particles
-        updateParticles();
-
-        // Rainbow effect
-        if (skinEffect === 'rainbow') {
-            rainbowOffset += 0.1;
+        function releaseHook() {
+            if (player.hooked) {
+                player.hooked = false;
+                player.anchor = null;
+                targetedAnchor = null;
+                spawnParticles(player.x, player.y, '#ff2a6d', 10, 4);
+                
+                // FAIRNESS: Guarantee a minimum forward speed so you don't just drop straight down
+                if (player.vx < MIN_FORWARD_SPEED) {
+                    player.vx = MIN_FORWARD_SPEED;
+                }
+                // Slight momentum boost on release for satisfying feel
+                player.vx *= 1.05;
+                player.vy *= 1.05;
+            }
         }
 
-        // Check death
-        if (stickman.y > canvas.height + 100 || stickman.y < -500) {
-            gameOver();
+        function handleStart(e) {
+            if (e.type === 'touchstart') e.preventDefault();
+            isMouseDown = true;
+            tryHook();
         }
-    }
+        function handleEnd(e) {
+            if (e.type === 'touchend') e.preventDefault();
+            isMouseDown = false;
+            releaseHook();
+        }
 
-    function draw() {
-        // Clear canvas
-        ctx.fillStyle = 'rgba(30, 60, 114, 0.3)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        window.addEventListener('mousedown', handleStart);
+        window.addEventListener('mouseup', handleEnd);
+        window.addEventListener('touchstart', handleStart, { passive: false });
+        window.addEventListener('touchend', handleEnd, { passive: false });
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { isMouseDown = true; tryHook(); }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') { isMouseDown = false; releaseHook(); }
+        });
 
-        ctx.save();
-        
-        // Draw hooks
-        hooks.forEach(hook => {
-            const screenX = hook.x - camera.x;
+        function update() {
+            if (isGameOver) return;
+            gameTime += 0.016;
+
+            player.vy += GRAVITY;
+            player.vx *= AIR_RESISTANCE;
+            player.vy *= AIR_RESISTANCE;
             
-            // Glow effect
-            if (skinEffect === 'glow' || skinEffect === 'rainbow') {
+            player.x += player.vx;
+            player.y += player.vy;
+            
+            // Pendulum physics
+            if (player.hooked && player.anchor) {
+                let dx = player.x - player.anchor.x;
+                let dy = player.y - player.anchor.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist > player.ropeLength) {
+                    let nx = dx / dist;
+                    let ny = dy / dist;
+                    
+                    player.x = player.anchor.x + nx * player.ropeLength;
+                    player.y = player.anchor.y + ny * player.ropeLength;
+                    
+                    let tx = -ny;
+                    let ty = nx;
+                    let dot = player.vx * tx + player.vy * ty;
+                    
+                    player.vx = tx * dot * SWING_BOOST;
+                    player.vy = ty * dot * SWING_BOOST;
+                }
+            }
+            
+            // Scarf trail
+            player.scarf.push({ x: player.x, y: player.y - 10 });
+            if (player.scarf.length > 25) player.scarf.shift();
+            
+            // FAIR GENERATION: Ensure next hook is always reachable
+            while (lastAnchorX < player.x + width * 1.2) {
+                let prevAnchor = anchors.length > 0 ? anchors[anchors.length - 1] : { x: 150, y: height * 0.4 };
+                
+                // Calculate a reachable Y based on previous hook, with limited variance
+                let variance = (Math.random() - 0.5) * 180; 
+                let nextY = prevAnchor.y + variance;
+                
+                // Clamp to keep it on screen and reachable
+                nextY = Math.max(120, Math.min(height - 150, nextY));
+                
+                // Consistent, achievable gap (not too far, not too close)
+                let gap = 220 + Math.random() * 130; 
+                let nextX = prevAnchor.x + gap;
+                
+                let type = Math.random() > 0.85 ? 'bonus' : 'normal';
+                if (type === 'bonus') nextY -= 60; // Bonus hooks are higher but reachable with a good swing
+                
+                anchors.push({ x: nextX, y: nextY, type: type });
+                lastAnchorX = nextX;
+            }
+            
+            anchors = anchors.filter(a => a.x > player.x - width * 0.5);
+            
+            // Smooth camera with velocity lookahead
+            let lookahead = player.vx * 15;
+            camera.targetX = player.x - width * 0.35 + lookahead;
+            camera.targetY = player.y - height * 0.45;
+            
+            if (camera.targetY > 150) camera.targetY = 150; // Don't show too much void
+            
+            camera.x += (camera.targetX - camera.x) * 0.1;
+            camera.y += (camera.targetY - camera.y) * 0.1;
+            
+            let currentDist = Math.floor(player.x / 10);
+            if (currentDist > score) {
+                score = currentDist;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('stickman_highscore_fair', highScore);
+                    document.getElementById('high-score').textContent = `BEST: ${highScore}m`;
+                }
+            }
+            
+            // Very forgiving death threshold
+            if (player.y > camera.y + height + 150) {
+                isGameOver = true;
+                document.getElementById('game-over').style.display = 'block';
+                spawnParticles(player.x, player.y - 50, '#fff', 20, 6);
+            }
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.life -= p.decay;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.save();
+            ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
+            
+            // Background stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            for (let i = 0; i < 30; i++) {
+                let px = (Math.floor(camera.x / 500) * 500) + (i * 137) % 500;
+                let py = (Math.floor(camera.y / 500) * 500) + (i * 89) % 500;
+                ctx.beginPath();
+                ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw anchors
+            for (let a of anchors) {
+                let pulse = Math.sin(gameTime * 3 + a.x * 0.01) * 3;
+                let color = a.type === 'bonus' ? '#ffd700' : '#ff2a6d';
+                let glow = a.type === 'bonus' ? '#ffaa00' : '#ff2a6d';
+                
                 ctx.shadowBlur = 20;
-                ctx.shadowColor = getSkinColor();
+                ctx.shadowColor = glow;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, 10 + pulse, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(a.x, a.y - 15);
+                ctx.stroke();
             }
+            
+            // Aim assist line when holding but not yet hooked
+            if (isMouseDown && !player.hooked && targetedAnchor) {
+                ctx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([10, 10]);
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y - 10);
+                ctx.lineTo(targetedAnchor.x, targetedAnchor.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Draw rope
+            if (player.hooked && player.anchor) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00f2ff';
+                ctx.strokeStyle = '#00f2ff';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                
+                let midX = (player.x + player.anchor.x) / 2;
+                let midY = (player.y + player.anchor.y) / 2;
+                let dx = player.anchor.x - player.x;
+                let dy = player.anchor.y - player.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                let sag = Math.min(15, dist * 0.04);
+                let perpX = -dy / dist;
+                let perpY = dx / dist;
+                
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y - 5);
+                ctx.quadraticCurveTo(midX + perpX * sag, midY + perpY * sag, player.anchor.x, player.anchor.y);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw Scarf
+            if (player.scarf.length > 1) {
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                for (let i = 0; i < player.scarf.length - 1; i++) {
+                    let alpha = (i / player.scarf.length) * 0.7;
+                    let w = (i / player.scarf.length) * 14;
+                    ctx.strokeStyle = `rgba(233, 69, 96, ${alpha})`;
+                    ctx.lineWidth = w;
+                    ctx.beginPath();
+                    ctx.moveTo(player.scarf[i].x, player.scarf[i].y);
+                    ctx.lineTo(player.scarf[i+1].x, player.scarf[i+1].y);
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw Stickman
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            
+            let tilt = Math.atan2(player.vy, player.vx) * 0.3;
+            if (player.hooked && player.anchor) {
+                let ropeAngle = Math.atan2(player.anchor.y - player.y, player.anchor.x - player.x);
+                tilt = ropeAngle + Math.PI/2 + (player.vx > 0 ? 0.15 : -0.15);
+            }
+            ctx.rotate(tilt);
+            
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+            
+            ctx.fillStyle = '#1a1a2e';
+            ctx.beginPath();
+            ctx.arc(0, -18, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
             
             ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 0;
+            let lookX = player.vx > 0 ? 3 : -3;
             ctx.beginPath();
-            ctx.arc(screenX, hook.y, hook.radius, 0, Math.PI * 2);
+            ctx.arc(lookX, -20, 2.5, 0, Math.PI * 2);
             ctx.fill();
             
-            ctx.strokeStyle = '#00f3ff';
-            ctx.lineWidth = 2;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(0, -9);
+            ctx.lineTo(0, 12);
             ctx.stroke();
             
-            ctx.shadowBlur = 0;
-        });
-
-        // Draw rope
-        if (hooking && hookPoint) {
-            ctx.strokeStyle = getSkinColor();
-            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(stickman.x - camera.x, stickman.y);
-            ctx.lineTo(hookPoint.x - camera.x, hookPoint.y);
+            if (player.hooked && player.anchor) {
+                let dx = player.anchor.x - player.x;
+                let dy = player.anchor.y - player.y;
+                let len = Math.sqrt(dx*dx + dy*dy);
+                ctx.moveTo(0, -5);
+                ctx.lineTo((dx / len) * 18, (dy / len) * 18 - 5);
+            } else {
+                ctx.moveTo(0, -5);
+                ctx.lineTo(-12, 2);
+                ctx.moveTo(0, -5);
+                ctx.lineTo(-8, 8);
+            }
             ctx.stroke();
+            
+            ctx.beginPath();
+            let speed = Math.sqrt(player.vx**2 + player.vy**2);
+            let legSwing = Math.sin(gameTime * 15) * Math.min(15, speed * 2);
+            ctx.moveTo(0, 12);
+            ctx.lineTo(-8 + legSwing, 28);
+            ctx.moveTo(0, 12);
+            ctx.lineTo(8 - legSwing, 28);
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            // Particles
+            for (let p of particles) {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+            ctx.shadowBlur = 0;
+            
+            ctx.restore();
+            
+            document.getElementById('score').textContent = `${score}m`;
         }
 
-        // Draw particles
-        drawParticles();
-
-        // Draw stickman
-        const screenX = stickman.x - camera.x;
-        const color = getSkinColor();
-        
-        // Glow effect
-        if (skinEffect === 'glow' || skinEffect === 'rainbow') {
-            ctx.shadowBlur = 30;
-            ctx.shadowColor = color;
-        }
-
-        // Body
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 4;
-        ctx.lineCap = 'round';
-        
-        // Head
-        ctx.beginPath();
-        ctx.arc(screenX, stickman.y, stickman.radius, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        // Body line
-        ctx.beginPath();
-        ctx.moveTo(screenX, stickman.y + stickman.radius);
-        ctx.lineTo(screenX, stickman.y + 40);
-        ctx.stroke();
-        
-        // Arms
-        ctx.beginPath();
-        ctx.moveTo(screenX, stickman.y + 25);
-        ctx.lineTo(screenX - 20, stickman.y + 45);
-        ctx.moveTo(screenX, stickman.y + 25);
-        ctx.lineTo(screenX + 20, stickman.y + 45);
-        ctx.stroke();
-        
-        // Legs
-        ctx.beginPath();
-        ctx.moveTo(screenX, stickman.y + 40);
-        ctx.lineTo(screenX - 15, stickman.y + 70);
-        ctx.moveTo(screenX, stickman.y + 40);
-        ctx.lineTo(screenX + 15, stickman.y + 70);
-        ctx.stroke();
-
-        ctx.shadowBlur = 0;
-        ctx.restore();
-    }
-
-    function gameLoop() {
-        if (gameRunning) {
+        function loop() {
             update();
             draw();
-            requestAnimationFrame(gameLoop);
+            requestAnimationFrame(loop);
         }
-    }
 
-    function startGame() {
-        document.getElementById('startScreen').style.display = 'none';
-        gameRunning = true;
-        generateHooks();
-        gameLoop();
-    }
-
-    function gameOver() {
-        gameRunning = false;
-        
-        if (score > bestScore) {
-            bestScore = score;
-            localStorage.setItem('stickman_best', bestScore);
-            CoinSystem.addCoins(100); // Bonus for new record
-        }
-        
-        const coinsEarned = Math.floor(score / 10);
-        document.getElementById('finalScore').textContent = score;
-        document.getElementById('finalBest').textContent = bestScore;
-        document.getElementById('coinReward').textContent = `+${coinsEarned} 🪙 verdiend!`;
-        document.getElementById('gameOverScreen').style.display = 'block';
-    }
-
-    function resetGame() {
-        stickman.x = 200;
-        stickman.y = canvas.height / 2;
-        stickman.vx = 0;
-        stickman.vy = 0;
-        hooks = [];
-        score = 0;
-        hooking = false;
-        hookPoint = null;
-        particles = [];
-        document.getElementById('score').textContent = '0m';
-        document.getElementById('gameOverScreen').style.display = 'none';
-        gameRunning = true;
-        generateHooks();
-        gameLoop();
-    }
-
-    // Input handling
-    function startHook(e) {
-        if (!gameRunning) return;
-        e.preventDefault();
-        hooking = true;
-        
-        // Find nearest hook
-        let nearest = null;
-        let nearestDist = 200;
-        
-        hooks.forEach(hook => {
-            const dx = hook.x - stickman.x;
-            const dy = hook.y - stickman.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            if (dist < nearestDist && hook.x > stickman.x) {
-                nearest = hook;
-                nearestDist = dist;
-            }
-        });
-        
-        hookPoint = nearest;
-    }
-
-    function endHook(e) {
-        if (!gameRunning) return;
-        e.preventDefault();
-        hooking = false;
-        hookPoint = null;
-    }
-
-    canvas.addEventListener('mousedown', startHook);
-    canvas.addEventListener('mouseup', endHook);
-    canvas.addEventListener('touchstart', startHook);
-    canvas.addEventListener('touchend', endHook);
-
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
-            e.preventDefault();
-            startHook(e);
-        }
-    });
-
-    document.addEventListener('keyup', (e) => {
-        if (e.code === 'Space') {
-            e.preventDefault();
-            endHook(e);
-        }
-    });
-
-    // Skin shop
-    function renderSkins() {
-        const grid = document.getElementById('skinsGrid');
-        grid.innerHTML = '';
-        const inventory = CoinSystem.getInventory();
-        const equipped = CoinSystem.getEquippedSkin();
-
-        skins.forEach(skin => {
-            const item = document.createElement('div');
-            item.className = 'skin-item';
-            
-            const isOwned = inventory.includes(skin.id) || skin.price === 0;
-            const isEquipped = equipped === skin.id;
-            
-            if (isOwned) item.classList.add('owned');
-            if (isEquipped) item.classList.add('equipped');
-            
-            const previewColor = skin.color === 'rainbow' ? 
-                'linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #9400D3)' : 
-                skin.color;
-            
-            item.innerHTML = `
-                <div class="skin-preview" style="background: ${previewColor}; border: 3px solid ${isEquipped ? '#ffd700' : '#fff'}"></div>
-                <div class="skin-name">${skin.name}</div>
-                <div style="font-size: 11px; opacity: 0.8; margin-bottom: 5px;">${skin.effect !== 'none' ? '✨ ' + skin.effect : ''}</div>
-                ${isOwned ? (
-                    isEquipped ? '<div class="equipped-label">✓ UITGERUST</div>' : 
-                    `<button class="skin-btn equip-btn" onclick="CoinSystem.equipSkin('${skin.id}')">Uitrusten</button>`
-                ) : (
-                    `<div class="skin-price">${skin.price} 🪙</div>
-                    <button class="skin-btn buy-btn" onclick="buySkin('${skin.id}', ${skin.price})">Kopen</button>`
-                )}
-            `;
-            
-            grid.appendChild(item);
-        });
-    }
-
-    function buySkin(skinId, price) {
-        if (CoinSystem.spendCoins(price)) {
-            CoinSystem.addItemToInventory(skinId);
-            CoinSystem.equipSkin(skinId);
-            renderSkins();
-            alert(`Skin gekocht: ${skins.find(s => s.id === skinId).name}!`);
-        } else {
-            alert('Niet genoeg munten! Speel meer om munten te verdienen.');
-        }
-    }
-
-    // Handle window resize
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
-
-    // Initialize
-    CoinSystem.updateDisplay();
-    loadSkin();
-    renderSkins();
-    
-    // Initial draw
-    ctx.fillStyle = '#1e3c72';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+        initGame();
+        loop();
     </script>
 </body>
 </html>
