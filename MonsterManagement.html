@@ -1,0 +1,1094 @@
+
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monster Management</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #11120f;
+      --panel: #1b1d18;
+      --panel-2: #24271f;
+      --line: #3b4032;
+      --text: #f3ead7;
+      --muted: #b7ad99;
+      --gold: #d9aa43;
+      --blood: #b5463d;
+      --moss: #7fa66a;
+      --cyan: #5fb7b2;
+      --violet: #9d7ad1;
+      --ash: #7d8584;
+      --shadow: rgba(0, 0, 0, .38);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 8%, rgba(127, 166, 106, .18), transparent 28rem),
+        radial-gradient(circle at 78% 12%, rgba(181, 70, 61, .15), transparent 26rem),
+        linear-gradient(180deg, #14160f 0%, #0c0d0b 100%);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: #292d22;
+      border-radius: 7px;
+      padding: .62rem .82rem;
+      cursor: pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: #6a7358;
+      background: #343929;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(290px, 330px) 1fr minmax(300px, 360px);
+      gap: 16px;
+      width: min(1540px, calc(100vw - 24px));
+      min-height: calc(100vh - 24px);
+      margin: 12px auto;
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(36, 39, 31, .95), rgba(25, 27, 22, .96));
+      box-shadow: 0 16px 44px var(--shadow);
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 4rem);
+      line-height: .92;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(82px, 1fr));
+      gap: 8px;
+      min-width: min(620px, 100%);
+    }
+
+    .stat {
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: rgba(14, 15, 12, .52);
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      font-size: .72rem;
+      margin-bottom: 4px;
+    }
+
+    .stat strong {
+      font-size: 1.05rem;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(27, 29, 24, .94);
+      box-shadow: 0 14px 36px var(--shadow);
+      min-width: 0;
+    }
+
+    .panel header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.025);
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    .panel-body {
+      padding: 12px;
+    }
+
+    .build-list, .monster-list, .research-grid, .market-grid {
+      display: grid;
+      gap: 9px;
+    }
+
+    .choice {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+    }
+
+    .icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: #11130f;
+      font-size: 1.25rem;
+    }
+
+    .choice h3 {
+      font-size: .9rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .choice p {
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.35;
+    }
+
+    .choice button {
+      grid-column: 1 / -1;
+      width: 100%;
+      padding: .52rem .65rem;
+    }
+
+    .main {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .phasebar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .phase {
+      min-height: 62px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(27, 29, 24, .88);
+    }
+
+    .phase.active {
+      border-color: var(--gold);
+      box-shadow: inset 0 0 0 1px rgba(217, 170, 67, .28);
+    }
+
+    .phase strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: .88rem;
+    }
+
+    .phase span {
+      color: var(--muted);
+      font-size: .75rem;
+      line-height: 1.28;
+    }
+
+    .dungeon-wrap {
+      position: relative;
+      min-height: 510px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        radial-gradient(circle at 35% 30%, rgba(217, 170, 67, .1), transparent 22rem),
+        #12140f;
+      background-size: 48px 48px, 48px 48px, auto, auto;
+      overflow: hidden;
+      box-shadow: inset 0 0 90px rgba(0,0,0,.56), 0 14px 36px var(--shadow);
+    }
+
+    .dungeon {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(5, 1fr);
+      gap: 8px;
+      padding: 14px;
+    }
+
+    .room {
+      position: relative;
+      min-height: 82px;
+      border: 1px solid #34392d;
+      border-radius: 7px;
+      background: rgba(24, 27, 21, .82);
+      overflow: hidden;
+    }
+
+    .room::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.04), transparent 45%);
+      pointer-events: none;
+    }
+
+    .room.filled {
+      border-color: #5a634b;
+      background: rgba(37, 42, 32, .94);
+    }
+
+    .room.damaged {
+      border-color: var(--blood);
+      box-shadow: inset 0 0 0 2px rgba(181, 70, 61, .2);
+    }
+
+    .room-name {
+      position: absolute;
+      left: 8px;
+      top: 7px;
+      right: 8px;
+      font-size: .72rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .room-icon {
+      position: absolute;
+      left: 8px;
+      bottom: 5px;
+      font-size: 1.55rem;
+    }
+
+    .occupants {
+      position: absolute;
+      right: 7px;
+      bottom: 7px;
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: 76%;
+    }
+
+    .pip {
+      width: 15px;
+      height: 15px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-size: .62rem;
+      line-height: 1;
+      border: 1px solid rgba(255,255,255,.18);
+      background: #131510;
+    }
+
+    .invaders {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      width: min(250px, calc(100% - 36px));
+      padding: 10px;
+      border: 1px solid rgba(217,170,67,.38);
+      border-radius: 7px;
+      background: rgba(12,13,10,.84);
+      backdrop-filter: blur(8px);
+    }
+
+    .invaders h3 {
+      font-size: .92rem;
+      margin-bottom: 8px;
+    }
+
+    .bars {
+      display: grid;
+      gap: 7px;
+    }
+
+    .bar {
+      height: 9px;
+      overflow: hidden;
+      border: 1px solid #49503f;
+      border-radius: 999px;
+      background: #0d0e0c;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      width: var(--w);
+      background: linear-gradient(90deg, var(--blood), var(--gold));
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+    }
+
+    .actions button.primary {
+      color: #17140c;
+      background: var(--gold);
+      border-color: #f2cb6b;
+      font-weight: 800;
+    }
+
+    .log {
+      height: 246px;
+      overflow: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .entry {
+      padding: 8px 9px;
+      border-left: 3px solid var(--ash);
+      border-radius: 0 7px 7px 0;
+      background: rgba(255,255,255,.035);
+      color: #ddd4c2;
+      font-size: .82rem;
+      line-height: 1.35;
+    }
+
+    .entry.good { border-left-color: var(--moss); }
+    .entry.warn { border-left-color: var(--gold); }
+    .entry.bad { border-left-color: var(--blood); }
+    .entry.magic { border-left-color: var(--violet); }
+
+    .monster-card {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+    }
+
+    .monster-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .monster-name {
+      font-weight: 800;
+      font-size: .92rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 2px 7px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .7rem;
+      background: rgba(0,0,0,.18);
+    }
+
+    .traits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 7px 0;
+    }
+
+    .mini {
+      color: var(--muted);
+      font-size: .75rem;
+      line-height: 1.35;
+    }
+
+    .meter {
+      display: grid;
+      grid-template-columns: 72px 1fr 28px;
+      gap: 6px;
+      align-items: center;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: .72rem;
+    }
+
+    .meter .bar {
+      height: 7px;
+    }
+
+    .meter .bar > span {
+      background: linear-gradient(90deg, var(--cyan), var(--moss));
+    }
+
+    .select-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0 8px;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #11130f;
+      color: var(--text);
+      padding: .55rem .6rem;
+    }
+
+    .ending-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0,0,0,.68);
+      z-index: 10;
+    }
+
+    .modal.open {
+      display: grid;
+    }
+
+    .modal-box {
+      width: min(680px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #1b1d18;
+      box-shadow: 0 28px 90px rgba(0,0,0,.55);
+      padding: 18px;
+    }
+
+    .modal-box h2 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .modal-box p {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 1120px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+      .stats {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        width: min(100vw - 16px, 1540px);
+        margin: 8px auto;
+        gap: 10px;
+      }
+      .topbar, .panel-body {
+        padding: 10px;
+      }
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .phasebar, .actions {
+        grid-template-columns: 1fr 1fr;
+      }
+      .dungeon-wrap {
+        min-height: 640px;
+      }
+      .dungeon {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(10, 1fr);
+        gap: 6px;
+        padding: 8px;
+      }
+      .room {
+        min-height: 58px;
+      }
+      .invaders {
+        position: static;
+        width: auto;
+        margin: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="topbar">
+      <div>
+        <h1>Monster Management</h1>
+        <p class="subtitle">Beheer een levende dungeon, bouw kamers, kweek monsters, overleef helden en laat je beste overlevers uitgroeien tot legendes.</p>
+      </div>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <aside class="panel">
+      <header>
+        <h2>Bouwen & Onderzoek</h2>
+        <span class="tag" id="phaseTag">Fase 1</span>
+      </header>
+      <div class="panel-body">
+        <div class="build-list" id="buildList"></div>
+        <h2 style="margin:14px 0 8px;font-size:1rem">Magische technologie</h2>
+        <div class="research-grid" id="researchList"></div>
+      </div>
+    </aside>
+
+    <section class="main">
+      <div class="phasebar" id="phasebar"></div>
+      <div class="dungeon-wrap">
+        <div class="dungeon" id="dungeon"></div>
+        <div class="invaders" id="invaders"></div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="nextDay">Volgende dag</button>
+        <button id="sendSpies">Spionnen sturen</button>
+        <button id="baitHeroes">Helden lokken</button>
+        <button id="repair">Herstellen</button>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <header>
+        <h2>Monsters</h2>
+        <span class="tag" id="monsterCount"></span>
+      </header>
+      <div class="panel-body">
+        <div class="market-grid" id="hireList"></div>
+        <h2 style="margin:14px 0 8px;font-size:1rem">Kruisen</h2>
+        <div class="select-row">
+          <select id="breedA"></select>
+          <select id="breedB"></select>
+        </div>
+        <button id="breedBtn" style="width:100%">Nieuw monster kweken</button>
+        <h2 style="margin:14px 0 8px;font-size:1rem">Rooster</h2>
+        <div class="monster-list" id="monsterList"></div>
+      </div>
+    </aside>
+
+    <section class="panel" style="grid-column:1 / -1">
+      <header>
+        <h2>Dungeon Kroniek</h2>
+        <span class="tag" id="endingTag">Eindspel gesloten</span>
+      </header>
+      <div class="log" id="log"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="endingModal">
+    <div class="modal-box">
+      <h2 id="endingTitle"></h2>
+      <p id="endingText"></p>
+      <div class="ending-options" id="endingOptions"></div>
+      <button id="closeModal" style="margin-top:12px;width:100%">Terug naar de kerker</button>
+    </div>
+  </div>
+
+  <script>
+    const rooms = [
+      { id: "treasury", name: "Schatkistkamer", icon: "◈", cost: 80, upkeep: 4, note: "+ goud uit buit" },
+      { id: "training", name: "Trainingskamer", icon: "▲", cost: 95, upkeep: 6, note: "+ kracht en overleving" },
+      { id: "lair", name: "Monsterverblijf", icon: "■", cost: 70, upkeep: 5, note: "+ monsterlimiet" },
+      { id: "lab", name: "Laboratorium", icon: "✶", cost: 120, upkeep: 8, note: "+ kennis en kruisen" },
+      { id: "trap", name: "Valwerkplaats", icon: "◇", cost: 90, upkeep: 5, note: "+ hinderlagen" },
+      { id: "reactor", name: "Magische reactor", icon: "◆", cost: 150, upkeep: 10, note: "+ magie en weerstand" }
+    ];
+
+    const species = {
+      goblin: { name: "Goblin", icon: "G", cost: 45, traits: ["Slim", "Goedkoop", "Steelt"], stats: { power: 20, stealth: 35, magic: 5, fire: 10, morale: 50 } },
+      ogre: { name: "Ogre", icon: "O", cost: 110, traits: ["Sterk", "Duur", "Driftig"], stats: { power: 58, stealth: 4, magic: 0, fire: 18, morale: 38 } },
+      ghost: { name: "Geest", icon: "Z", cost: 95, traits: ["Door muren", "Stil", "Haat lawaai"], stats: { power: 22, stealth: 52, magic: 35, fire: 5, morale: 45 } },
+      spider: { name: "Spin", icon: "S", cost: 70, traits: ["Klimt", "Webvallen", "Snel"], stats: { power: 24, stealth: 45, magic: 0, fire: 6, morale: 42 } },
+      mage: { name: "Monster-magiër", icon: "M", cost: 130, traits: ["Arcanist", "Kwetsbaar", "Leert snel"], stats: { power: 18, stealth: 18, magic: 62, fire: 28, morale: 46 } }
+    };
+
+    const heroTeams = [
+      { name: "Paladin Team", focus: "undead", hp: 118, attack: 42, tactic: "Sterk tegen geesten en hoge moraal", reward: 95 },
+      { name: "Rogue Team", focus: "traps", hp: 92, attack: 34, tactic: "Detecteert vallen en steelt goud", reward: 80 },
+      { name: "Mage Team", focus: "magic", hp: 86, attack: 48, tactic: "Vernietigt zwakke groepen met magie", reward: 105 },
+      { name: "Barden met Sponsors", focus: "fame", hp: 74, attack: 26, tactic: "Maken je beroemd als ze ontsnappen", reward: 120 },
+      { name: "Veteranen Gilde", focus: "balanced", hp: 136, attack: 45, tactic: "Past tactieken aan tijdens de aanval", reward: 140 }
+    ];
+
+    const research = [
+      { id: "bloodMemory", name: "Bloedherinnering", cost: 80, effect: "Evolutie gaat sneller" },
+      { id: "spyNetwork", name: "Stadsspionnen", cost: 70, effect: "Betere heldeninfo" },
+      { id: "breedingRunes", name: "Kweekrunen", cost: 95, effect: "Goedkoper kruisen" },
+      { id: "politics", name: "Politieke invloed", cost: 120, effect: "Eindspelroutes openen" }
+    ];
+
+    const state = {
+      day: 1,
+      phase: 0,
+      gold: 230,
+      knowledge: 30,
+      infamy: 12,
+      influence: 0,
+      rooms: [],
+      monsters: [],
+      log: [],
+      research: {},
+      currentRaid: null,
+      raidHp: 0,
+      unlockedEndgame: false
+    };
+
+    const phases = [
+      ["Bouwen", "Plaats kamers en betaal onderhoud."],
+      ["Beheren", "Koop, kweek en train monsters."],
+      ["Verdedigen", "Helden vallen aan met tactieken."],
+      ["Evolueren", "Overlevers krijgen nieuwe eigenschappen."]
+    ];
+
+    const names = ["Krik", "Morda", "Vex", "Brul", "Nim", "Sable", "Orro", "Tika", "Velm", "Grom"];
+
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+    function rand(list) { return list[Math.floor(Math.random() * list.length)]; }
+    function countRoom(id) { return state.rooms.filter(r => r.id === id).length; }
+    function cap() { return 4 + countRoom("lair") * 3; }
+    function hasResearch(id) { return !!state.research[id]; }
+
+    function addLog(text, type = "") {
+      state.log.unshift({ text, type });
+      state.log = state.log.slice(0, 60);
+    }
+
+    function makeMonster(type, hybridName) {
+      const base = species[type] || species.goblin;
+      const m = {
+        id: crypto.randomUUID(),
+        name: `${rand(names)} de ${hybridName || base.name}`,
+        type,
+        icon: base.icon,
+        rank: base.name,
+        traits: [...base.traits],
+        stats: { ...base.stats },
+        kills: 0,
+        survived: 0,
+        scars: 0,
+        relation: rand(["loyaal", "jaloers", "rivaal", "vriendelijk", "opstandig"])
+      };
+      return m;
+    }
+
+    function roomPower() {
+      return countRoom("trap") * 18 + countRoom("reactor") * 14 + countRoom("training") * 10;
+    }
+
+    function monsterPower() {
+      return state.monsters.reduce((sum, m) => {
+        return sum + m.stats.power + m.stats.stealth * .45 + m.stats.magic * .55 + m.stats.fire * .22 + m.survived * 3;
+      }, 0);
+    }
+
+    function upkeep() {
+      return state.rooms.reduce((sum, r) => sum + r.upkeep, 0) + state.monsters.length * 3;
+    }
+
+    function raidChance() {
+      return clamp(18 + state.infamy * .55 - state.influence * .18, 18, 82);
+    }
+
+    function buildRoom(id) {
+      const tpl = rooms.find(r => r.id === id);
+      if (!tpl || state.gold < tpl.cost || state.rooms.length >= 30) return;
+      state.gold -= tpl.cost;
+      state.rooms.push({ ...tpl, damaged: false });
+      addLog(`${tpl.name} gebouwd. Onderhoud stijgt met ${tpl.upkeep} goud per dag.`, "good");
+      render();
+    }
+
+    function hire(type) {
+      const tpl = species[type];
+      if (!tpl || state.gold < tpl.cost || state.monsters.length >= cap()) return;
+      state.gold -= tpl.cost;
+      const m = makeMonster(type);
+      state.monsters.push(m);
+      addLog(`${m.name} sluit zich aan bij je organisatie.`, "good");
+      render();
+    }
+
+    function buyResearch(id) {
+      const item = research.find(r => r.id === id);
+      if (!item || state.research[id] || state.knowledge < item.cost) return;
+      state.knowledge -= item.cost;
+      state.research[id] = true;
+      if (id === "politics") state.influence += 18;
+      addLog(`${item.name} onderzocht: ${item.effect}.`, "magic");
+      render();
+    }
+
+    function breed() {
+      const a = state.monsters.find(m => m.id === document.getElementById("breedA").value);
+      const b = state.monsters.find(m => m.id === document.getElementById("breedB").value);
+      const cost = hasResearch("breedingRunes") ? 45 : 70;
+      if (!a || !b || a.id === b.id || state.gold < cost || state.monsters.length >= cap() || countRoom("lab") < 1) return;
+      state.gold -= cost;
+      const combo = [a.rank, b.rank].sort().join("+");
+      const rare = Math.random() < .18 + countRoom("reactor") * .04;
+      let child = makeMonster("goblin", "Hybride");
+      child.icon = rare ? "★" : a.icon;
+      child.rank = rare ? "Zeldzame Chimera" : `${a.rank.split(" ")[0]}-${b.rank.split(" ")[0]}`;
+      child.name = `${rand(names)} de ${child.rank}`;
+      child.traits = [...new Set([...a.traits.slice(0,2), ...b.traits.slice(0,2), rare ? "Extreem zeldzaam" : "Instabiel"])];
+      child.stats = {
+        power: Math.round((a.stats.power + b.stats.power) / 2 + (rare ? 18 : 5)),
+        stealth: Math.round((a.stats.stealth + b.stats.stealth) / 2 + (combo.includes("Spin") ? 12 : 3)),
+        magic: Math.round((a.stats.magic + b.stats.magic) / 2 + (combo.includes("Geest") ? 12 : 3)),
+        fire: Math.round((a.stats.fire + b.stats.fire) / 2 + 6),
+        morale: Math.round((a.stats.morale + b.stats.morale) / 2)
+      };
+      if (combo.includes("Goblin") && combo.includes("Spin")) child.traits.push("Webvallen");
+      if (combo.includes("Geest") && combo.includes("magiër")) child.traits.push("Teleportatie");
+      state.monsters.push(child);
+      state.knowledge += rare ? 24 : 10;
+      addLog(`${child.name} is gekweekt in het laboratorium. ${rare ? "De kweekrunen gloeien gevaarlijk fel." : "De staf probeert niet te staren."}`, rare ? "magic" : "good");
+      render();
+    }
+
+    function nextDay() {
+      state.day += 1;
+      state.phase = (state.phase + 1) % phases.length;
+      const income = 18 + countRoom("treasury") * 22 + state.infamy * .35;
+      const knowledgeGain = countRoom("lab") * 12 + countRoom("reactor") * 5;
+      state.gold = Math.round(state.gold + income - upkeep());
+      state.knowledge += knowledgeGain;
+      if (countRoom("training")) {
+        state.monsters.forEach(m => {
+          m.stats.power = clamp(m.stats.power + Math.ceil(countRoom("training") * .8), 0, 120);
+          m.stats.morale = clamp(m.stats.morale + 1, 0, 100);
+        });
+      }
+      if (state.gold < 0) {
+        state.infamy = clamp(state.infamy - 3, 0, 200);
+        state.gold = 0;
+        addLog("Onderhoud kon niet volledig worden betaald. Je reputatie brokkelt af.", "bad");
+      }
+      if (!state.currentRaid && Math.random() * 100 < raidChance()) startRaid();
+      else if (!state.currentRaid) addLog(`Dag ${state.day}: de dungeon ademt, telt munten en wacht op voetstappen.`, "");
+      if (state.infamy > 90 && state.influence > 35 && !state.unlockedEndgame) {
+        state.unlockedEndgame = true;
+        addLog("Je naam wordt in koninklijke raden gefluisterd. Eindspelroutes zijn geopend.", "magic");
+      }
+      render();
+    }
+
+    function startRaid(forced = false) {
+      const base = rand(heroTeams);
+      const scale = 1 + state.infamy / 120 + (forced ? .22 : 0);
+      state.currentRaid = { ...base, maxHp: Math.round(base.hp * scale), attack: Math.round(base.attack * scale) };
+      state.raidHp = state.currentRaid.maxHp;
+      addLog(`${state.currentRaid.name} nadert: ${state.currentRaid.tactic}.`, "warn");
+    }
+
+    function resolveRaid() {
+      if (!state.currentRaid) return;
+      const raid = state.currentRaid;
+      const trapBonus = raid.focus === "traps" ? countRoom("trap") * 5 : countRoom("trap") * 22;
+      const ghostPenalty = raid.focus === "undead" ? state.monsters.filter(m => m.type === "ghost").length * 20 : 0;
+      const magePenalty = raid.focus === "magic" ? state.monsters.filter(m => m.stats.power < 30).length * 12 : 0;
+      const defense = monsterPower() + roomPower() + trapBonus - ghostPenalty - magePenalty + Math.random() * 70;
+      const heroForce = raid.maxHp + raid.attack * 2 + Math.random() * 70;
+      state.raidHp = clamp(Math.round(raid.maxHp - defense * .38), 0, raid.maxHp);
+
+      if (defense >= heroForce) {
+        const reward = Math.round(raid.reward + state.infamy * 1.2 + countRoom("treasury") * 24);
+        state.gold += reward;
+        state.knowledge += 12 + countRoom("lab") * 7;
+        state.infamy += raid.focus === "fame" ? 12 : 7;
+        state.monsters.forEach(m => {
+          if (Math.random() < .72) {
+            m.kills += Math.ceil(Math.random() * 3);
+            m.survived += 1;
+            learnFromRaid(m, raid);
+          }
+        });
+        addLog(`${raid.name} is verslagen. Buit: ${reward} goud, kennis en verhalen voor de kroeg.`, "good");
+      } else {
+        const loss = Math.min(state.gold, Math.round(45 + raid.attack * 1.4));
+        state.gold -= loss;
+        state.infamy = clamp(state.infamy - 6, 0, 200);
+        damageRooms();
+        injureMonsters(raid);
+        addLog(`${raid.name} breekt door de verdediging en plundert ${loss} goud.`, "bad");
+      }
+      state.currentRaid = null;
+      evolveMonsters();
+      render();
+    }
+
+    function learnFromRaid(m, raid) {
+      const boost = hasResearch("bloodMemory") ? 5 : 3;
+      if (raid.focus === "magic") m.stats.magic = clamp(m.stats.magic + boost, 0, 130);
+      if (raid.focus === "traps") m.stats.stealth = clamp(m.stats.stealth + boost, 0, 130);
+      if (raid.focus === "undead") m.stats.morale = clamp(m.stats.morale + boost, 0, 100);
+      if (Math.random() < .28) m.stats.fire = clamp(m.stats.fire + boost, 0, 130);
+    }
+
+    function evolveMonsters() {
+      state.monsters.forEach(m => {
+        const old = m.rank;
+        if (m.rank.includes("Goblin") && m.survived >= 12) m.rank = "Goblin King";
+        else if (m.rank.includes("Goblin") && m.survived >= 7) m.rank = "Goblin Warlord";
+        else if (m.rank.includes("Goblin") && m.survived >= 3) m.rank = "Goblin Veteran";
+        if (m.survived >= 5 && !m.traits.includes("Snellere reacties")) m.traits.push("Snellere reacties");
+        if (m.stats.stealth >= 70 && !m.traits.includes("Hinderlaag-expert")) m.traits.push("Hinderlaag-expert");
+        if (m.stats.magic >= 75 && !m.traits.includes("Magieweerstand")) m.traits.push("Magieweerstand");
+        if (m.stats.fire >= 60 && !m.traits.includes("Vuurresistent")) m.traits.push("Vuurresistent");
+        if (old !== m.rank) addLog(`${m.name} evolueert tot ${m.rank}. Een nieuwe legende krijgt tanden.`, "magic");
+      });
+    }
+
+    function damageRooms() {
+      const candidates = state.rooms.filter(r => !r.damaged);
+      for (let i = 0; i < Math.min(2, candidates.length); i++) rand(candidates).damaged = true;
+    }
+
+    function injureMonsters(raid) {
+      state.monsters.forEach(m => {
+        if (Math.random() < .28) {
+          m.scars += 1;
+          m.stats.morale = clamp(m.stats.morale - raid.attack * .25, 0, 100);
+        }
+      });
+      state.monsters = state.monsters.filter(m => m.scars < 4 || Math.random() > .35);
+    }
+
+    function sendSpies() {
+      const cost = hasResearch("spyNetwork") ? 20 : 38;
+      if (state.gold < cost) return;
+      state.gold -= cost;
+      state.influence += hasResearch("spyNetwork") ? 8 : 4;
+      state.knowledge += 10;
+      const clue = rand(heroTeams);
+      addLog(`Spionnen melden dat ${clue.name} traint. ${clue.tactic}.`, "magic");
+      render();
+    }
+
+    function baitHeroes() {
+      if (state.gold < 35 || state.currentRaid) return;
+      state.gold -= 35;
+      state.infamy += 5;
+      startRaid(true);
+      render();
+    }
+
+    function repair() {
+      const damaged = state.rooms.filter(r => r.damaged);
+      const cost = damaged.length * 25;
+      if (!damaged.length || state.gold < cost) return;
+      state.gold -= cost;
+      damaged.forEach(r => r.damaged = false);
+      addLog(`${damaged.length} beschadigde kamers hersteld.`, "good");
+      render();
+    }
+
+    function chooseEnding(type) {
+      const endings = {
+        ruler: ["Wereldheerser", "Je dungeon wordt de hoofdstad van een duister rijk. Steden betalen belasting in goud, artefacten en angst."],
+        perfect: ["Perfecte Dungeon", "Je bouwt een onneembare kerker waar helden alleen nog als waarschuwing op kaarten verschijnen."],
+        trade: ["Ondergrondse Handelsmacht", "Monsters, magie en artefacten worden je exportproducten. Koninkrijken haten je, maar tekenen wel contracten."],
+        peace: ["Vrede", "Je opent de eerste gereguleerde avonturiersattractie. De giftshop verkoopt miniatuurvalkuilen."]
+      };
+      document.getElementById("endingTitle").textContent = endings[type][0];
+      document.getElementById("endingText").textContent = endings[type][1];
+    }
+
+    function renderStats() {
+      const data = [
+        ["Dag", state.day],
+        ["Goud", state.gold],
+        ["Kennis", state.knowledge],
+        ["Berucht", state.infamy],
+        ["Invloed", state.influence]
+      ];
+      document.getElementById("stats").innerHTML = data.map(([k,v]) => `<div class="stat"><small>${k}</small><strong>${Math.round(v)}</strong></div>`).join("");
+    }
+
+    function renderBuild() {
+      document.getElementById("buildList").innerHTML = rooms.map(r => `
+        <article class="choice">
+          <div class="icon">${r.icon}</div>
+          <div><h3><span>${r.name}</span><span>${r.cost}g</span></h3><p>${r.note} · onderhoud ${r.upkeep}g</p></div>
+          <button ${state.gold < r.cost || state.rooms.length >= 30 ? "disabled" : ""} onclick="buildRoom('${r.id}')">Bouwen</button>
+        </article>
+      `).join("");
+      document.getElementById("researchList").innerHTML = research.map(r => `
+        <article class="choice">
+          <div class="icon">✦</div>
+          <div><h3><span>${r.name}</span><span>${r.cost}k</span></h3><p>${r.effect}</p></div>
+          <button ${state.knowledge < r.cost || state.research[r.id] ? "disabled" : ""} onclick="buyResearch('${r.id}')">${state.research[r.id] ? "Onderzocht" : "Onderzoek"}</button>
+        </article>
+      `).join("");
+    }
+
+    function renderDungeon() {
+      const slots = Array.from({ length: 30 }, (_, i) => state.rooms[i]);
+      document.getElementById("dungeon").innerHTML = slots.map((r, i) => {
+        const occupants = state.monsters.filter((_, idx) => idx % 30 === i % Math.max(1, state.rooms.length || 1)).slice(0, 5);
+        return `<div class="room ${r ? "filled" : ""} ${r?.damaged ? "damaged" : ""}">
+          <div class="room-name">${r ? r.name : "Lege grot"}</div>
+          <div class="room-icon">${r ? r.icon : ""}</div>
+          <div class="occupants">${r ? occupants.map(m => `<span class="pip" title="${m.name}">${m.icon}</span>`).join("") : ""}</div>
+        </div>`;
+      }).join("");
+      const raid = state.currentRaid;
+      document.getElementById("invaders").innerHTML = raid ? `
+        <h3>${raid.name}</h3>
+        <p class="mini">${raid.tactic}</p>
+        <div class="bars" style="margin-top:8px">
+          <div class="bar"><span style="--w:${(state.raidHp / raid.maxHp) * 100}%"></span></div>
+        </div>
+        <button onclick="resolveRaid()" style="width:100%;margin-top:10px">Verdedig nu</button>
+      ` : `
+        <h3>Geen aanval</h3>
+        <p class="mini">Aanvalskans: ${Math.round(raidChance())}%. Beruchter worden levert betere buit op, maar trekt sterkere helden.</p>
+      `;
+    }
+
+    function renderMonsters() {
+      document.getElementById("monsterCount").textContent = `${state.monsters.length}/${cap()}`;
+      document.getElementById("hireList").innerHTML = Object.entries(species).map(([id, s]) => `
+        <article class="choice">
+          <div class="icon">${s.icon}</div>
+          <div><h3><span>${s.name}</span><span>${s.cost}g</span></h3><p>${s.traits.join(" · ")}</p></div>
+          <button ${state.gold < s.cost || state.monsters.length >= cap() ? "disabled" : ""} onclick="hire('${id}')">Inlijven</button>
+        </article>
+      `).join("");
+      document.getElementById("monsterList").innerHTML = state.monsters.map(m => `
+        <article class="monster-card">
+          <div class="monster-top"><span class="monster-name">${m.icon} ${m.name}</span><span class="tag">${m.rank}</span></div>
+          <p class="mini">Relatie: ${m.relation} · kills ${m.kills} · overleefd ${m.survived} · littekens ${m.scars}</p>
+          <div class="traits">${m.traits.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+          ${meter("Kracht", m.stats.power)}${meter("Stealth", m.stats.stealth)}${meter("Magie", m.stats.magic)}${meter("Vuur", m.stats.fire)}
+        </article>
+      `).join("") || `<p class="mini">Nog geen monsters. Zelfs een verlaten grot heeft personeel nodig.</p>`;
+      const options = state.monsters.map(m => `<option value="${m.id}">${m.name}</option>`).join("");
+      document.getElementById("breedA").innerHTML = options;
+      document.getElementById("breedB").innerHTML = options;
+      document.getElementById("breedBtn").disabled = state.monsters.length < 2 || countRoom("lab") < 1 || state.gold < (hasResearch("breedingRunes") ? 45 : 70) || state.monsters.length >= cap();
+    }
+
+    function meter(label, value) {
+      return `<div class="meter"><span>${label}</span><div class="bar"><span style="--w:${clamp(value,0,100)}%"></span></div><span>${Math.round(value)}</span></div>`;
+    }
+
+    function renderPhases() {
+      document.getElementById("phaseTag").textContent = `Fase ${state.phase + 1}`;
+      document.getElementById("phasebar").innerHTML = phases.map((p, i) => `
+        <div class="phase ${i === state.phase ? "active" : ""}"><strong>${i + 1}. ${p[0]}</strong><span>${p[1]}</span></div>
+      `).join("");
+    }
+
+    function renderLog() {
+      document.getElementById("log").innerHTML = state.log.map(e => `<div class="entry ${e.type}">${e.text}</div>`).join("");
+    }
+
+    function renderEndgame() {
+      const can = state.unlockedEndgame;
+      document.getElementById("endingTag").textContent = can ? "Eindspel open" : "Eindspel gesloten";
+      const box = document.getElementById("endingOptions");
+      box.innerHTML = ["ruler", "perfect", "trade", "peace"].map(id => {
+        const label = { ruler: "Wereldheerser", perfect: "Perfecte Dungeon", trade: "Handelsmacht", peace: "Vrede" }[id];
+        return `<button ${can ? "" : "disabled"} onclick="chooseEnding('${id}')">${label}</button>`;
+      }).join("");
+      if (can && !document.getElementById("endingModal").classList.contains("open")) {
+        document.getElementById("endingModal").classList.add("open");
+        chooseEnding("perfect");
+      }
+    }
+
+    function render() {
+      renderStats();
+      renderBuild();
+      renderDungeon();
+      renderMonsters();
+      renderPhases();
+      renderLog();
+      renderEndgame();
+      document.getElementById("repair").disabled = !state.rooms.some(r => r.damaged) || state.gold < state.rooms.filter(r => r.damaged).length * 25;
+      document.getElementById("baitHeroes").disabled = state.gold < 35 || !!state.currentRaid;
+      document.getElementById("sendSpies").disabled = state.gold < (hasResearch("spyNetwork") ? 20 : 38);
+    }
+
+    document.getElementById("nextDay").addEventListener("click", nextDay);
+    document.getElementById("sendSpies").addEventListener("click", sendSpies);
+    document.getElementById("baitHeroes").addEventListener("click", baitHeroes);
+    document.getElementById("repair").addEventListener("click", repair);
+    document.getElementById("breedBtn").addEventListener("click", breed);
+    document.getElementById("closeModal").addEventListener("click", () => document.getElementById("endingModal").classList.remove("open"));
+
+    window.buildRoom = buildRoom;
+    window.hire = hire;
+    window.buyResearch = buyResearch;
+    window.resolveRaid = resolveRaid;
+    window.chooseEnding = chooseEnding;
+
+    state.rooms.push({ ...rooms[2], damaged: false }, { ...rooms[0], damaged: false }, { ...rooms[1], damaged: false });
+    state.monsters.push(makeMonster("goblin"), makeMonster("ogre"), makeMonster("ghost"));
+    addLog("Je erft een verlaten kerker met drie kamers, drie ontevreden werknemers en een verrassend bruikbare boekhouding.", "magic");
+    render();
+  </script>
+</body>
+</html>
