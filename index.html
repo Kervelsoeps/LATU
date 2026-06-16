@@ -902,6 +902,26 @@
         display: block;
         border-radius: 8px; /* Optioneel: voor mooie ronde hoeken */
       }
+      /* Minimalistische en grotere styling voor het losse logo */
+      .nav-logo {
+        height: 300px; /* Groter formaat voor een duidelijke uitstraling */
+        width: auto; /* Behoudt de originele verhoudingen van het logo */
+        object-fit: contain; /* Zorgt dat het logo nooit vervormt of uitrekt */
+        display: block; /* Voorkomt ongewenste witruimte onder de afbeelding */
+        transition: var(
+          --transition
+        ); /* Zorgt voor een vloeiende overgang bij de hover-animatie */
+        cursor: pointer;
+        border-radius: 15px;
+      }
+
+      /* Subtiele animatie en gloed wanneer je over het logo beweegt */
+      .nav-logo:hover {
+        transform: translateY(-2px) scale(1.03); /* Beweegt heel lichtjes omhoog en schaalt subtiel mee */
+        filter: drop-shadow(
+          0 0 12px var(--accent)
+        ); /* Geeft een neon-blauwe gloed die strak de contouren van het logo volgt (in plaats van een vierkante box-shadow) */
+      }
     </style>
   </head>
   <body>
@@ -925,6 +945,8 @@
                 arcade-uitdagingen. Elk spel is geoptimaliseerd voor snelheid,
                 interface en plezier.
                 <br /><br />
+                <img src="logo.png" alt="Online Latu Logo" class="nav-logo" />
+                <br />
                 Wil jij je game toevoegen aan deze collectie? Bekijk onze
                 <a
                   href="legal.html"
