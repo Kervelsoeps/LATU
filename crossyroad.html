@@ -44,7 +44,7 @@
     </style>
 </head>
 <body>
-    <div id="ui">Score: <span id="score">0</span></div>
+    <div id="ui">High Score: <span id="score">0</span></div>
     <div id="death-flash"></div>
     <div id="instructions">Gebruik PIJLTOETSEN of WASD om te bewegen<br>Klik op het scherm om te focussen</div>
 
@@ -57,7 +57,7 @@
         let player;
         let lanes = [];
         let cars = [];
-        let maxScore = 0;
+        let maxScore = parseInt(localStorage.getItem('highScore') || '0', 10);
         let isDead = false;
         let playerTargetX = 0;
         let playerTargetZ = 0;
@@ -103,6 +103,8 @@
             dirLight.shadow.camera.bottom = -30;
             scene.add(dirLight);
 
+            document.getElementById('score').innerText = maxScore;
+                    localStorage.setItem('highScore', maxScore);
             createPlayer();
             generateInitialWorld();
 
@@ -365,7 +367,6 @@
 
         function resetGame() {
             isDead = false;
-            maxScore = 0;
             document.getElementById('score').innerText = maxScore;
             document.getElementById('death-flash').style.opacity = 0;
 
