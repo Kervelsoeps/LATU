@@ -408,6 +408,10 @@
             <span class="stat-label">Bet</span>
             <span class="stat-value" id="current-bet">$0</span>
         </div>
+        <div class="stat-box">
+            <span class="stat-label">Best</span>
+            <span class="stat-value" id="highest-bankroll">$1000</span>
+        </div>
     </div>
 </header>
 
@@ -435,7 +439,7 @@
         <div class="chip chip-25" onclick="game.addBet(25)">25</div>
         <div class="chip chip-50" onclick="game.addBet(50)">50</div>
         <div class="chip chip-100" onclick="game.addBet(100)">100</div>
-        <button class="btn btn-clear" onclick="game.clearBet()">Clear</button>
+        <button class="btn btn-clear" onclick="game.clearBet()">Clear</button><button class="btn btn-clear" onclick="game.saveProgress()">Save</button>
         <button class="btn btn-deal" id="deal-btn" onclick="game.deal()" disabled>Deal Cards</button>
     </div>
 
@@ -570,7 +574,8 @@
     class Game {
         constructor() {
             this.deck = new Deck();
-            this.bankroll = 1000;
+            this.bankroll = parseInt(localStorage.getItem('blackjack_bankroll')) || 1000;
+            this.highestBankroll = parseInt(localStorage.getItem('blackjack_highestBankroll')) || this.bankroll;
             this.currentBet = 0;
             this.playerHand = new Hand();
             this.dealerHand = new Hand();
@@ -587,7 +592,7 @@
                 bettingControls: document.getElementById('betting-controls'),
                 actionControls: document.getElementById('action-controls'),
                 dealBtn: document.getElementById('deal-btn'),
-                doubleBtn: document.getElementById('double-btn')
+                doubleBtn: document.getElementById('double-btn'), highestBankroll: document.getElementById('highest-bankroll')
             };
 
             this.updateUI();
@@ -617,6 +622,10 @@
         updateUI() {
             this.ui.bankroll.textContent = `$${this.bankroll}`;
             this.ui.currentBet.textContent = `$${this.currentBet}`;
+            this.highestBankroll = Math.max(this.highestBankroll, this.bankroll);
+            localStorage.setItem('blackjack_bankroll', this.bankroll);
+            localStorage.setItem('blackjack_highestBankroll', this.highestBankroll);
+            if (this.ui.highestBankroll) this.ui.highestBankroll.textContent = `$${this.highestBankroll}`;
             
             const chips = document.querySelectorAll('.chip');
             chips.forEach(chip => {
@@ -705,6 +714,11 @@
         async hit() {
             this.ui.doubleBtn.disabled = true;
             await this.dealCardTo('player');
+            const card = this.playerHand.cards[this.playerHand.cards.length - 1];
+            if (card && card.rank === 'A') {
+                const choice = confirm('Use Ace as 11?\nPress OK = 11, Cancel = 1');
+                if (!choice) card.value = 1;
+            }
             this.checkPlayerBust();
         }
 
@@ -799,11 +813,18 @@
                 this.ui.doubleBtn.disabled = false;
                 
                 if (this.bankroll <= 0) {
-                    this.bankroll = 1000;
+                    this.bankroll = parseInt(localStorage.getItem('blackjack_bankroll')) || 1000;
+            this.highestBankroll = parseInt(localStorage.getItem('blackjack_highestBankroll')) || this.bankroll;
                     this.showMessage('Bankroll reset! Good luck.', 'push');
                 }
                 this.updateUI();
             }, 3000);
+        }
+
+        saveProgress() {
+            localStorage.setItem('blackjack_bankroll', this.bankroll);
+            localStorage.setItem('blackjack_highestBankroll', this.highestBankroll);
+            this.showMessage('Progress Saved!', 'push');
         }
 
         showMessage(text, type) {
