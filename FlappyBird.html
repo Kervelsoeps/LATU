@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird - Deluxe Edition</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #222;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+        #gameContainer {
+            position: relative;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 4px solid #333;
+        }
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+        }
+        #scoreBoard {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .score-text {
+            color: white;
+            font-size: 50px;
+            font-weight: 900;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            margin-bottom: -10px;
+        }
+        .highscore-text {
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000;
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <div id="scoreBoard">
+        <div class="score-text" id="scoreDisplay">0</div>
+        <div class="highscore-text" id="highScoreDisplay">Best: 0</div>
+    </div>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreDisplay = document.getElementById("scoreDisplay");
+const highScoreDisplay = document.getElementById("highScoreDisplay");
+
+// Game Settings
+const GRAVITY = 0.28;
+const FLAP_STRENGTH = -6;
+const SPAWN_RATE = 100;
+const PIPE_SPEED = 3.5;
+const PIPE_GAP = 145;
+const GROUND_HEIGHT = 50;
+
+// Ophalen van highscore uit LocalStorage
+let highScore = localStorage.getItem("flappyHighScore") || 0;
+highScoreDisplay.innerText = "Best: " + highScore;
+
+// Entiteiten
+let bird = { x: 60, y: 250, velocity: 0, radius: 15, angle: 0, wingY: 0 };
+let pipes = [];
+let particles = [];
+let clouds = [];
+let groundX = 0;
+
+let frameCount = 0;
+let score = 0;
+let gameOver = false;
+let gameStarted = false;
+
+// Genereer beginwolken
+for(let i=0; i<5; i++) {
+    clouds.push({ x: Math.random() * canvas.width, y: Math.random() * 200 + 20, speed: Math.random() * 0.5 + 0.2, size: Math.random() * 30 + 20 });
+}
+
+// Controls
+window.addEventListener("keydown", (e) => { if (e.code === "Space") handleJump(); });
+canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleJump(); });
+canvas.addEventListener("mousedown", () => handleJump());
+
+function handleJump() {
+    if (gameOver) {
+        resetGame();
+        return;
+    }
+    if (!gameStarted) gameStarted = true;
+    bird.velocity = FLAP_STRENGTH;
+    createParticles(bird.x, bird.y + 10, "white", 5); // Flap stofwolkje
+}
+
+function resetGame() {
+    bird.y = 250;
+    bird.velocity = 0;
+    bird.angle = 0;
+    pipes = [];
+    particles = [];
+    score = 0;
+    frameCount = 0;
+    scoreDisplay.innerText = score;
+    gameOver = false;
+    gameStarted = true;
+}
+
+function createParticles(x, y, color, amount) {
+    for (let i = 0; i < amount; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4,
+            life: 1,
+            color: color
+        });
+    }
+}
+
+function update() {
+    // Beweeg wolken en grond altijd
+    clouds.forEach(c => {
+        c.x -= c.speed;
+        if (c.x + c.size < 0) { c.x = canvas.width + c.size; c.y = Math.random() * 200 + 20; }
+    });
+    
+    if (!gameOver) {
+        groundX -= PIPE_SPEED;
+        if (groundX <= -canvas.width) groundX = 0;
+    }
+
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    if (!gameStarted || gameOver) return;
+    frameCount++;
+
+    // Vogel Physics & Animatie
+    bird.velocity += GRAVITY;
+    bird.y += bird.velocity;
+    bird.angle = Math.min(Math.PI / 4, Math.max(-Math.PI / 6, bird.velocity * 0.1));
+    bird.wingY = Math.sin(frameCount * 0.4) * 5; // Flappende vleugel
+
+    // Collision Grond of Plafond
+    if (bird.y + bird.radius >= canvas.height - GROUND_HEIGHT || bird.y - bird.radius <= 0) {
+        die();
+    }
+
+    // Spawn Buizen
+    if (frameCount % SPAWN_RATE === 0) {
+        let minHeight = 60;
+        let maxHeight = canvas.height - GROUND_HEIGHT - PIPE_GAP - 60;
+        let topHeight = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+        pipes.push({ x: canvas.width, top: topHeight, bottom: canvas.height - GROUND_HEIGHT - topHeight - PIPE_GAP, passed: false });
+    }
+
+    // Buizen Logic
+    for (let i = pipes.length - 1; i >= 0; i--) {
+        let p = pipes[i];
+        p.x -= PIPE_SPEED;
+
+        // Collision Check
+        if (bird.x + bird.radius - 2 > p.x && bird.x - bird.radius + 2 < p.x + 65) {
+            if (bird.y - bird.radius + 2 < p.top || bird.y + bird.radius - 2 > canvas.height - GROUND_HEIGHT - p.bottom) {
+                die();
+            }
+        }
+
+        // Score
+        if (!p.passed && p.x + 32 < bird.x) {
+            p.passed = true;
+            score++;
+            scoreDisplay.innerText = score;
+            createParticles(p.x + 32, p.top + (PIPE_GAP/2), "#FFD700", 20); // Gouden confetti
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem("flappyHighScore", highScore);
+                highScoreDisplay.innerText = "Best: " + highScore;
+            }
+        }
+
+        // Verwijder oude buizen
+        if (p.x < -70) pipes.splice(i, 1);
+    }
+}
+
+function die() {
+    gameOver = true;
+    createParticles(bird.x, bird.y, "#f7dc6f", 30); // Explosie van veren
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Teken Wolken
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    clouds.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+        ctx.arc(c.x + c.size*0.8, c.y - c.size*0.2, c.size*0.8, 0, Math.PI * 2);
+        ctx.arc(c.x + c.size*1.5, c.y, c.size*0.6, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    // Teken Buizen
+    pipes.forEach(p => {
+        let grad = ctx.createLinearGradient(p.x, 0, p.x + 65, 0);
+        grad.addColorStop(0, "#74c02c");
+        grad.addColorStop(0.5, "#95e843");
+        grad.addColorStop(1, "#5a9622");
+
+        ctx.fillStyle = grad;
+        ctx.strokeStyle = "#406e16";
+        ctx.lineWidth = 3;
+
+        // Bovenbuis
+        ctx.fillRect(p.x, 0, 65, p.top);
+        ctx.strokeRect(p.x, 0, 65, p.top);
+        ctx.fillRect(p.x - 4, p.top - 25, 73, 25);
+        ctx.strokeRect(p.x - 4, p.top - 25, 73, 25);
+
+        // Onderbuis
+        let bottomY = canvas.height - GROUND_HEIGHT - p.bottom;
+        ctx.fillRect(p.x, bottomY, 65, p.bottom);
+        ctx.strokeRect(p.x, bottomY, 65, p.bottom);
+        ctx.fillRect(p.x - 4, bottomY, 73, 25);
+        ctx.strokeRect(p.x - 4, bottomY, 73, 25);
+    });
+
+    // Teken Grond
+    ctx.fillStyle = "#ded895";
+    ctx.fillRect(groundX, canvas.height - GROUND_HEIGHT, canvas.width * 2, GROUND_HEIGHT);
+    ctx.fillStyle = "#73bf2e"; // Grasrand
+    ctx.fillRect(groundX, canvas.height - GROUND_HEIGHT, canvas.width * 2, 12);
+    ctx.strokeStyle = "#5a9622";
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - GROUND_HEIGHT);
+    ctx.lineTo(canvas.width, canvas.height - GROUND_HEIGHT);
+    ctx.stroke();
+
+    // Teken Particles
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
+    // Teken Vogel
+    if (!gameOver || bird.y < canvas.height - GROUND_HEIGHT) {
+        ctx.save();
+        ctx.translate(bird.x, bird.y);
+        ctx.rotate(bird.angle);
+        
+        // Lichaam
+        ctx.fillStyle = "#f1c40f";
+        ctx.strokeStyle = "#c0392b";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Oog
+        ctx.fillStyle = "white";
+        ctx.beginPath(); ctx.arc(6, -5, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "black";
+        ctx.beginPath(); ctx.arc(8, -5, 2.5, 0, Math.PI * 2); ctx.fill();
+
+        // Vleugel
+        ctx.fillStyle = "#f39c12";
+        ctx.beginPath();
+        ctx.ellipse(-4, bird.wingY, 8, 5, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Snavel
+        ctx.fillStyle = "#e67e22";
+        ctx.beginPath();
+        ctx.moveTo(10, 0);
+        ctx.lineTo(24, 3);
+        ctx.lineTo(10, 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+
+    // UI Overlays
+    if (!gameStarted) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        ctx.font = "bold 26px sans-serif";
+        ctx.textAlign = "center";
+        ctx.shadowColor = "black"; ctx.shadowBlur = 4;
+        ctx.fillText("TAP OF SPATIE OM", canvas.width / 2, canvas.height / 2 - 15);
+        ctx.fillText("TE STARTEN", canvas.width / 2, canvas.height / 2 + 20);
+        ctx.shadowBlur = 0; // reset
+    }
+
+    if (gameOver) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Game Over Paneel
+        ctx.fillStyle = "#f4f4f4";
+        ctx.roundRect(canvas.width/2 - 100, canvas.height/2 - 80, 200, 150, 10);
+        ctx.fill();
+        ctx.strokeStyle = "#555"; ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = "#e74c3c";
+        ctx.font = "bold 28px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 40);
+        
+        ctx.fillStyle = "#333";
+        ctx.font = "20px sans-serif";
+        ctx.fillText("Score: " + score, canvas.width / 2, canvas.height / 2);
+        ctx.fillText("Best: " + highScore, canvas.width / 2, canvas.height / 2 + 30);
+    }
+}
+
+// Custom roundRect functie voor bredere browser support
+CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  this.beginPath();
+  this.moveTo(x + r, y);
+  this.arcTo(x + w, y, x + w, y + h, r);
+  this.arcTo(x + w, y + h, x, y + h, r);
+  this.arcTo(x, y + h, x, y, r);
+  this.arcTo(x, y, x + r, y, r);
+  this.closePath();
+  return this;
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>

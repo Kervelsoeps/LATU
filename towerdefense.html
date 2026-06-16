@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winding Path Tower Defense</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            margin: 0;
+            padding: 20px;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        canvas {
+            background-color: #27ae60;
+            border: 4px solid #34495e;
+            cursor: crosshair;
+            display: block;
+        }
+        #sidebar {
+            width: 280px;
+            background-color: #34495e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .stat-box {
+            background-color: #2c3e50;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .stat-box.danger { border-left-color: #e74c3c; }
+        .stat-box.success { border-left-color: #2ecc71; }
+        
+        h2, h3 { margin: 0 0 10px 0; color: #f1c40f; }
+        
+        .shop-item, .backpack-item {
+            background-color: #2c3e50;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .shop-item:hover { background-color: #3d566e; }
+        .shop-item.disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .backpack-item { border-color: #f39c12; }
+        .backpack-item.selected { background-color: #f39c12; color: #2c3e50; font-weight: bold; }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #2980b9; }
+        button.danger { background-color: #e74c3c; }
+        button.danger:hover { background-color: #c0392b; }
+        button.success { background-color: #2ecc71; }
+        button.success:hover { background-color: #27ae60; }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+            border: 3px solid #e74c3c;
+        }
+        .info-text { font-size: 12px; color: #bdc3c7; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="game-over">
+            <h1 style="color: #e74c3c;">GAME OVER</h1>
+            <p>The castle has fallen!</p>
+            <button class="danger" onclick="resetGame()">Restart Game</button>
+        </div>
+    </div>
+
+    <div id="sidebar">
+        <div class="stat-box">
+            <h3>Stats</h3>
+            <div>Wave: <span id="wave-display">1</span></div>
+            <div>Money: $<span id="money-display">100</span></div>
+            <div>Castle HP: <span id="hp-display">100</span>/100</div>
+        </div>
+
+        <div>
+            <h3>Shop</h3>
+            <div class="shop-item" onclick="buyItem('turret_basic', 50)">
+                <span>🔫 Basic Turret</span>
+                <span>$50</span>
+            </div>
+            <div class="shop-item" onclick="buyItem('turret_rapid', 100)">
+                <span>🔫 Rapid Turret</span>
+                <span>$100</span>
+            </div>
+            <div class="shop-item" onclick="buyItem('turret_sniper', 150)">
+                <span>🎯 Sniper Turret</span>
+                <span>$150</span>
+            </div>
+            <div class="shop-item" onclick="buyItem('block', 20)">
+                <span>🧱 Defense Block</span>
+                <span>$20</span>
+            </div>
+            <div class="info-text">Blocks can be placed on the path to stall enemies. They have 100 HP.</div>
+        </div>
+
+        <div>
+            <h3>Backpack <span id="backpack-count">(0)</span></h3>
+            <div id="backpack-list"></div>
+            <button class="danger" onclick="deselectTool()" style="width: 100%; margin-top: 10px;">Cancel Placement</button>
+        </div>
+
+        <div style="margin-top: auto; display: flex; gap: 10px;">
+            <button class="success" onclick="saveGame()" style="flex: 1;">💾 Save</button>
+            <button onclick="loadGame()" style="flex: 1;">📂 Load</button>
+        </div>
+        <div class="info-text">Save stores your layout, backpack, and money. Wave resets to 1 on load.</div>
+    </div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const TILE_SIZE = 40;
+const COLS = 20;
+const ROWS = 15;
+
+// Game State
+let money = 100;
+let wave = 1;
+let castleHP = 100;
+const MAX_CASTLE_HP = 100;
+let gameOver = false;
+
+let enemies = [];
+let turrets = [];
+let blocks = [];
+let projectiles = [];
+let backpack = [];
+let selectedTool = null;
+
+// Wave Management
+let enemiesToSpawn = 0;
+let spawnTimer = 0;
+let spawnInterval = 60; // frames
+let waveInProgress = true;
+let waveDelay = 0;
+
+// Path Waypoints (Grid Coordinates)
+const waypoints = [
+    {x: 0, y: 2},
+    {x: 4, y: 2},
+    {x: 4, y: 8},
+    {x: 10, y: 8},
+    {x: 10, y: 3},
+    {x: 16, y: 3},
+    {x: 16, y: 12},
+    {x: 19, y: 12} // Castle
+];
+
+// Helper: Check if a grid tile is part of the path
+function isPathTile(gx, gy) {
+    for (let i = 0; i < waypoints.length - 1; i++) {
+        let p1 = waypoints[i];
+        let p2 = waypoints[i+1];
+        
+        // Horizontal segment
+        if (p1.y === p2.y && gy === p1.y) {
+            if (gx >= Math.min(p1.x, p2.x) && gx <= Math.max(p1.x, p2.x)) return true;
+        }
+        // Vertical segment
+        if (p1.x === p2.x && gx === p1.x) {
+            if (gy >= Math.min(p1.y, p2.y) && gy <= Math.max(p1.y, p2.y)) return true;
+        }
+    }
+    return false;
+}
+
+// Classes
+class Enemy {
+    constructor(waveNum) {
+        this.wpIndex = 0;
+        this.x = waypoints[0].x * TILE_SIZE + TILE_SIZE/2;
+        this.y = waypoints[0].y * TILE_SIZE + TILE_SIZE/2;
+        this.isBoss = (waveNum % 15 === 0);
+        
+        if (this.isBoss) {
+            this.maxHp = 500 + (waveNum * 50);
+            this.speed = 1.0;
+            this.reward = 500;
+            this.radius = 14;
+            this.color = '#e74c3c';
+        } else {
+            this.maxHp = 20 + (waveNum * 10);
+            this.speed = 1.5 + (waveNum * 0.1);
+            this.reward = 10 + waveNum;
+            this.radius = 10;
+            this.color = '#2ecc71';
+        }
+        this.hp = this.maxHp;
+        this.blockTarget = null;
+    }
+
+    update() {
+        if (this.hp <= 0) return;
+
+        // Check for block in front
+        let nextGx = Math.round((this.x - TILE_SIZE/2) / TILE_SIZE);
+        let nextGy = Math.round((this.y - TILE_SIZE/2) / TILE_SIZE);
+        
+        // Look ahead based on direction
+        let targetWp = waypoints[this.wpIndex + 1];
+        if (targetWp) {
+            let tx = targetWp.x * TILE_SIZE + TILE_SIZE/2;
+            let ty = targetWp.y * TILE_SIZE + TILE_SIZE/2;
+            let dx = Math.sign(tx - this.x);
+            let dy = Math.sign(ty - this.y);
+            nextGx = Math.round((this.x + dx * 15 - TILE_SIZE/2) / TILE_SIZE);
+            nextGy = Math.round((this.y + dy * 15 - TILE_SIZE/2) / TILE_SIZE);
+        }
+
+        let blockInWay = blocks.find(b => b.gx === nextGx && b.gy === nextGy && b.hp > 0);
+        
+        if (blockInWay) {
+            this.blockTarget = blockInWay;
+        }
+
+        if (this.blockTarget && this.blockTarget.hp > 0) {
+            // Attack block
+            this.blockTarget.hp -= 0.5; // Damage per frame
+            return; // Don't move
+        } else {
+            this.blockTarget = null;
+        }
+
+        // Move towards next waypoint
+        if (this.wpIndex < waypoints.length - 1) {
+            let target = waypoints[this.wpIndex + 1];
+            let tx = target.x * TILE_SIZE + TILE_SIZE/2;
+            let ty = target.y * TILE_SIZE + TILE_SIZE/2;
+            
+            let dx = tx - this.x;
+            let dy = ty - this.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < this.speed) {
+                this.x = tx;
+                this.y = ty;
+                this.wpIndex++;
+            } else {
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+            }
+        } else {
+            // Reached castle
+            castleHP -= this.isBoss ? 20 : 10;
+            this.hp = 0; // Kill enemy
+            updateUI();
+            if (castleHP <= 0) endGame();
+        }
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Health bar
+        let hpPct = this.hp / this.maxHp;
+        ctx.fillStyle = 'red';
+        ctx.fillRect(this.x - 10, this.y - this.radius - 8, 20, 4);
+        ctx.fillStyle = '#2ecc71';
+        ctx.fillRect(this.x - 10, this.y - this.radius - 8, 20 * hpPct, 4);
+        
+        if (this.isBoss) {
+            ctx.strokeStyle = '#f1c40f';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+}
+
+class Turret {
+    constructor(gx, gy, type) {
+        this.gx = gx;
+        this.gy = gy;
+        this.x = gx * TILE_SIZE + TILE_SIZE/2;
+        this.y = gy * TILE_SIZE + TILE_SIZE/2;
+        this.type = type;
+        this.cooldown = 0;
+        
+        if (type === 'turret_basic') {
+            this.range = 3;
+            this.damage = 15;
+            this.fireRate = 40;
+            this.color = '#3498db';
+        } else if (type === 'turret_rapid') {
+            this.range = 2.5;
+            this.damage = 5;
+            this.fireRate = 10;
+            this.color = '#9b59b6';
+        } else if (type === 'turret_sniper') {
+            this.range = 6;
+            this.damage = 60;
+            this.fireRate = 90;
+            this.color = '#e67e22';
+        }
+    }
+
+    update() {
+        if (this.cooldown > 0) this.cooldown--;
+        
+        if (this.cooldown <= 0) {
+            // Find target (closest to castle = highest wpIndex, then closest distance)
+            let bestTarget = null;
+            let bestScore = -1;
+            
+            for (let enemy of enemies) {
+                if (enemy.hp <= 0) continue;
+                let dist = Math.sqrt((enemy.x - this.x)**2 + (enemy.y - this.y)**2);
+                if (dist <= this.range * TILE_SIZE) {
+                    let score = enemy.wpIndex * 1000 + (1000 - dist);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestTarget = enemy;
+                    }
+                }
+            }
+            
+            if (bestTarget) {
+                projectiles.push(new Projectile(this.x, this.y, bestTarget, this.damage));
+                this.cooldown = this.fireRate;
+            }
+        }
+    }
+
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x - 12, this.y - 12, 24, 24);
+        ctx.strokeStyle = '#2c3e50';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.x - 12, this.y - 12, 24, 24);
+        
+        // Range indicator when hovering (simplified: always draw faint range)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.range * TILE_SIZE, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+}
+
+class Block {
+    constructor(gx, gy) {
+        this.gx = gx;
+        this.gy = gy;
+        this.x = gx * TILE_SIZE + TILE_SIZE/2;
+        this.y = gy * TILE_SIZE + TILE_SIZE/2;
+        this.maxHp = 100;
+        this.hp = 100;
+    }
+
+    draw() {
+        ctx.fillStyle = '#7f8c8d';
+        ctx.fillRect(this.gx * TILE_SIZE + 2, this.gy * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        ctx.strokeStyle = '#34495e';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(this.gx * TILE_SIZE + 2, this.gy * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        
+        // HP Bar
+        let hpPct = this.hp / this.maxHp;
+        ctx.fillStyle = 'red';
+        ctx.fillRect(this.x - 15, this.y - 18, 30, 4);
+        ctx.fillStyle = '#f1c40f';
+        ctx.fillRect(this.x - 15, this.y - 18, 30 * hpPct, 4);
+    }
+}
+
+class Projectile {
+    constructor(x, y, target, damage) {
+        this.x = x;
+        this.y = y;
+        this.target = target;
+        this.damage = damage;
+        this.speed = 8;
+        this.active = true;
+    }
+
+    update() {
+        if (!this.active) return;
+        if (this.target.hp <= 0) {
+            this.active = false;
+            return;
+        }
+        
+        let dx = this.target.x - this.x;
+        let dy = this.target.y - this.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        
+        if (dist < this.speed) {
+            this.target.hp -= this.damage;
+            this.active = false;
+            if (this.target.hp <= 0) {
+                money += this.target.reward;
+                updateUI();
+            }
+        } else {
+            this.x += (dx / dist) * this.speed;
+            this.y += (dy / dist) * this.speed;
+        }
+    }
+
+    draw() {
+        ctx.fillStyle = '#f1c40f';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+// Game Loop
+function startWave() {
+    if (wave % 15 === 0) {
+        enemiesToSpawn = 1; // Boss
+    } else {
+        enemiesToSpawn = 5 + Math.floor(wave * 1.5);
+    }
+    spawnInterval = Math.max(20, 60 - wave * 2);
+    waveInProgress = true;
+}
+
+function update() {
+    if (gameOver) return;
+
+    // Spawning
+    if (waveInProgress && enemiesToSpawn > 0) {
+        spawnTimer++;
+        if (spawnTimer >= spawnInterval) {
+            enemies.push(new Enemy(wave));
+            enemiesToSpawn--;
+            spawnTimer = 0;
+        }
+    } else if (waveInProgress && enemiesToSpawn === 0 && enemies.length === 0) {
+        waveInProgress = false;
+        waveDelay = 120; // 2 seconds before next wave
+    }
+
+    if (!waveInProgress) {
+        waveDelay--;
+        if (waveDelay <= 0) {
+            wave++;
+            updateUI();
+            startWave();
+        }
+    }
+
+    // Updates
+    enemies.forEach(e => e.update());
+    enemies = enemies.filter(e => e.hp > 0);
+    
+    turrets.forEach(t => t.update());
+    
+    projectiles.forEach(p => p.update());
+    projectiles = projectiles.filter(p => p.active);
+    
+    blocks = blocks.filter(b => b.hp > 0);
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw Path
+    ctx.fillStyle = '#d3b88c';
+    for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+            if (isPathTile(x, y)) {
+                ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
+        }
+    }
+    
+    // Draw Grid (subtle)
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= COLS; x++) {
+        ctx.beginPath();
+        ctx.moveTo(x * TILE_SIZE, 0);
+        ctx.lineTo(x * TILE_SIZE, canvas.height);
+        ctx.stroke();
+    }
+    for (let y = 0; y <= ROWS; y++) {
+        ctx.beginPath();
+        ctx.moveTo(0, y * TILE_SIZE);
+        ctx.lineTo(canvas.width, y * TILE_SIZE);
+        ctx.stroke();
+    }
+
+    // Draw Start and End
+    ctx.fillStyle = '#2ecc71';
+    ctx.fillRect(waypoints[0].x * TILE_SIZE, waypoints[0].y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px Arial';
+    ctx.fillText('START', waypoints[0].x * TILE_SIZE + 2, waypoints[0].y * TILE_SIZE + 25);
+
+    let castleWp = waypoints[waypoints.length - 1];
+    ctx.fillStyle = '#8e44ad';
+    ctx.fillRect(castleWp.x * TILE_SIZE, castleWp.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    ctx.fillStyle = '#fff';
+    ctx.fillText('CASTLE', castleWp.x * TILE_SIZE + 2, castleWp.y * TILE_SIZE + 25);
+
+    // Draw Entities
+    blocks.forEach(b => b.draw());
+    turrets.forEach(t => t.draw());
+    enemies.forEach(e => e.draw());
+    projectiles.forEach(p => p.draw());
+    
+    // Draw placement preview
+    if (selectedTool) {
+        // Handled in mouse move, but we can draw a ghost here if we tracked mouse pos globally
+    }
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// Input Handling
+let mouseX = 0, mouseY = 0;
+
+canvas.addEventListener('mousemove', (e) => {
+    let rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+});
+
+canvas.addEventListener('click', (e) => {
+    if (gameOver || !selectedTool) return;
+    
+    let rect = canvas.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+    let gx = Math.floor(x / TILE_SIZE);
+    let gy = Math.floor(y / TILE_SIZE);
+    
+    if (gx < 0 || gx >= COLS || gy < 0 || gy >= ROWS) return;
+    
+    if (selectedTool === 'block') {
+        if (isPathTile(gx, gy) && !blocks.find(b => b.gx === gx && b.gy === gy)) {
+            blocks.push(new Block(gx, gy));
+            removeFromBackpack('block');
+        }
+    } else if (selectedTool.startsWith('turret')) {
+        if (!isPathTile(gx, gy) && !turrets.find(t => t.gx === gx && t.gy === gy)) {
+            turrets.push(new Turret(gx, gy, selectedTool));
+            removeFromBackpack(selectedTool);
+        }
+    }
+    
+    updateBackpackUI();
+});
+
+// UI Functions
+function buyItem(type, cost) {
+    if (money >= cost) {
+        money -= cost;
+        backpack.push(type);
+        updateUI();
+        updateBackpackUI();
+    }
+}
+
+function removeFromBackpack(type) {
+    let idx = backpack.indexOf(type);
+    if (idx > -1) {
+        backpack.splice(idx, 1);
+        if (selectedTool === type) {
+            selectedTool = null;
+        }
+    }
+}
+
+function selectTool(type) {
+    if (backpack.includes(type)) {
+        selectedTool = type;
+        updateBackpackUI();
+    }
+}
+
+function deselectTool() {
+    selectedTool = null;
+    updateBackpackUI();
+}
+
+function updateBackpackUI() {
+    const list = document.getElementById('backpack-list');
+    list.innerHTML = '';
+    document.getElementById('backpack-count').innerText = `(${backpack.length})`;
+    
+    if (backpack.length === 0) {
+        list.innerHTML = '<div class="info-text">Empty</div>';
+        return;
+    }
+    
+    // Group items
+    let counts = {};
+    backpack.forEach(item => {
+        counts[item] = (counts[item] || 0) + 1;
+    });
+    
+    for (let [item, count] of Object.entries(counts)) {
+        let div = document.createElement('div');
+        div.className = 'backpack-item' + (selectedTool === item ? ' selected' : '');
+        
+        let name = item === 'block' ? '🧱 Defense Block' : 
+                   item === 'turret_basic' ? '🔫 Basic Turret' :
+                   item === 'turret_rapid' ? '🔫 Rapid Turret' : '🎯 Sniper Turret';
+                   
+        div.innerHTML = `<span>${name}</span><span>x${count}</span>`;
+        div.onclick = () => selectTool(item);
+        list.appendChild(div);
+    }
+}
+
+function updateUI() {
+    document.getElementById('wave-display').innerText = wave;
+    document.getElementById('money-display').innerText = money;
+    document.getElementById('hp-display').innerText = Math.max(0, castleHP);
+    
+    // Update shop disabled states
+    let items = document.querySelectorAll('.shop-item');
+    items[0].classList.toggle('disabled', money < 50);
+    items[1].classList.toggle('disabled', money < 100);
+    items[2].classList.toggle('disabled', money < 150);
+    items[3].classList.toggle('disabled', money < 20);
+}
+
+function endGame() {
+    gameOver = true;
+    document.getElementById('game-over').style.display = 'block';
+}
+
+function resetGame() {
+    money = 100;
+    wave = 1;
+    castleHP = MAX_CASTLE_HP;
+    gameOver = false;
+    enemies = [];
+    turrets = [];
+    blocks = [];
+    projectiles = [];
+    backpack = [];
+    selectedTool = null;
+    enemiesToSpawn = 0;
+    waveInProgress = true;
+    document.getElementById('game-over').style.display = 'none';
+    updateUI();
+    updateBackpackUI();
+    startWave();
+}
+
+// Save / Load System
+function saveGame() {
+    const saveData = {
+        money: money,
+        turrets: turrets.map(t => ({gx: t.gx, gy: t.gy, type: t.type})),
+        blocks: blocks.map(b => ({gx: b.gx, gy: b.gy, hp: b.hp})),
+        backpack: backpack
+    };
+    localStorage.setItem('td_save', JSON.stringify(saveData));
+    alert('Game Saved! (Wave progress is not saved, as requested)');
+}
+
+function loadGame() {
+    const saved = localStorage.getItem('td_save');
+    if (!saved) {
+        alert('No save found!');
+        return;
+    }
+    
+    const data = JSON.parse(saved);
+    money = data.money || 100;
+    backpack = data.backpack || [];
+    
+    turrets = [];
+    if (data.turrets) {
+        data.turrets.forEach(t => turrets.push(new Turret(t.gx, t.gy, t.type)));
+    }
+    
+    blocks = [];
+    if (data.blocks) {
+        data.blocks.forEach(b => {
+            let block = new Block(b.gx, b.gy);
+            block.hp = b.hp || 100;
+            blocks.push(block);
+        });
+    }
+    
+    // Reset wave to 1 as per requirements ("not the waves")
+    wave = 1;
+    castleHP = MAX_CASTLE_HP;
+    enemies = [];
+    projectiles = [];
+    gameOver = false;
+    waveInProgress = true;
+    enemiesToSpawn = 0;
+    document.getElementById('game-over').style.display = 'none';
+    
+    selectedTool = null;
+    updateUI();
+    updateBackpackUI();
+    startWave();
+    alert('Game Loaded! Wave reset to 1.');
+}
+
+// Initialization
+updateUI();
+updateBackpackUI();
+startWave();
+gameLoop();
+
+</script>
+</body>
+</html>
