@@ -41,18 +41,13 @@
             font-family: 'Fredoka One', cursive;
             color: white;
             text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-            font-size: 2rem;
             letter-spacing: 1px;
         }
 
-        #score-display { text-align: left; }
-        #coin-display { text-align: right; color: #FFD700; }
-        #distance-display { 
-            text-align: center; 
-            font-size: 1.2rem; 
-            opacity: 0.8; 
-            margin-top: 5px;
-        }
+        #score-display { text-align: left; font-size: 2.2rem; }
+        #highscore-display { text-align: left; font-size: 1.2rem; opacity: 0.8; margin-top: 5px; color: #FFD700; }
+        #distance-display { text-align: center; font-size: 1.2rem; opacity: 0.8; margin-top: 5px; }
+        #coin-display { text-align: right; color: #FFD700; font-size: 2rem; }
 
         #overlay {
             position: absolute;
@@ -136,6 +131,20 @@
         }
 
         .hidden { display: none !important; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .new-record {
+            color: #FFD700;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            animation: pulse 1s infinite;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
     </style>
 </head>
 <body>
@@ -145,6 +154,7 @@
     <div id="ui-layer">
         <div style="display: flex; justify-content: space-between; width: 100%; flex-direction: column; align-items: center;">
             <div id="score-display" class="hud-text">0</div>
+            <div id="highscore-display" class="hud-text">BEST: 0</div>
             <div id="distance-display" class="hud-text">0 m</div>
         </div>
         <div style="display: flex; justify-content: flex-end; width: 100%;">
@@ -155,6 +165,7 @@
     <div id="overlay">
         <h1 id="title-text">ONEINDIGE<br>SUBWAY</h1>
         <div id="game-over-stats" class="hidden">
+            <div id="new-highscore-msg" class="new-record hidden">🏆 NEW HIGH SCORE! 🏆</div>
             <div style="font-size: 1rem; opacity: 0.8; font-family: 'Roboto', sans-serif; margin-bottom: 5px;">EINDSCORE</div>
             <span id="final-score" style="color: #FFD700; font-size: 3rem;">0</span>
             <div style="margin-top: 10px; font-size: 1.2rem;">Munten: <span id="final-coins" style="color: #FFD700;">0</span></div>
@@ -182,7 +193,7 @@
             laneWidth: 3.5,
             baseSpeed: 22,
             maxSpeed: 55,
-            jumpForce: 0.55, // Iets hoger gemaakt om makkelijker op treinen te springen
+            jumpForce: 0.55,
             gravity: 0.024,
             spawnDistance: 100,
             colors: {
@@ -199,6 +210,9 @@
                 barrierDark: 0x2C3E50
             }
         };
+
+        // --- HIGH SCORE SYSTEM ---
+        let highScore = parseInt(localStorage.getItem('subwayRunnerHighScore_v1') || '0');
 
         class ObjectPool {
             constructor(createFn, initialSize = 80) {
@@ -302,6 +316,8 @@
             setupTouchControls();
             document.getElementById('start-btn').addEventListener('click', startGame);
 
+            // Update high score UI on load
+            document.getElementById('highscore-display').textContent = `BEST: ${highScore}`;
             renderer.render(scene, camera);
         }
 
@@ -590,7 +606,6 @@
             obj.position.set(x, 0, z);
             obj.scale.set(1, 1, 1);
             
-            // BELANGRIJK: Opslaan van het type voor de "op de trein lopen" logica
             obj.userData.subType = type;
             
             const body = obj.getObjectByName('trainBody');
@@ -607,7 +622,6 @@
                 if (obj.userData.barrierMesh) obj.userData.barrierMesh.visible = false;
                 if (obj.userData.overheadMesh) obj.userData.overheadMesh.visible = false;
                 const depth = 4.75 * scaleZ;
-                // Hitbox hoogte is nu exact 3.2 (matcht met de visuele trein)
                 obj.userData.box.min.set(x - 1.3, 0, z - depth);
                 obj.userData.box.max.set(x + 1.3, 3.2, z + depth);
             } else if (type === 'barrier') {
@@ -722,11 +736,32 @@
         function gameOver() {
             gameState.isPlaying = false;
             cancelAnimationFrame(frameId);
+            
+            const currentScore = Math.floor(gameState.score);
+            let isNewHighScore = false;
+            
+            // Check and update high score
+            if (currentScore > highScore && currentScore > 0) {
+                highScore = currentScore;
+                localStorage.setItem('subwayRunnerHighScore_v1', highScore.toString());
+                isNewHighScore = true;
+            }
+            
             document.getElementById('overlay').classList.remove('hidden');
             document.getElementById('game-over-stats').classList.remove('hidden');
             document.getElementById('title-text').innerHTML = "GAME<br>OVER";
-            document.getElementById('final-score').textContent = Math.floor(gameState.score);
+            document.getElementById('final-score').textContent = currentScore;
             document.getElementById('final-coins').textContent = gameState.coins;
+            
+            // Show/hide new high score message
+            const newHighScoreMsg = document.getElementById('new-highscore-msg');
+            if (isNewHighScore) {
+                newHighScoreMsg.classList.remove('hidden');
+            } else {
+                newHighScoreMsg.classList.add('hidden');
+            }
+            
+            updateUI();
         }
 
         function handleKeyDown(e) {
@@ -751,7 +786,7 @@
             if (!gameState.isJumping && !gameState.isDucking) {
                 gameState.yVelocity = CONFIG.jumpForce;
                 gameState.isJumping = true;
-                gameState.onTrain = false; // Spring van de trein af
+                gameState.onTrain = false;
             }
         }
 
@@ -790,6 +825,7 @@
 
         function updateUI() {
             document.getElementById('score-display').textContent = Math.floor(gameState.score);
+            document.getElementById('highscore-display').textContent = `BEST: ${highScore}`;
             document.getElementById('coin-display').textContent = `🪙 ${gameState.coins}`;
             document.getElementById('distance-display').textContent = `${Math.floor(gameState.distance)} m`;
         }
@@ -799,7 +835,6 @@
             frameId = requestAnimationFrame(animate);
             const delta = Math.min(clock.getDelta(), 0.1);
             
-            // 1. Speler Beweging
             playerGroup.position.x += (gameState.targetX - playerGroup.position.x) * 12 * delta;
             
             if (gameState.isJumping) {
@@ -821,7 +856,6 @@
                 }
             }
 
-            // 2. Animatie
             if (!gameState.isJumping && !gameState.isDucking) {
                 gameState.runCycle += gameState.speed * delta * 0.8;
                 const swing = Math.sin(gameState.runCycle) * 0.8;
@@ -841,18 +875,15 @@
                 limbs.leftArm.rotation.x = 1.5; limbs.rightArm.rotation.x = 1.5;
             }
 
-            // 3. Voortgang
             gameState.speed = Math.min(CONFIG.maxSpeed, gameState.speed + delta * 0.2);
             gameState.score += gameState.speed * delta * 0.1;
             gameState.distance += gameState.speed * delta;
             updateUI();
             ground.material.map.offset.y -= gameState.speed * delta * 0.04;
 
-            // 4. Oneindig Spawnen
             updateSpawning(delta);
             if (Math.random() < 0.08) spawnProp(-CONFIG.spawnDistance);
 
-            // 5. Hitboxes & Collision (MET TREIN DAK LOGICA)
             updatePlayerHitbox();
             
             let onTrainThisFrame = false;
@@ -872,18 +903,15 @@
                     const isTrain = obj.userData.subType === 'train' || obj.userData.subType === 'long_train';
                     
                     if (isTrain && playerBox.min.y >= box.max.y - 0.4) {
-                        // Speler zit OP de trein!
                         onTrainThisFrame = true;
                         currentTrainHeight = box.max.y;
                         
-                        // Magnetisch landen op het dak
                         if (gameState.yVelocity <= 0 && playerGroup.position.y < box.max.y + 0.5) {
                             playerGroup.position.y = box.max.y;
                             gameState.yVelocity = 0;
                             gameState.isJumping = false;
                         }
                     } else {
-                        // Botst met zijkant van trein, of met ander obstakel
                         gameOver();
                         return;
                     }
@@ -892,12 +920,10 @@
                 if (obj.position.z > 15) obstaclePool.release(obj);
             }
 
-            // Update trein status na de loop
             if (onTrainThisFrame) {
                 gameState.onTrain = true;
                 gameState.trainHeight = currentTrainHeight;
             } else {
-                // Als we van de trein aflopen, laat de zwaartekracht je vallen
                 if (gameState.onTrain && playerGroup.position.y > 1.0) {
                     gameState.isJumping = true;
                     gameState.yVelocity = -0.1;
@@ -905,7 +931,6 @@
                 gameState.onTrain = false;
             }
 
-            // 6. Munten
             for (let i = coinPool.active.length - 1; i >= 0; i--) {
                 const obj = coinPool.active[i];
                 if (!obj.userData.active) continue;
@@ -920,7 +945,6 @@
                 } else if (obj.position.z > 15) coinPool.release(obj);
             }
 
-            // 7. Omgeving & Deeltjes
             for (let i = propPool.active.length - 1; i >= 0; i--) {
                 const obj = propPool.active[i];
                 obj.position.z += gameState.speed * delta;
@@ -936,7 +960,6 @@
                 if (obj.userData.life <= 0) particlePool.release(obj);
             }
 
-            // 8. Camera
             camera.position.x += (playerGroup.position.x * 0.4 - camera.position.x) * 3 * delta;
             camera.fov = 65 + (gameState.speed - CONFIG.baseSpeed) * 0.15;
             camera.updateProjectionMatrix();
