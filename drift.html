@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sling Drift</title>
+  <style>
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #1c1c22;
+  font-family: Impact, "Arial Black", system-ui, sans-serif;
+  user-select: none;
+  touch-action: none;
+}
+
+#gameShell {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #1c1c22;
+}
+
+#game {
+  width: min(100vw, calc(100vh * 1.8));
+  height: min(100vh, calc(100vw / 1.8));
+  display: block;
+  background: #50c462;
+  cursor: pointer;
+}
+
+  </style>
+</head>
+<body>
+  <main id="gameShell" aria-label="Sling Drift game">
+    <canvas id="game" width="1008" height="560"></canvas>
+  </main>
+  <script>
+(() => {
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+  const TAU = Math.PI * 2;
+
+  const state = {
+    mode: "start",
+    input: false,
+    justPressed: false,
+    distance: 105,
+    speed: 245,
+    cameraX: 0,
+    cameraY: 0,
+    score: 0,
+    best: Number(localStorage.getItem("slingBest") || 0),
+    diamonds: Number(localStorage.getItem("slingDiamonds") || 0),
+    perfectChain: 0,
+    message: "",
+    messageTime: 0,
+    levelBanner: 0,
+    crashTime: 0,
+    secondChance: 5,
+    usedContinue: false,
+    tireMarks: [],
+    sparkles: [],
+    collected: new Set(),
+    missed: 0,
+    lastTurn: -1,
+    turnHold: null,
+    level: 1,
+  };
+
+  const track = buildTrack();
+  const car = { x: 0, y: 0, angle: -Math.PI / 2, wobble: 0 };
+
+  function buildTrack() {
+    const builtTrack = {
+      segments: [],
+      anchors: [],
+      coins: [],
+      length: 0,
+      cursor: { x: W / 2, y: 260, heading: -Math.PI / 2, distance: 0 },
+      nextTurnIndex: 0,
+    };
+    appendLine(builtTrack, 520, false);
+    appendStairSteps(builtTrack, 18);
+    return builtTrack;
+  }
+
+  function appendLine(targetTrack, len, addCoins = true) {
+    const { x, y, heading, distance } = targetTrack.cursor;
+    const end = {
+      x: x + Math.cos(heading) * len,
+      y: y + Math.sin(heading) * len,
+      heading,
+      distance: distance + len,
+    };
+    const seg = {
+      type: "line",
+      start: { x, y, heading, distance },
+      end,
+      length: len,
+      distance,
+    };
+    targetTrack.segments.push(seg);
+    if (addCoins) addCoinsOnLine(targetTrack, seg);
+    targetTrack.cursor = end;
+    targetTrack.length = end.distance;
+    return seg;
+  }
+
+  function appendArc(targetTrack, side, angle, radius) {
+    const { x, y, heading, distance } = targetTrack.cursor;
+    const sign = side === "left" ? -1 : 1;
+    const normal = heading + sign * Math.PI / 2;
+    const cx = x + Math.cos(normal) * radius;
+    const cy = y + Math.sin(normal) * radius;
+    const startAngle = Math.atan2(y - cy, x - cx);
+    const endAngle = startAngle + sign * angle;
+    const len = radius * angle;
+    const turnIndex = targetTrack.nextTurnIndex;
+    const seg = {
+      type: "arc",
+      side,
+      turnIndex,
+      cx,
+      cy,
+      radius,
+      startAngle,
+      endAngle,
+      angle: sign * angle,
+      absAngle: angle,
+      distance,
+      length: len,
+      startHeading: heading,
+    };
+    const anchor = { x: cx, y: cy, turnIndex, radius, distance, side };
+    seg.anchor = anchor;
+    seg.end = {
+      x: cx + Math.cos(endAngle) * radius,
+      y: cy + Math.sin(endAngle) * radius,
+      heading: heading + sign * angle,
+      distance: distance + len,
+    };
+    targetTrack.segments.push(seg);
+    targetTrack.anchors.push(anchor);
+    targetTrack.cursor = seg.end;
+    targetTrack.length = seg.end.distance;
+    targetTrack.nextTurnIndex += 1;
+    return seg;
+  }
+
+  function addCoinsOnLine(targetTrack, seg) {
+    const coinCount = targetTrack.nextTurnIndex > 9 ? 3 : 2;
+    for (let c = 1; c <= coinCount; c++) {
+      targetTrack.coins.push({
+        distance: seg.distance + seg.length * (c / (coinCount + 1)),
+        id: `${targetTrack.nextTurnIndex}-${c}-${Math.round(seg.distance)}`,
+      });
+    }
+  }
+
+
+  function appendStairSteps(targetTrack, count) {
+    for (let i = 0; i < count; i++) {
+      const side = i % 2 === 0 ? "left" : "right";
+      const radius = 112 + (i % 4) * 8;
+      const sideLen = 280 + (i % 3) * 70;
+      const upLen = 380 + (i % 5) * 45;
+      appendArc(targetTrack, side, Math.PI / 2, radius);
+      appendLine(targetTrack, sideLen);
+      appendArc(targetTrack, side === "left" ? "right" : "left", Math.PI / 2, radius);
+      appendLine(targetTrack, upLen);
+    }
+  }
+
+  function extendTrackUntil(targetDistance) {
+    while (track.length < targetDistance) appendStairSteps(track, 4);
+  }
+
+  function pointAt(distance) {
+    extendTrackUntil(distance + 2500);
+    const d = Math.max(0, Math.min(distance, track.length - 1));
+    let seg = track.segments[track.segments.length - 1];
+    for (const candidate of track.segments) {
+      if (d >= candidate.distance && d <= candidate.distance + candidate.length) {
+        seg = candidate;
+        break;
+      }
+    }
+    const t = (d - seg.distance) / seg.length;
+    if (seg.type === "line") {
+      return {
+        x: seg.start.x + (seg.end.x - seg.start.x) * t,
+        y: seg.start.y + (seg.end.y - seg.start.y) * t,
+        angle: seg.start.heading,
+        segment: seg,
+        t,
+      };
+    }
+    const a = seg.startAngle + seg.angle * t;
+    const tangent = a + (seg.side === "left" ? -Math.PI / 2 : Math.PI / 2);
+    return {
+      x: seg.cx + Math.cos(a) * seg.radius,
+      y: seg.cy + Math.sin(a) * seg.radius,
+      angle: tangent,
+      segment: seg,
+      t,
+    };
+  }
+
+  function setInput(value) {
+    if (value && !state.input) state.justPressed = true;
+    state.input = value;
+    if (state.mode === "start" && value) startGame();
+    if (state.mode === "crashed" && value && state.secondChance > 0 && !state.usedContinue) continueGame();
+  }
+
+  addEventListener("keydown", (event) => {
+    if (event.code === "Space" || event.code === "ArrowUp" || event.code === "Enter") {
+      event.preventDefault();
+      setInput(true);
+    }
+    if (event.code === "KeyR" && state.mode === "crashed") resetGame();
+  });
+  addEventListener("keyup", (event) => {
+    if (event.code === "Space" || event.code === "ArrowUp" || event.code === "Enter") setInput(false);
+  });
+  canvas.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture(event.pointerId);
+    setInput(true);
+  });
+  canvas.addEventListener("pointerup", (event) => {
+    event.preventDefault();
+    setInput(false);
+  });
+  canvas.addEventListener("pointercancel", () => setInput(false));
+  addEventListener("blur", () => setInput(false));
+
+  function startGame() {
+    state.mode = "playing";
+    state.usedContinue = false;
+    state.messageTime = 0;
+    state.levelBanner = 0;
+  }
+
+  function resetGame() {
+    state.mode = "start";
+    state.distance = 105;
+    state.score = 0;
+    state.speed = 245;
+    state.cameraX = 0;
+    state.perfectChain = 0;
+    state.message = "";
+    state.messageTime = 0;
+    state.levelBanner = 0;
+    state.crashTime = 0;
+    state.secondChance = 5;
+    state.usedContinue = false;
+    state.tireMarks = [];
+    state.sparkles = [];
+    state.collected = new Set();
+    state.missed = 0;
+    state.lastTurn = -1;
+    state.turnHold = null;
+    state.level = 1;
+  }
+
+  function continueGame() {
+    state.usedContinue = true;
+    state.mode = "playing";
+    state.distance = Math.max(100, state.distance - 180);
+    state.speed = 245 + state.level * 8;
+    state.perfectChain = 0;
+    state.turnHold = null;
+    state.message = "";
+    state.crashTime = 0;
+  }
+
+  function crash() {
+    if (state.mode !== "playing") return;
+    state.mode = "crashed";
+    state.crashTime = 0;
+    state.secondChance = state.usedContinue ? 0 : 5;
+    state.best = Math.max(state.best, state.score);
+    localStorage.setItem("slingBest", String(state.best));
+  }
+
+  function update(dt) {
+    state.justPressed = false;
+    if (state.mode === "playing") {
+      state.distance += state.speed * dt;
+      state.speed = Math.min(430, state.speed + dt * 2.4);
+      const p = pointAt(state.distance);
+      const currentTurn = p.segment.type === "arc" ? p.segment.turnIndex : -1;
+
+      if (p.segment.type === "arc") {
+        if (!state.turnHold || state.turnHold.turn !== currentTurn) {
+          state.turnHold = {
+            turn: currentTurn,
+            heldFrames: 0,
+            startT: state.input ? p.t : 999,
+            released: false,
+          };
+        }
+        if (state.input) state.turnHold.heldFrames += 1;
+        if (!state.input && p.t > 0.18 && p.t < 0.86) {
+          car.wobble += dt * 7;
+          if (car.wobble > 0.52) crash();
+        } else {
+          car.wobble = Math.max(0, car.wobble - dt * 3.2);
+        }
+      } else {
+        if (state.turnHold && state.turnHold.turn !== state.lastTurn) {
+          const hold = state.turnHold;
+          const perfect = hold.startT <= 0.12 && hold.heldFrames > 10 && car.wobble < 0.18;
+          finishTurn(perfect);
+          state.lastTurn = hold.turn;
+          state.turnHold = null;
+        }
+        if (state.input && state.mode === "playing" && state.distance > 360) {
+          car.wobble += dt * 4.2;
+          if (car.wobble > 0.75) crash();
+        } else {
+          car.wobble = Math.max(0, car.wobble - dt * 4.5);
+        }
+      }
+
+      const offset = Math.sin(performance.now() * 0.018) * car.wobble * 48;
+      car.x = p.x + Math.cos(p.angle + Math.PI / 2) * offset;
+      car.y = p.y + Math.sin(p.angle + Math.PI / 2) * offset;
+      car.angle = p.angle + Math.sin(performance.now() * 0.02) * car.wobble * 0.32;
+      state.cameraX += (car.x - W / 2 - state.cameraX) * Math.min(1, dt * 5);
+      state.cameraY += (car.y - H * 0.62 - state.cameraY) * Math.min(1, dt * 5);
+
+      collectCoins();
+      spawnEffects(dt);
+      extendTrackUntil(state.distance + 3000);
+    }
+
+    if (state.mode === "crashed") {
+      state.crashTime += dt;
+      state.secondChance = Math.max(0, 5 - state.crashTime);
+      if (state.crashTime > 5.2) resetGame();
+    }
+
+    state.messageTime = Math.max(0, state.messageTime - dt);
+    state.levelBanner = Math.max(0, state.levelBanner - dt);
+    state.sparkles = state.sparkles.filter((p) => (p.life -= dt) > 0);
+    state.tireMarks = state.tireMarks.filter((m) => (m.life -= dt) > 0);
+  }
+
+  function finishTurn(perfect) {
+    state.score += 1;
+    if (perfect) {
+      state.perfectChain += 1;
+      state.message = `PERFECT ${state.perfectChain}`;
+      state.messageTime = 1.0;
+      state.diamonds += state.perfectChain % 3 === 0 ? 1 : 0;
+      localStorage.setItem("slingDiamonds", String(state.diamonds));
+    } else {
+      state.perfectChain = 0;
+      state.message = "NICE";
+      state.messageTime = 0.55;
+    }
+    if (state.score > 0 && state.score % 10 === 0) {
+      state.levelBanner = 2.0;
+      state.level += 1;
+    }
+  }
+
+  function collectCoins() {
+    for (const coin of track.coins) {
+      if (state.collected.has(coin.id)) continue;
+      if (Math.abs(coin.distance - state.distance) < 18) {
+        state.collected.add(coin.id);
+        state.diamonds += 1;
+        localStorage.setItem("slingDiamonds", String(state.diamonds));
+        const p = pointAt(coin.distance);
+        for (let i = 0; i < 8; i++) {
+          state.sparkles.push({
+            x: p.x,
+            y: p.y,
+            vx: Math.cos((i / 8) * TAU) * 90,
+            vy: Math.sin((i / 8) * TAU) * 90,
+            life: 0.45,
+            color: i % 2 ? "#ffd829" : "#6b4cff",
+          });
+        }
+      }
+    }
+  }
+
+  function spawnEffects(dt) {
+    if (state.input && state.mode === "playing") {
+      state.tireMarks.push({
+        x: car.x - Math.cos(car.angle) * 20,
+        y: car.y - Math.sin(car.angle) * 20,
+        angle: car.angle,
+        life: 1.2,
+      });
+      if (Math.random() < dt * 9) {
+        state.sparkles.push({
+          x: car.x - Math.cos(car.angle) * 24,
+          y: car.y - Math.sin(car.angle) * 24,
+          vx: -Math.cos(car.angle) * 30 + (Math.random() - 0.5) * 50,
+          vy: -Math.sin(car.angle) * 30 + (Math.random() - 0.5) * 50,
+          life: 0.38,
+          color: "#cfcfcf",
+        });
+      }
+    }
+    state.sparkles.forEach((p) => {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= 0.96;
+      p.vy *= 0.96;
+    });
+  }
+
+  function screen(x, y) {
+    return { x: x - state.cameraX, y: y - state.cameraY };
+  }
+
+  function draw() {
+    const bg = state.level >= 3 ? "#eda332" : state.level >= 2 ? "#88c34d" : "#51c662";
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    drawLevelTint();
+    drawRoad();
+    drawWorldItems();
+    drawRope();
+    drawCar();
+    drawHud();
+    if (state.mode === "start") drawStart();
+    if (state.mode === "crashed") drawCrash();
+    if (state.levelBanner > 0) drawLevelUp();
+  }
+
+  function drawRoad() {
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    drawTrackStroke("#343434", 138);
+    drawTrackStroke("#444", 112);
+    drawTrackStroke("rgba(0,0,0,.12)", 4, 36);
+    drawTrackStroke("rgba(255,255,255,.06)", 3, -34);
+    ctx.restore();
+
+    for (const a of track.anchors) {
+      if (a.distance < state.distance - 300 || a.distance > state.distance + 1600) continue;
+      const s = screen(a.x, a.y);
+      if (s.x < -80 || s.x > W + 80 || s.y < -80 || s.y > H + 80) continue;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 18, 0, TAU);
+      ctx.fillStyle = "#91441a";
+      ctx.fill();
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "rgba(0,0,0,.22)";
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 10, 0, TAU);
+      ctx.fillStyle = "#cc5d18";
+      ctx.fill();
+    }
+  }
+
+  function drawTrackStroke(color, width, sideOffset = 0) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    let started = false;
+    const minD = Math.max(0, state.distance - 420);
+    const maxD = Math.min(track.length, state.distance + 1800);
+    for (const seg of track.segments) {
+      if (seg.distance + seg.length < minD || seg.distance > maxD) continue;
+      const steps = Math.max(8, Math.ceil(seg.length / 28));
+      for (let i = 0; i <= steps; i++) {
+        const d = seg.distance + seg.length * (i / steps);
+        if (d < minD || d > maxD) {
+          started = false;
+          continue;
+        }
+        const p = pointAt(d);
+        const x = p.x + Math.cos(p.angle + Math.PI / 2) * sideOffset;
+        const y = p.y + Math.sin(p.angle + Math.PI / 2) * sideOffset;
+        const s = screen(x, y);
+        if (s.x < -220 || s.x > W + 220 || s.y < -220 || s.y > H + 220) {
+          started = false;
+          continue;
+        }
+        if (!started) {
+          ctx.moveTo(s.x, s.y);
+          started = true;
+        } else {
+          ctx.lineTo(s.x, s.y);
+        }
+      }
+    }
+    ctx.stroke();
+  }
+
+  function drawWorldItems() {
+    for (const coin of track.coins) {
+      if (state.collected.has(coin.id)) continue;
+      if (coin.distance < state.distance - 220 || coin.distance > state.distance + 1600) continue;
+      const p = pointAt(coin.distance);
+      const s = screen(p.x, p.y);
+      if (s.x < -80 || s.x > W + 80 || s.y < -80 || s.y > H + 80) continue;
+      drawDiamond(s.x, s.y, 10);
+    }
+
+    for (let i = 0; i < track.anchors.length; i++) {
+      const anchor = track.anchors[i];
+      if (anchor.distance < state.distance - 280 || anchor.distance > state.distance + 1600) continue;
+      const p = pointAt(anchor.distance + 65);
+      const s = screen(p.x, p.y);
+      if (s.x < -90 || s.x > W + 90 || s.y < -70 || s.y > H + 70) continue;
+      outlinedText(String(i + 1), s.x + 46, s.y - 6, 34, "#2fac43", "rgba(0,0,0,.65)");
+    }
+
+    state.tireMarks.forEach((m) => {
+      const s = screen(m.x, m.y);
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, m.life / 1.2) * 0.45;
+      ctx.translate(s.x, s.y);
+      ctx.rotate(m.angle);
+      ctx.strokeStyle = "#151515";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 28, -0.8, 0.45);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    state.sparkles.forEach((p) => {
+      const s = screen(p.x, p.y);
+      if (s.x < -60 || s.x > W + 60 || s.y < -60 || s.y > H + 60) return;
+      ctx.globalAlpha = Math.max(0, p.life / 0.45);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, p.color === "#cfcfcf" ? 6 : 4, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function drawRope() {
+    if (state.mode !== "playing" || !state.input) return;
+    const p = pointAt(state.distance);
+    if (p.segment.type !== "arc" || !p.segment.anchor) return;
+    const anchor = screen(p.segment.anchor.x, p.segment.anchor.y);
+    const carPoint = screen(car.x, car.y);
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "rgba(35, 20, 45, .78)";
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(anchor.x, anchor.y);
+    ctx.lineTo(carPoint.x, carPoint.y);
+    ctx.stroke();
+    ctx.strokeStyle = "#ffe000";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(anchor.x, anchor.y);
+    ctx.lineTo(carPoint.x, carPoint.y);
+    ctx.stroke();
+    ctx.fillStyle = "#ffe000";
+    ctx.beginPath();
+    ctx.arc(anchor.x, anchor.y, 7, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawCar() {
+    const s = screen(car.x, car.y);
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(car.angle + Math.PI / 2);
+    ctx.shadowColor = "rgba(0,0,0,.35)";
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 5;
+    roundRect(-13, -24, 26, 48, 7, "#f0c400");
+    ctx.shadowColor = "transparent";
+    roundRect(-9, -15, 18, 12, 3, "#41304d");
+    roundRect(-8, 5, 16, 11, 3, "#7b5422");
+    ctx.fillStyle = "#121212";
+    ctx.fillRect(-15, -15, 4, 12);
+    ctx.fillRect(11, -15, 4, 12);
+    ctx.fillRect(-15, 6, 4, 12);
+    ctx.fillRect(11, 6, 4, 12);
+    ctx.restore();
+  }
+
+  function drawHud() {
+    ctx.fillStyle = "#ffe000";
+    ctx.beginPath();
+    ctx.arc(24, 24, 19, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#47304d";
+    for (let i = 0; i < 8; i++) {
+      ctx.save();
+      ctx.translate(24, 24);
+      ctx.rotate((i / 8) * TAU);
+      ctx.fillRect(12, -3, 7, 6);
+      ctx.restore();
+    }
+    ctx.beginPath();
+    ctx.arc(24, 24, 7, 0, TAU);
+    ctx.fill();
+
+    drawDiamond(W - 24, 23, 9);
+    outlinedText(String(state.diamonds), W - 49, 29, 24, "#fff", "rgba(0,0,0,.35)", "right");
+
+    if (state.mode !== "start") {
+      outlinedText(String(state.score), W / 2, 65, 58, "#fff", "rgba(0,0,0,.28)", "center");
+      ctx.fillStyle = "#ffe000";
+      ctx.font = "24px Impact, Arial Black, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("♛ " + state.best, W / 2, 106);
+    }
+
+    if (state.messageTime > 0) {
+      const alpha = Math.min(1, state.messageTime * 2);
+      ctx.globalAlpha = alpha;
+      outlinedText(state.message, W / 2, 96, 38, "#ffe12a", "rgba(0,0,0,.75)", "center");
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawStart() {
+    ctx.save();
+    ctx.translate(W / 2, H * 0.25);
+    outlinedText("SLING", 0, 0, 62, "#ffdf16", "#3a2950", "center");
+    outlinedText("DRIFT", 0, 58, 62, "#ffdf16", "#3a2950", "center");
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-80, 26);
+    ctx.lineTo(80, 26);
+    ctx.stroke();
+    ctx.restore();
+    outlinedText("SPACE TO START", W / 2, H * 0.42, 28, "#fff", "rgba(0,0,0,.32)", "center");
+    ctx.globalAlpha = 0.13;
+    outlinedText("START", W * 0.83, H * 0.2, 70, "#fff", "transparent", "center");
+    ctx.globalAlpha = 1;
+  }
+
+  function drawCrash() {
+    ctx.fillStyle = "rgba(0,0,0,.62)";
+    ctx.fillRect(0, 0, W, H);
+    outlinedText(String(state.score), W / 2, 74, 70, "#fff", "rgba(0,0,0,.35)", "center");
+    ctx.fillStyle = "#ffe000";
+    ctx.font = "26px Impact, Arial Black, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("♛ " + state.best, W / 2, 116);
+
+    const cx = W / 2;
+    const cy = H / 2;
+    const radius = 70;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, TAU);
+    ctx.fillStyle = "#34224d";
+    ctx.fill();
+    ctx.lineWidth = 13;
+    ctx.strokeStyle = "#ffe000";
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + TAU * (state.secondChance / 5));
+    ctx.strokeStyle = "#26a5e7";
+    ctx.stroke();
+    outlinedText("SECOND", cx, cy - 8, 26, "#fff", "rgba(0,0,0,.3)", "center");
+    outlinedText("CHANCE?", cx, cy + 25, 26, "#fff", "rgba(0,0,0,.3)", "center");
+    outlinedText("HOLD TO REVIVE", cx, cy + 115, 18, "#fff", "rgba(0,0,0,.4)", "center");
+  }
+
+  function drawLevelUp() {
+    ctx.globalAlpha = Math.min(1, state.levelBanner * 2);
+    ctx.fillStyle = "rgba(18,55,25,.82)";
+    ctx.fillRect(0, 58, W, 84);
+    outlinedText("LEVEL UP!", W / 2, 116, 45, "#fff", "#ff8b16", "center");
+    ctx.globalAlpha = 1;
+  }
+
+  function drawLevelTint() {
+    if (state.level < 2) return;
+    ctx.globalAlpha = state.level >= 3 ? 0.18 : 0.12;
+    ctx.fillStyle = state.level >= 3 ? "#f7a12b" : "#c9da59";
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawDiamond(x, y, size) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "#fff5a2";
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size * 0.95, -size * 0.2);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size * 0.95, -size * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#ffb900";
+    ctx.beginPath();
+    ctx.moveTo(0, -size * 0.72);
+    ctx.lineTo(size * 0.68, -size * 0.1);
+    ctx.lineTo(0, size * 0.72);
+    ctx.lineTo(-size * 0.68, -size * 0.1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function outlinedText(text, x, y, size, fill, stroke, align = "left") {
+    ctx.font = `${size}px Impact, Arial, Black, sans-serif`;
+    ctx.textAlign = align;
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+    if (stroke !== "transparent") {
+      ctx.lineWidth = Math.max(3, size * 0.12);
+      ctx.strokeStyle = stroke;
+      ctx.strokeText(text, x, y);
+    }
+    ctx.fillStyle = fill;
+    ctx.fillText(text, x, y);
+  }
+
+  function roundRect(x, y, w, h, r, fill) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+  resetGame();
+  requestAnimationFrame(frame);
+})();
+
+  </script>
+</body>
+</html>
