@@ -1,0 +1,4124 @@
+<!DOCTYPE html><html><head><title>Yet Another Doom Clone</title></head><body><style>body{margin:0px;background:#000}#qQ{position:absolute;left:35vw;top:4em;font-size:2em;font-variant:small-caps;color:#aaa;animation:z 9s;}#cQ{height:100%;width:100%}#hQ{top:0px;width:10vw;height:2vh;border:3px solid #008;border-radius:3px;display:none}#fps{display:none}#hW{height:2vh;background:#00a}@keyframes q{50%{opacity:0}}.b{animation:q 1s linear infinite}@keyframes z{from{opacity:0}to{opacity:1}}</style><canvas id=cQ></canvas><div id=qQ><div id=hE>Yet Another Doom Clone<br><br><div class=b>Loading... <span id=jQ></span></div><br><br>Move: WASD<br>Aim/Shoot: Mouse/Click<br><br><br><br>By Nicholas Carlini</div><div id=hQ><div id=hW></div></div></div></body>
+<script>
+const program1Shader = `
+float vsm(int which_texture, vec2 texpos) {
+    vec4 coded_distance = get_shader(which_texture, texpos);
+    float depth_mean = coded_distance.x, variance = max(coded_distance.y - depth_mean * depth_mean, .1), dist_to_camera = distance(u_light_position[which_texture], world_position);
+    return clamp(max(clamp((variance / (variance + (dist_to_camera - depth_mean) * (dist_to_camera - depth_mean)) - .2) / .8, 0., 1.), smoothstep(dist_to_camera - .02, dist_to_camera, depth_mean)), 0., 1.);
+}
+void main() {
+    if(u_render_direct) {
+        out_color = v_color;
+        return;
+    }
+    vec3 v_normal_ = normalize(v_normal.xyz);
+    float light_add;
+    light_add += clamp(dot(vec3(0, 0, -1), v_normal_), 0., 1.), light_add += clamp(dot(vec3(1, 0, .5), v_normal_), 0., 1.), light_add += clamp(dot(vec3(-.5, -.86, .5), v_normal_), 0., 1.), light_add += clamp(dot(vec3(-.5, .86, .5), v_normal_), 0., 1.), light_add *= u_ambient_light * (1. - smoothstep(0., 1., clamp(length(u_light_position[4] - world_position) / 150. - .3, 0., .9)));
+        if(!u_is_light_shadow[0] || v_project_onto_light[0].z > 0.) {
+            vec2 scaled = v_project_onto_light[0].xy / v_project_onto_light[0].w;
+            float in_light_amt = u_is_light_shadow[0] ? vsm(0, scaled * .5 + .5) : 1.;
+            if(in_light_amt > 0.) {
+                vec4 v_to_light = u_light_position[0] - world_position;
+                float fade_amt = u_is_light_shadow[0] ? clamp(.9 - dot(scaled, scaled), 0., .095) * 10. / .95 : 1., light_amt = dot(v_normal_, normalize(v_to_light.xyz)) + 1.;
+                vec4 halfVector = normalize(normalize(v_to_light) + normalize(v_to_light));
+                float specular = pow(abs(dot(v_normal_, halfVector.xyz)), 100.) * .1;
+                light_amt += specular;
+                float dist_to_light = distance(u_light_position[0], world_position);
+                light_amt *= u_light_brightness[0] * fade_amt * fade_amt * in_light_amt / (u_is_light_shadow[0] ? 1. : sqrt(dist_to_light)), light_add += u_ambient_light * pow(light_amt, 3.);
+            }
+        }
+        if(!u_is_light_shadow[1] || v_project_onto_light[1].z > 0.) {
+            vec2 scaled = v_project_onto_light[1].xy / v_project_onto_light[1].w;
+            float in_light_amt = u_is_light_shadow[1] ? vsm(1, scaled * .5 + .5) : 1.;
+            if(in_light_amt > 0.) {
+                vec4 v_to_light = u_light_position[1] - world_position;
+                float fade_amt = u_is_light_shadow[1] ? clamp(.9 - dot(scaled, scaled), 0., .095) * 10. / .95 : 1., light_amt = dot(v_normal_, normalize(v_to_light.xyz)) + 1.;
+                vec4 halfVector = normalize(normalize(v_to_light) + normalize(v_to_light));
+                float specular = pow(abs(dot(v_normal_, halfVector.xyz)), 100.) * .1;
+                light_amt += specular;
+                float dist_to_light = distance(u_light_position[1], world_position);
+                light_amt *= u_light_brightness[1] * fade_amt * fade_amt * in_light_amt / (u_is_light_shadow[1] ? 1. : sqrt(dist_to_light)), light_add += u_ambient_light * pow(light_amt, 3.);
+            }
+        }
+        if(!u_is_light_shadow[2] || v_project_onto_light[2].z > 0.) {
+            vec2 scaled = v_project_onto_light[2].xy / v_project_onto_light[2].w;
+            float in_light_amt = u_is_light_shadow[2] ? vsm(2, scaled * .5 + .5) : 1.;
+            if(in_light_amt > 0.) {
+                vec4 v_to_light = u_light_position[2] - world_position;
+                float fade_amt = u_is_light_shadow[2] ? clamp(.9 - dot(scaled, scaled), 0., .095) * 10. / .95 : 1., light_amt = dot(v_normal_, normalize(v_to_light.xyz)) + 1.;
+                vec4 halfVector = normalize(normalize(v_to_light) + normalize(v_to_light));
+                float specular = pow(abs(dot(v_normal_, halfVector.xyz)), 100.) * .1;
+                light_amt += specular;
+                float dist_to_light = distance(u_light_position[2], world_position);
+                light_amt *= u_light_brightness[2] * fade_amt * fade_amt * in_light_amt / (u_is_light_shadow[2] ? 1. : sqrt(dist_to_light)), light_add += u_ambient_light * pow(light_amt, 3.);
+            }
+        }
+        if(!u_is_light_shadow[3] || v_project_onto_light[3].z > 0.) {
+            vec2 scaled = v_project_onto_light[3].xy / v_project_onto_light[3].w;
+            float in_light_amt = u_is_light_shadow[3] ? vsm(3, scaled * .5 + .5) : 1.;
+            if(in_light_amt > 0.) {
+                vec4 v_to_light = u_light_position[3] - world_position;
+                float fade_amt = u_is_light_shadow[3] ? clamp(.9 - dot(scaled, scaled), 0., .095) * 10. / .95 : 1., light_amt = dot(v_normal_, normalize(v_to_light.xyz)) + 1.;
+                vec4 halfVector = normalize(normalize(v_to_light) + normalize(v_to_light));
+                float specular = pow(abs(dot(v_normal_, halfVector.xyz)), 100.) * .1;
+                light_amt += specular;
+                float dist_to_light = distance(u_light_position[3], world_position);
+                light_amt *= u_light_brightness[3] * fade_amt * fade_amt * in_light_amt / (u_is_light_shadow[3] ? 1. : sqrt(dist_to_light)), light_add += u_ambient_light * pow(light_amt, 3.);
+            }
+        }
+    out_color.rgb += pow(light_add, .33), out_color *= v_color;
+    if(u_render_texture > 0)
+        out_color *= get_shader(u_texture_mux + 5, u_render_texture == 1 ? world_position.xy / 32. : vec2(dot(world_position.xy, vec2(sin(v_angle.x), -cos(v_angle.x))), world_position.z) / 16.);
+    out_color.w = 1.;
+}`;
+</script>
+<script>
+// jsfxr.js -- a heavily compressed audio engine
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// ----------------------------------------------------------------
+// ----------------------------------------------------------------
+// Original code licensed as follows
+
+/**
+ * SfxrParams
+ *
+ * Copyright 2010 Thomas Vian
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author Thomas Vian
+ */
+/** @constructor */
+
+// 10965
+// 10957
+// 10935
+
+  //--------------------------------------------------------------------------
+  //
+  //  Settings String Methods
+  //
+  //--------------------------------------------------------------------------
+
+  /**
+   * Parses a settings array into the parameters
+   * @param array Array of the settings values, where elements 0 - 23 are
+   *                a: waveType
+   *                b: attackTime
+   *                c: sustainTime
+   *                d: sustainPunch
+   *                e: decayTime
+   *                f: startFrequency
+   *                g: minFrequency
+   *                h: slide
+   *                i: deltaSlide
+   *                j: vibratoDepth
+   *                k: vibratoSpeed
+   *                l: changeAmount
+   *                m: changeSpeed
+   *                n: squareDuty
+   *                o: dutySweep
+   *                p: repeatSpeed
+   *                q: phaserOffset
+   *                r: phaserSweep
+   *                s: lpFilterCutoff
+   *                t: lpFilterCutoffSweep
+   *                u: lpFilterResonance
+   *                v: hpFilterCutoff
+   *                w: hpFilterCutoffSweep
+   *                x: masterVolume
+   * @return If the string successfully parsed
+   */
+
+/**
+ * SfxrSynth
+ *
+ * Copyright 2010 Thomas Vian
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author Thomas Vian
+ */
+/** @constructor */
+class SfxrSynth {
+
+    constructor() {
+    // All variables are kept alive through closures
+
+  //--------------------------------------------------------------------------
+  //
+  //  Sound Parameters
+  //
+  //--------------------------------------------------------------------------
+
+        this._params = {};  // Params instance
+
+  //--------------------------------------------------------------------------
+  //
+  //  Synth Variables
+  //
+  //--------------------------------------------------------------------------
+
+  var _envelopeLengths, // Length of the attack stage
+      // Length of the sustain stage
+      // Length of the decay stage
+
+      _period,          // Period of the wave
+      _maxPeriod,       // Maximum period before sound stops (from minFrequency)
+
+      _slide,           // Note slide
+      _deltaSlide,      // Change in slide
+
+      _changeAmount,    // Amount to change the note by
+      _changeTime,      // Counter for the note change
+      _changeLimit,     // Once the time reaches this limit, the note changes
+
+      _squareDuty,      // Offset of center switching point in the square wave
+      _dutySweep;       // Amount to change the duty by
+
+  //--------------------------------------------------------------------------
+  //
+  //  Synth Methods
+  //
+  //--------------------------------------------------------------------------
+
+  /**
+   * Resets the runing variables from the params
+   * Used once at the start (total reset) and for the repeat effect (partial reset)
+   */
+  this.reset = () => {
+    // Shorter reference
+    var p = this._params;
+
+    _period       = 100 / (p.f**2 + .001);
+    _maxPeriod    = 100 / (p.g**2   + .001);
+
+    _slide        = 1 - p.h**3 * .01;
+      _deltaSlide   = -(p.i**3) * .000001;
+
+    if (p.a==3) {
+      _squareDuty = .5 - p.n / 2;
+      _dutySweep  = -p.o * .00005;
+    }
+
+    _changeAmount =  1 + p.l**2 * (p.l > 0 ? -.9 : 10);
+    _changeTime   = 0;
+    _changeLimit  = p.m == 1 ? 0 : (1 - p.m)**2 * 20000 + 32;
+  }
+
+  // I split the reset() fn into two fn for better readability
+  this.totalReset = () => {
+    this.reset();
+
+    // Shorter reference
+    var p = this._params;
+
+    // Calculating the length is all that remained here, everything else moved somewhere
+      _envelopeLengths = [p.b**2 * 100000,
+                          p.c**2 * 100000,
+                          p.e**2 * 100000,
+                         1]
+    // Full length of the volume envelop (and therefore sound)
+      // Make sure the length can be divided by 3 so we will not need the padding "==" after base64 encode
+      // TODO I removed a /3 |0 *3, is this okay?
+      return sum(_envelopeLengths)
+  }
+
+  /**
+   * Writes the wave to the supplied buffer ByteArray
+   * @param buffer A ByteArray to write the wave to
+   * @return If the wave is finished
+   */
+  this.synthWave = (buffer, length) => {
+    // Shorter reference
+    var p = this._params;
+
+    // If the filters are active
+    var _filters = p.s != 1 || p.v,
+        // Cutoff multiplier which adjusts the amount the wave position can move
+        _hpFilterCutoff = p.v**2 * .1,
+        // Speed of the high-pass cutoff multiplier
+        _hpFilterDeltaCutoff = 1 + p.w * .0003,
+        // Cutoff multiplier which adjusts the amount the wave position can move
+        _lpFilterCutoff = p.s**3 * .1,
+        // masterVolume * masterVolume (for quick calculations)
+        _masterVolume = p.x**2,
+        // If the phaser is active
+        _phaser = p.q || p.r,
+        // Phase offset for phaser effect
+        _phaserOffset = p.q**2 * (p.q < 0 ? -1020 : 1020),
+        // Once the time reaches this limit, some of the    iables are reset
+        _repeatLimit = p.p ? ((1 - p.p)**2 * 20000 | 0) + 32 : 0,
+        // Amount to change the period of the wave by at the peak of the vibrato wave
+        _vibratoAmplitude = p.j / 2,
+        // The type of wave to generate
+        _waveType = p.a;
+
+    var _envelopeLength      = _envelopeLengths[0]     // Length of the current envelope stage
+
+    // Damping muliplier which restricts how fast the wave position can move
+      var _lpFilterDamping = 5 / (1 + p.u**2 * 20) * (.01 + _lpFilterCutoff);
+      _lpFilterDamping = 1 - clamp(_lpFilterDamping,0,.8);
+
+    var _finished = false,     // If the sound has finished
+        _envelopeStage    = 0, // Current stage of the envelope (attack, sustain, decay, end)
+        _envelopeTime     = 0, // Current time through current enelope stage
+        _envelopeVolume   = 0, // Current volume of the envelope
+        _hpFilterPos      = 0, // Adjusted wave position after high-pass filter
+        _lpFilterDeltaPos = 0, // Change in low-pass wave position, as allowed by the cutoff and damping
+        _lpFilterOldPos,       // Previous low-pass wave position
+        _lpFilterPos      = 0, // Adjusted wave position after low-pass filter
+        _periodTemp,           // Period modified by vibrato
+        _phase            = 0, // Phase through the wave
+        _phaserInt,            // Integer phaser offset, for bit maths
+        _phaserPos        = 0, // Position through the phaser buffer
+        _pos,                  // Phase expresed as a Number from 0-1, used for fast sin approx
+        _repeatTime       = 0, // Counter for the repeats
+        _sample,               // Sub-sample calculated 8 times per actual sample, averaged out to get the super sample
+        lastOut = 0,
+        _vibratoPhase     = 0; // Phase through the vibrato sine wave
+
+    // Buffer of wave values used to create the out of phase second wave
+    var _phaserBuffer = new Array(1024),
+        // Buffer of random values used to generate noise
+        _noiseBuffer  = range(32).map(x=>urandom());
+      _phaserBuffer.fill(0);
+
+    for (var i = 0; i < length; i++) {
+      if (_finished) {
+        return i;
+      }
+
+      // Repeats every _repeatLimit times, partially resetting the sound parameters
+      if (_repeatLimit) {
+        if (++_repeatTime >= _repeatLimit) {
+          _repeatTime = 0;
+          this.reset();
+        }
+      }
+
+      // If _changeLimit is reached, shifts the pitch
+      if (_changeLimit) {
+        if (++_changeTime >= _changeLimit) {
+          _changeLimit = 0;
+          _period *= _changeAmount;
+        }
+      }
+
+      // Acccelerate and apply slide
+      _slide += _deltaSlide;
+      _period *= _slide;
+
+      // Checks for frequency getting too low, and stops the sound if a minFrequency was set
+      if (_period > _maxPeriod) {
+          _period = _maxPeriod;
+          _finished = (p.g > 0);
+      }
+
+      _periodTemp = _period;
+
+      // Applies the vibrato effect
+      if (_vibratoAmplitude > 0) {
+        _vibratoPhase += p.k**2 * .01;
+        _periodTemp *= 1 + Math.sin(_vibratoPhase) * _vibratoAmplitude;
+      }
+
+        _periodTemp = clamp(_periodTemp,8,1e9)|0;
+      // Sweeps the square duty
+      if (_waveType == 3) {
+          _squareDuty = clamp(_squareDuty+_dutySweep,0,.5);
+      }
+
+      // Moves through the different stages of the volume envelope
+      if (++_envelopeTime > _envelopeLength) {
+        _envelopeTime = 0;
+
+          _envelopeLength = _envelopeLengths[++_envelopeStage];
+      }
+
+        // Sets the volume based on the position in the envelope
+        var r = _envelopeTime / _envelopeLengths[_envelopeStage]
+
+        _envelopeVolume = [r, 1 + (1 - r) * 2 * p.d, 1 - r, 0][_envelopeStage]
+        _finished |= _envelopeStage == 3;
+
+      // Moves the phaser offset
+      if (_phaser) {
+          _phaserOffset += p.r**3 * .2;
+
+          // todo space this can be a clamp if I do the negate. Maybe use math.abs?
+        _phaserInt = _phaserOffset | 0;
+        if (_phaserInt < 0) {
+          _phaserInt = -_phaserInt;
+        } else if (_phaserInt > 1023) {
+          _phaserInt = 1023;
+        }
+      }
+
+      // Moves the high-pass filter cutoff
+      if (_filters && _hpFilterDeltaCutoff) {
+          _hpFilterCutoff = clamp(_hpFilterCutoff*_hpFilterDeltaCutoff,.00001,.1);
+      }
+
+        buffer[i] = sum(range(8).map(_=>{
+        // Cycles through the period
+        _phase++;
+        if (_phase >= _periodTemp) {
+          _phase %= _periodTemp;
+
+          // Generates new random noise for this period
+          if (_waveType <= 1) {
+              range(_noiseBuffer.length).map(n=>{
+                  // TODO SPACE make this be a ternary op
+                if (_waveType == 1) {
+                    // Brown for that GAME FEEL
+                    _noiseBuffer[n] = lastOut = (lastOut + (0.02 * urandom())) / 1.02;
+                    _noiseBuffer[n] *= 3.5;
+                } else {
+                    _noiseBuffer[n] = urandom();
+                }
+              })
+          }
+        }
+
+          _sample = [
+              _noiseBuffer[Math.abs(_phase * 32 / _periodTemp | 0)],
+              _noiseBuffer[Math.abs(_phase * 32 / _periodTemp | 0)],
+              NaN,
+              ((_phase / _periodTemp) < _squareDuty) ? .5 : -.5, // 3
+              _sample = 1 - _phase / _periodTemp * 2 // 4
+              ][_waveType]
+
+        // Applies the low and high pass filters
+        if (_filters) {
+          _lpFilterOldPos = _lpFilterPos;
+            _lpFilterCutoff = clamp(_lpFilterCutoff*(1 + p.t * .0001),0,.1);
+
+          if (p.s != 1) {
+            _lpFilterDeltaPos += (_sample - _lpFilterPos) * _lpFilterCutoff;
+            _lpFilterDeltaPos *= _lpFilterDamping;
+          } else {
+            _lpFilterPos = _sample;
+            _lpFilterDeltaPos = 0;
+          }
+
+          _lpFilterPos += _lpFilterDeltaPos;
+
+          _hpFilterPos += _lpFilterPos - _lpFilterOldPos;
+          _hpFilterPos *= 1 - _hpFilterCutoff;
+          _sample = _hpFilterPos;
+        }
+
+        // Applies the phaser effect
+        if (_phaser) {
+          _phaserBuffer[_phaserPos % 1024] = _sample;
+          _sample += _phaserBuffer[(_phaserPos - _phaserInt + 1024) % 1024];
+          _phaserPos++;
+        }
+
+            return _sample;
+        }))* _envelopeVolume * _masterVolume * (.5 + 1.5*(_waveType == 1));
+        
+
+    }
+
+    return length;
+  }
+    }
+}
+
+var cache = {};
+function jsfxr(settings) {
+    if (cache[settings]) return cache[settings];
+    // Initialize SfxrParams
+    // Adapted from http://codebase.es/riffwave/
+    var synth = new SfxrSynth();
+
+    var self = synth._params;
+    range(24).map(i=>self[String.fromCharCode( 97 + i )] = settings[i] || 0);
+
+    self.c = Math.max(self.c, 0.01)
+    // I moved self here from the reset(true) 
+
+    // Synthesize Wave
+    var envelopeFullLength = synth.totalReset();
+    var arr = range(envelopeFullLength|0);
+    synth.synthWave(arr, envelopeFullLength) * 2;
+    
+    return cache[settings] = arr;
+}
+
+
+</script>
+<script>
+// audio.js -- sounds (both audio and music) for the game
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+var sounds = {}
+
+var context = new AudioContext();
+var play = (which, location) => {
+    var m = context.createBuffer(1,which.length,48e3);
+    m.copyToChannel(new Float32Array(which), 0, 0);
+    var src = context.createBufferSource();
+    var panner = context.createStereoPanner();
+    src.buffer = m;
+    src.connect(panner);
+    panner.pan.value = location ? Math.cos(angle_between(location, camera.position) + camera.theta + Math.PI/2) : 0;;
+    panner.connect(context.destination)
+    src.start(); // QQ
+    return src;
+};
+
+var musicnotes;
+var music_timeouts=[];
+function doplay() {
+    if (music_timeouts.length < 2 && !going_back && can_play_music) {
+        musicnotes.map((note,i) =>
+                       note.map(n=>music_timeouts.push(setTimeout(_ => {
+                           music_timeouts.shift();
+                           play(n, NewVector(20,-40,0));
+                           if (music_timeouts.length == 1) {
+                               doplay();
+                           }
+                       }, i*200+400)))
+                      )
+    }
+}
+
+var toaudio = x => transpose(x).map(sum);
+
+function load() {
+    var melody =  [null, 19, 17, 19, 15, 19, 14, 19, 12, 19, 11, 19, 12, 19, 14, 19, 15, 19, 7, 19, 9, 19, 11, 19, 12, 19, 11, 19, 12, 19, 14, 19];
+    var harmony_2 =  [15, 16, 17, 10, 8, 7, 8, 10, 12, 4, 5, 7, 8, 7, 8, 4];
+    var melody_4 =  [20, 24, 20, 24, 25, 17, 25, 17, 22, 19, 22, 19, 24, 15, 24, 15, 20, 17, 20, 17, 23, 14, 23, 14, 19, 15, 19, 15, 17, 11, 17, 11, 15, 12, 15, 12, 14, 8, 14, 8];
+    var harmony_4 =  [5, 17, 5, 17, 12, 17, 12, 17, 10, 13, 10, 13, 10, 13, 10, 13, 10, 15, 10, 15, 10, 15, 10, 15, 8, 12, 8, 12, 8, 12, 8, 12, 8, 14, 8, 14, 8, 14, 8, 14, 7, 11, 7, 11, 7, 11, 7, 11, 3, 12, 3, 12, 3, 12, 3, 12, 2, 8, 2, 8, 2, 8, 2, 8, 0, 19, 0, 19, 0, 19, 0, 19, 2, 5, 2, 5, 2, 5, 2, 5];
+    var harmony_9 =  [3, 2, 0, 5, 3, 2, 3, -1, 0, -1, 0, 2, 3, 2, 3, -1];
+
+    var melody_11 =  [15, 19, 14, 19, 12, 19, 10, 19, 8, 19, 10, 19, 12, 17, 20, 17, 14, 17, 12, 17, 10, 17, 20, 17, 7, 17, 8, 17, 10, 15, 7, 15, 12, 15, 10, 15, 8, 15, 7, 15, 5, 15, 19, 15, 8, 14, 5, 14, 11, 14, 8, 14, 7, 14, 5, 14, 3, 14, 5, 14];
+    var harmony_11_up =  [7, 12, 12, null, 10, 10, 10, null, 9, 9, 9, null, 7, 7, 7];
+    var harmony_11_down =  [0, 3, 5, null, -2, 2, 3, null, -4, 0, 2, null, -5, -1, 12];
+
+    var final_melody =  [19, 24, 15, 24, 14, 26, 14, 26, 15, 24, 15, 24, 20, 23, 20, 23, 19, 24, 15, 24, 14, 26, 14, 26, 15, 24, 15, 24];
+    var final_harmony_up =  [null, 12, 11, 11, 12, 12, 14, null, null, 12, 11, 11, 12, 12, 14];
+    var final_harmony_down =  [null, 3, 8, 8, 7, 7, 17, null, null, 7, 8, 8, 7, 7, 6];
+
+
+    /* offset of melody, duration of melody, duration of harmony, melody, harmony */
+    var arr = [
+        [0, 1, 1, melody],
+        [5, 1, 2, melody, harmony_2],
+        [0, 2, 1, melody_4, harmony_4],
+        [12, 1, 2, melody, harmony_9],
+        [12, 1, 4, melody_11, harmony_11_up, harmony_11_down],
+        [0, 1, 2, final_melody, final_harmony_up, final_harmony_down]
+    ]
+
+    musicnotes = range(300).map(_=>[])
+
+    var addnote = (kind, note, where, length) => {
+        if (note == null) return;
+        var time = length * 0.11+.13;
+        musicnotes[where+offset].push(toaudio([note/12, note/12-1].map(f=> {
+            f=2**(f/2) * .25;
+            return kind ? 
+                jsfxr([3,0.1,time,0.1,0.3,f,,,,,,,,0.5,,,-1,,0.2,,,,,0.1])
+                :
+                jsfxr([3,0.1,time+.07,.3,0.5,f,,,,,,,,,,,,,0.15,,,,,0.1])
+        })))
+    }
+
+
+    
+    var offset = 0;
+
+    var donext = _ => {
+        var [offset_melody, duration_melody, duration_harmony, ...music] = arr.shift()
+        music.map((notes,j)=>notes.map(
+            (note,i) => addnote(!j && arr.length < 5,
+                                note==null?null:note+offset_melody*(!j),
+                                i*(j?duration_harmony:duration_melody),
+                                (j?duration_harmony:duration_melody))))
+        offset += duration_melody*music[0].length;
+        jQ.innerHTML = (6-arr.length)+"/6"
+        setTimeout(arr.length ? donext : main_go,1)
+    }
+    setTimeout(donext,1)
+}
+
+var arr;
+function setup_audio() {
+    load()
+    arr = [100, 7, 55, 25, 35, 20, , 15, , , 4, , , , 2, 33, -8, -23, 20, , 23, 4, -48, 30,
+           100, , 5, 100, 55, 20, , , -10, , , , , , , , -40, -5, 15, , , , , 30,
+           , , 5, 100, 55, 20, , , -10, , , , , , , , -40, -5, 15, , , , , 30,
+           300, 10, 25, 5, 20, 25, 10, , , 50, , , , 50, , , , , 10, , 50, 50, , 60,
+           300, 5, 15, 5, 20, 25, 10, , , 50, , , , 50, , , , , 10, , 50, 50, , 60,
+           300,45,55,,55,15,,-10,,,,,,,,,,,25,,,,,30,
+           0,5,5,,45,5,,-10,,,,,,,,,-25,,5,,,,,300]
+    arr = reshape(arr.map(x=>x/100),24)
+
+
+    sounds.boom = toaudio([jsfxr(arr[0])]);
+    sounds.gun = toaudio([jsfxr(arr[1]),jsfxr(arr[2])]);
+    sounds.collect  = toaudio([jsfxr(arr[3])])
+    sounds.collect2 = toaudio([jsfxr(arr[4])])
+    sounds.clock = toaudio([jsfxr(arr[5]), jsfxr(arr[5]).slice(2000)])
+    sounds.hit = toaudio([jsfxr(arr[6]),jsfxr(arr[1])])
+}
+
+</script>
+<script>
+// utils.js -- a collection of short functions used throughout
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+var /* sdf */ LOCAL0, LOCAL1, LOCAL2;
+
+// todo check which of these should be functions defined here
+
+//var concat = (a,b) => [...a, ...(b||[])];
+
+// todo used only once?
+var pairs = (lst,fn) => lst.slice(0,-1).map((x,i)=>fn(x,lst[i+1],i))
+
+var transpose = (mat) => mat[0].map((x,i) => mat.map(x => x[i]))
+
+var range = (N,a) => Array(N).fill().map((_,x)=>x+(a||0));
+
+var reshape = (A,m) => 
+    range(A.length/m).map(x=>A.slice(x*m,(x+1)*m));
+
+var urandom = _ => Math.random()*2 - 1;
+var urandom_vector = _ => NewVector(urandom(),urandom(),urandom())
+
+
+function uncompress(x) {
+    return atob(x).split("").map(x=>x.charCodeAt(0));
+}
+
+var multiply, mat_vector_product;
+
+var cartesian_product_map = (a,b,f) =>
+    [].concat(...a.map(x=>b.map(y=>f(x,y))));
+
+// todo should I create a sum function?
+// todo uniq function that does list(set(x))?
+// todo do(n,fn) function that is range(n).map(x=>x)
+
+var normal_to_plane = (a,b,c) =>
+    (a.subtract(b).cross(c.subtract(b)))._normalize();
+
+var NewVector = (a,b,c) => new Vector(a,b,c);
+var NewVectorFromList = (x) => NewVector(...x);
+
+var reduce_add = (lst) => lst.reduce((a,b)=>a.add(b));
+var reduce_mean = (lst) => reduce_add(lst).scalar_multiply(1/lst.length);
+
+// todo make this a function on vectors
+var angle_between = (a,b) => Math.atan2(a.subtract(b).x,
+                                        a.subtract(b).y)
+
+
+var push = (x,y) => (x.push(y), x);
+
+var clamp = (x,low,high) => Math.min(Math.max(low, x), high)
+var sum = (x) => x.reduce((a,b)=>a+b)
+
+var matrix_rotate_yz = (theta) => 
+    [1,0,0,0,
+     0,Math.cos(theta), -Math.sin(theta), 0,
+     0,Math.sin(theta), Math.cos(theta), 0,
+     0, 0, 0, 1];
+
+var matrix_rotate_xz = (theta) => 
+    [Math.cos(theta),0,-Math.sin(theta),0,
+     0, 1, 0, 0,
+     Math.sin(theta),0, Math.cos(theta), 0,
+     0, 0, 0, 1];
+
+var matrix_rotate_xy = (theta) => 
+    [Math.cos(theta), -Math.sin(theta), 0, 0,
+     Math.sin(theta), Math.cos(theta), 0, 0,
+     0, 0, 1, 0,
+     0, 0, 0, 1];
+
+var matrix_translate = (position) =>
+     [1, 0, 0, position[0],
+      0, 1, 0, position[1],
+      0, 0, 1, position[2],
+      0, 0, 0, 1];
+
+var IDENTITY = matrix_translate([0,0,0]);
+
+// todo space new method assign_* to do it with an assign
+class Vector {
+    constructor(x, y, z) {
+        this.x = +x||0;
+        this.y = +y||0;
+        this.z = +z||0;
+    };
+
+    add(other) {
+        return NewVector(this.x+other.x,
+                         this.y+other.y,
+                         this.z+other.z)
+    }
+    
+    subtract(other) {
+        return this.add(other.negate())
+    }
+    
+    negate() {
+        return this.scalar_multiply(-1);
+    }
+    
+    scalar_multiply(c) {
+        return NewVector(this.x * c,
+                         this.y * c,
+                         this.z * c)
+    }
+
+    vector_multiply(other) {
+        return NewVector(this.x*other.x,
+                         this.y*other.y,
+                         this.z*other.z);
+    }
+
+    dot(other) {
+        return this.x*other.x+this.y*other.y+this.z*other.z;
+    }
+
+    _xyz() {
+        return [this.x,this.y,this.z]
+    }
+
+    _xyzw() {
+        return push(this._xyz(),0);
+    }
+
+    lerp(other, frac) {
+        return this.scalar_multiply(1-frac).add(other.scalar_multiply(frac));
+    }
+
+    cross(other) {
+        return NewVector(this.y*other.z-this.z*other.y,
+                          this.z*other.x-this.x*other.z,
+                          this.x*other.y-this.y*other.x);
+    }
+    
+    
+    copy() {
+        return NewVectorFromList(this._xyz());
+    }
+
+    length_squared() {
+        return this.dot(this)
+    }
+
+    vector_length() {
+        return this.length_squared()**.5;
+    }
+
+    distance_to(other) {
+        return this.subtract(other).vector_length();
+    }
+
+    noz() {
+        return NewVector(this.x,this.y,0);
+    }
+
+    _normalize() {
+        return this.scalar_multiply(1.0/(this.vector_length()+1e-30))
+    }
+
+    id() {
+        return ""+this._xyz().map(x=>x.toFixed(4));
+    }
+}
+
+function ray_line_intersect(o, dir, p1, p2) {
+    var v1 = o.subtract(p1);
+    var v2 = p2.subtract(p1);
+    var v3 = NewVector(-dir.y, dir.x, 0);
+
+    p1 = (v2.x*v1.y - v2.y*v1.x) / v2.dot(v3);
+    p2 = v1.dot(v3) / v2.dot(v3);
+
+    if (p1 >= 0 && p2 >= 0 && p2 <= 1)
+        return [p1,p2];
+}
+
+var ZERO = new Vector(0, 0, 0); // TODO keep it like this to stop the optimizer from inlining the class definition and making things 10x slower
+var X_DIR = NewVector(1, 0, 0);
+var Y_DIR = NewVector(0, 1, 0);
+var Z_DIR = NewVector(0, 0, 1);
+
+var X_AXIS = 1;
+var Y_AXIS = 2;
+var Z_AXIS = 4;
+
+function merge_sprites(sprites) {
+    var pos = []
+    var norm = []
+    var color = []
+    
+    sprites.map(sprite=> {
+        pos.push(reshape(Array.from(sprite.a_positions),3).map(x=>mat_vector_product(sprite.rotation, NewVectorFromList(x)).add(sprite.position)._xyz()))
+        norm.push(reshape(Array.from(sprite.a_normals),3).map(x=>mat_vector_product(sprite.rotation, NewVectorFromList(x))._normalize()._xyz()))
+        color.push(Array.from(sprite.a_colors));
+    })
+    return new Sprite([pos.flat(2), norm.flat(2)], ZERO, IDENTITY, false, color.flat());
+}
+
+class Sprite {
+    constructor(pos_and_normal, position, rotation, transparent, colors, texture) {
+        this.a_positions = new Float32Array(pos_and_normal[0]);
+        this.a_normals = new Float32Array(pos_and_normal[1]);
+        this.aq_angle = new Float32Array(pos_and_normal[0].map(x=>Math.PI/2));
+        this.position = position;
+        this.buffers = [gl.createBuffer(),gl.createBuffer(),gl.createBuffer(),gl.createBuffer()];
+        this.rotation = rotation||IDENTITY;
+        this.transparent = transparent;
+
+        colors = colors || [1,1,1]
+
+        this.a_colors = new Float32Array(colors.length == pos_and_normal[0].length ? colors : Array(pos_and_normal[0].length/3).fill(colors).flat());
+
+        [this._texture, this.texture_direction] = texture || [0,0];
+        
+        this.rebuffer();
+    }
+
+    rebuffer() {
+        [this.a_positions, this.a_normals, this.a_colors, this.aq_angle].map((which, i) => {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, which, gl.DYNAMIC_DRAW);
+        });
+    }
+
+    render() {
+        if (this.transparent && locations == locations2) {
+            // If we're running the shadowmapping, and this object is transparent
+            // don't cast its shadow.
+            return;
+        }
+        gl.uniform4fv(locations.u_world_position, this.position.negate()._xyzw());
+        gl.uniformMatrix4fv(locations.u_world_rotation, false, this.rotation);
+
+        [locations.a_position,
+         locations.a_normal,
+         locations.a_color,
+         locations.a_angle].map((location,i) => {
+             if (location === undefined || location === -1) {
+                 return;
+             }
+
+             gl.enableVertexAttribArray(location);
+             gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers[i]);
+             gl.vertexAttribPointer(
+                 location, 3, gl.FLOAT, false, 0, 0);
+         });
+        gl.uniform1i(locations.u_render_texture, this.texture_direction)
+
+        gl.uniform1i(locations.u_texture_mux, this._texture-20);
+        
+        gl.uniform1i(locations.u_render_direct, this.transparent);
+        
+        gl.drawArrays(gl.TRIANGLES, 0, this.a_positions.length/3);
+    }
+}
+
+var setup_utils = () => {
+    var mat_product_symbolic = B =>
+        `(a,b)=>[${reshape(range(16),4).map(c=>B[0].map((_,i)=>B.reduce((s,d,j)=>`${s}+b[${d[i]}]*a[${c[j]}]`,0))).flat()}]`;
+
+    
+    multiply = eval/*HACK*/(mat_product_symbolic(reshape(range(16),4))
+                           )    
+    var mat_vector_product_q = eval/*HACK*/(mat_product_symbolic(reshape(range(4),1))
+                                       )
+
+    mat_vector_product = (m,x) => NewVectorFromList(mat_vector_product_q(m,x._xyzw()));
+};
+
+
+</script>
+<script>
+// objects.js -- create 3d objects through lathing
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+function lathe(points, num_steps, subdivisions, has_cap, post_proc) {
+    var prev = ZERO;
+    points = reshape(points,2).map(x=>(prev=NewVector(0,...x).add(prev)))
+    var all_points = range(num_steps).map(i=>{
+        return points.map(x=>mat_vector_product(matrix_rotate_xy(2*Math.PI/num_steps*i), x));
+    }).flat();
+    var N = points.length;
+
+    var faces = cartesian_product_map(range(N-1), range(num_steps),
+                                      (z_step, theta_step) => 
+                                      [(0+z_step+theta_step*N),
+                                       (1+z_step+theta_step*N),
+                                       (N+1+z_step+theta_step*N),
+                                       (N+z_step+theta_step*N),
+                                      ]
+                                     );
+    if (has_cap) {
+        faces.push(range(num_steps).map(x=>x*N));
+        faces.push(range(num_steps).reverse().map(x=>x*N+N-1));
+    }
+    all_points = all_points.map(post_proc || (x=>x));
+    faces = faces.map(x=>x.map(y=>all_points[y%all_points.length]))
+
+    return make_output_from_faces(faces);
+}
+
+function make_output_from_faces(faces) {
+    var out_vertices = [];
+    var out_normals = [];
+    var vert_to_normal = {};
+
+    var triangles = faces.map(face => 
+                              pairs(face, (x,y) => [face[0], x, y]).slice(1)
+                             ).flat(1);
+    triangles.map(triangle => {
+        // todo space is this called anywhere else?
+        var normal = normal_to_plane(...triangle);
+        triangle.map((x,i) =>
+                     vert_to_normal[x.id()] = push(vert_to_normal[x.id()] || [],out_normals.length+i));
+        out_vertices.push(...triangle);
+        out_normals.push(normal,normal,normal);
+    })
+
+    // todo space big I can remove the mean if necessary
+    out_vertices.map(vert => {
+        var idxs = vert_to_normal[vert.id()]
+        var idxs_normals = idxs.map(x=>out_normals[x])
+        var mean_normal = reduce_mean(idxs_normals)
+        if (idxs_normals.every(x=>mean_normal.dot(x) > .8)) {
+            idxs.map(x=> out_normals[x] = mean_normal);
+        }
+    })
+
+    
+    return [out_vertices.map(x=>x._xyz()).flat(),
+            out_normals.map(x=>x._xyz()).flat()]
+}
+
+</script>
+<script>
+// graphics.js -- the core rendering engine
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/*
+TODO SPACE reuse u_which_shadow_light as u_texture_mux
+*/
+var fragmentShaderHeader = `#version 300 es
+precision mediump float;
+
+in vec4 v_normal,world_position,v_color,v_angle,v_project_onto_light[5];
+
+uniform bool u_render_direct,u_is_light_shadow[5];
+uniform int u_which_shadow_light,u_texture_mux,u_render_texture;
+uniform vec4 u_shift_color,u_light_position[5];
+uniform float u_ambient_light,u_light_brightness[5];
+uniform sampler2D u_texture[9];
+
+out vec4 out_color;
+
+vec4 get_shader(int i, vec2 texpos) {
+  switch(i) {
+  ${range(9).map(x=>"case "+x+":return texture(u_texture["+x+"],texpos)").join(";")};
+  }
+}`
+
+
+function createShader(gl, type, source) {
+    var shader = gl.createShader(type);
+    gl.shaderSource(shader, source); 
+    gl.compileShader(shader);
+
+    // Just assume success on the compiled version
+    var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS); // DEBUGONLY
+    if (success) { // DEBUGONLY
+        return shader;
+    } // DEBUGONLY
+
+    // TODO SPACE
+    console./*sdf*/log(source.split("\n").map((x,i)=>(i+1)+":" + x).join("\n")); // DEBUGONLY
+    console./*sdf*/log(gl.getShaderInfoLog(shader)); // DEBUGONLY
+    gl.deleteShader(shader); // DEBUGONLY
+    return undefined; // DEBUGONLY
+}
+
+function createProgram(gl, fragmentShaderSource) {
+    var program = gl.createProgram();
+    var vertexShaderSource = `#version 300 es
+precision mediump float;
+
+in vec4 a_position,a_normal,a_color,a_angle;
+
+out vec4 v_normal,world_position,v_color,v_angle;
+out vec4 v_project_onto_light[5];
+
+uniform vec4 u_world_position,u_light_position[5];
+uniform mat4 u_world_rotation,u_light_matrix[5];
+
+
+void main() {
+  world_position = a_position * u_world_rotation - u_world_position;
+  v_normal = a_normal * u_world_rotation;
+
+  for (int i = 0; i < 5; i++) {
+    gl_Position = v_project_onto_light[i] = u_light_matrix[i] * world_position;
+  }
+  v_color = a_color;
+  v_angle = a_angle;
+}
+`;
+    
+    gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vertexShaderSource));
+    gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource));
+    gl.linkProgram(program);
+
+    // Again assume success on the compiled version
+    var success = gl.getProgramParameter(program, gl.LINK_STATUS); // DEBUGONLY
+    if (success) { // DEBUGONLY
+        // TODO SPACE is it shorter to just inline all the assignments?
+        var locations = {};
+        var prev_in = true;
+        (fragmentShaderHeader+vertexShaderSource).match(/[a-zA-Z_]+(\[[0-9]\])?/g).map(tok => {
+            var toks = [tok];
+            if (tok.indexOf("[") > 0) {
+                toks = range(32).map(x=>tok.replace(/[0-9]/,x));
+            }
+            if (tok == "in") prev_in = true;
+            if (tok == "uniform") prev_in = false;
+            toks.map(tok => 
+                     locations[tok] = locations[tok] || (prev_in ? gl.getAttribLocation(program, tok) :gl.getUniformLocation(program, tok))
+                    )
+        })
+        
+        return [program, locations];
+    } // DEBUGONLY
+
+    console.log(gl.getProgramInfoLog(program)); // DEBUGONLY
+    gl.deleteProgram(program); // DEBUGONLY
+    return undefined; // DEBUGONLY
+}
+
+function make_proj_matrix(fov, aspect, rotation, position) {
+    var f = Math.tan(Math.PI/2 - fov/2);
+
+    var matrices = [[
+        f / aspect, 0, 0, 0,
+        0, 0, f, 0,
+        0, 1, 0, 0,
+        0, 1, 0, 1
+    ],
+                    rotation,
+                    matrix_translate(position.negate()._xyz())];
+    return matrices.reduce(multiply);
+}
+
+class Camera {
+    constructor(position, dimensions, fov, camera_is_light,
+                texture_id, theta, theta2) {
+        this.position = position;
+        this.dimensions = dimensions;
+        this.theta = theta||0;
+        this.theta2 = theta2||0;
+        this.theta3 = 0;
+        this.cull = gl.FRONT;
+        this.camera_is_light = camera_is_light;
+        this.fov = fov
+        this.aspect = dimensions[0]/dimensions[1];
+        this.shadow_camera = this;
+        this.texture_id = texture_id;
+
+        [this._texture, this.framebuffer] = setup_framebuffer(texture_id,
+                                                             camera_is_light,
+                                                             ...dimensions);
+    }
+
+    draw_scene() {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+
+        all_textures.map((tex,i) => {
+            gl.activeTexture(gl.TEXTURE19+i);
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.uniform1i(locations[`u_texture[${i+4}]`], i+19);
+        })
+
+        push(lights.slice(0,4),this).map((light,i) => {
+            gl.uniform4fv(locations[`u_light_position[${i}]`], light.position._xyzw());
+            gl.uniformMatrix4fv(locations[`u_light_matrix[${i}]`], true,
+                                make_proj_matrix(light.shadow_camera.fov,light.shadow_camera.aspect,
+                                                 [matrix_rotate_xz(light.shadow_camera.theta3),
+                                                  matrix_rotate_yz(light.shadow_camera.theta2),
+                                                  matrix_rotate_xy(light.shadow_camera.theta)].reduce(multiply),
+                                                 light.shadow_camera.position));
+
+            // Don't push the shadow stuff for the real camera, which
+            // we pass in u_light_xxx[4]
+            if (i == 4) return;
+
+            // don't cast shadows when rendering a light
+            if (!this.camera_is_light) {
+                gl.activeTexture(gl.TEXTURE0+light.id);
+                gl.bindTexture(gl.TEXTURE_2D, light.filter._texture);
+                gl.uniform1i(locations[`u_texture[${i}]`], light.id);
+            }
+            // todo shorten this is ugly and can probably be improved
+            // todo replace gl.uniformXXX([location...]) with a new function
+
+            gl.uniform1i(locations[`u_is_light_shadow[${i}]`], light.shadow)
+            
+            gl.uniform1f(locations[`u_light_brightness[${i}]`], light.brightness);
+        })
+
+        if (!going_back || framecount++%200 < 10) {
+            gl.uniform1f(locations.u_ambient_light, .05);
+            lights[0].brightness = 1.2; // flashlight
+            lights[1].brightness = 1.2;
+            lights[2].brightness = 1.5; // exit light
+            lights[3].brightness = 4; // gun flash light
+        } else {
+            gl.uniform1f(locations.u_ambient_light, 1e-4);
+            lights[0].brightness = 7; // flashlight
+            lights[1].brightness = 0;
+            lights[2].brightness = 8; // exit light
+            lights[3].brightness = 30; // gun flash light
+        }
+        
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+        if (this.cull) {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(this.cull);
+        }
+
+        gl.viewport(0, 0, this.dimensions[0], this.dimensions[1]);
+        objects.map(obj=> {
+            if (!this.camera_is_light || !obj.gc) obj.render()
+        });
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+}
+
+var framecount = 0;
+
+function Filter(code, W, H, type, extra_code) {
+
+    var sprite = new Sprite(lathe([5,0],4,0,1), ZERO,
+                             null, false);
+
+    var [shaderProgram, prog_locations] = createProgram(gl,
+                                                              fragmentShaderHeader + `//SHADER
+vec4 get_tex(int i, vec2 xy_pos) {
+  return get_shader(i, (world_position.xy*.5+.5) + xy_pos/vec2(${W|0}.,${H|0}.));
+}
+
+vec4 get_tex() {
+  return get_tex(0, vec2(0));
+}
+
+void main(void) {
+${code}
+}`);
+
+    [this._texture, this.framebuffer] = setup_framebuffer(31,
+                                                         type==gl.RG,
+                                                         W, H);
+    this.post_filter =  (source_texture, other_texture) => {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+        gl.useProgram(shaderProgram);
+
+        gl.uniform4fv(prog_locations.u_shift_color, global_screen_color);
+        
+        [[source_texture, 'u_texture[0]', 30],
+         [other_texture, 'u_texture[1]', 29]].map(arg => {
+             if (arg[0]) {
+                 gl.activeTexture(gl.TEXTURE0+arg[2]);
+                 gl.bindTexture(gl.TEXTURE_2D, arg[0]);
+                 gl.uniform1i(prog_locations[arg[1]], arg[2]);
+             }
+         });
+        
+        gl.uniform4fv(prog_locations.u_world_position, 
+                      [0,0,0,0]);
+        gl.uniformMatrix4fv(prog_locations.u_world_rotation, false,
+                            IDENTITY);
+        gl.uniformMatrix4fv(prog_locations['u_light_matrix[4]'], false,
+                            IDENTITY);        
+            
+
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        gl.viewport(0,0,W, H)
+        locations = prog_locations;
+        sprite.render();
+        return this._texture;
+    }
+}
+
+// Do the slow gaussian blur over the texture because it's shorter.
+var gaussian_2d = `//SHADER
+vec4 the_res;
+for (float i = -6.; i < 7.; i++) {
+for (float j = -6.; j < 7.; j++) {
+  the_res += exp(-i*i/9.-j*j/9.)*get_tex(0,vec2(j,i));
+}
+}
+out_color = the_res/28.17;`;
+
+function DrawToScreen$() {
+    var W=gl.canvas.width, H=gl.canvas.height;
+
+    var filters = [
+        // take the bright filter
+        new Filter(`//SHADER
+out_color = dot(get_tex(), vec4(21, 72, 7,0)) > 100. ? get_tex() : vec4(0,0,0,1);
+`, W, H, gl.RGBA),
+
+        // downsample filter
+        new Filter('out_color = get_tex();', W/4, H/4, gl.RGBA),
+        
+        // blur filter
+        new Filter(gaussian_2d,
+                   W/4, H/4, gl.RGBA),
+
+        // upsample filter
+        new Filter('out_color = get_tex();', W, H),
+        
+        // merge filter
+        new Filter('out_color = vec4(u_shift_color.rgb + u_shift_color.w*(get_tex(1,vec2(0)) + get_tex()).rgb, 1.);',
+                   W, H, gl.RGBA),
+        
+        // real render filter
+        new Filter('out_color = get_tex();',
+                   W,H, gl.RGBA)
+    ];
+
+    filters[5].framebuffer = null;
+
+    if (GRAPHICS > 3) {
+        camera.framebuffer = null;
+        return range;
+    }
+
+    return source_texture => filters.reduce((prev,cur)=>
+                                            cur.post_filter(prev,source_texture),
+                                            source_texture)
+}
+
+function make_gl_texture(texture_id,
+                      texture_types,
+                         H, W, data) {
+    var texture = gl.createTexture();
+
+    gl.activeTexture(gl.TEXTURE0 + texture_id);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    gl.texImage2D(gl.TEXTURE_2D, 0, texture_types?gl.RG32F:gl.RGBA32F,
+                  H, W, 0,
+                  texture_types?gl.RG:gl.RGBA, gl.FLOAT, data);
+    return texture;
+}
+
+function setup_framebuffer(texture_id,
+                           texture_types,
+                           H, W) {
+    var texture = make_gl_texture(texture_id, texture_types, H, W)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    
+    var framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+    var depthBuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, H, W);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+    return [texture, framebuffer];
+}
+
+var light_id = 0;
+class Light {
+    constructor(position, theta, theta2, is_shadow) {
+        var N = 1024>>GRAPHICS;
+        
+        this.position = position;
+        this.shadow_camera = new Camera(position, [N, N], light_id?2.5:1, true, this.id = light_id++,
+                                        theta, theta2);
+        this.shadow = is_shadow
+        //this.shadow_camera.cull = gl.FRONT;
+        this._texture = this.shadow_camera._texture;
+        this.brightness = 2;
+
+        this.filter = new Filter(gaussian_2d,
+                                  N/2, N/2, gl.RG);
+
+    }
+
+    compute_shadowmap() {
+        this.shadow_camera.position = this.position;
+        gl.useProgram(program2);
+        locations = locations2;
+
+        gl.activeTexture(gl.TEXTURE0 + this.id);
+        gl.bindTexture(gl.TEXTURE_2D, this._texture);
+
+        gl.uniform1i(locations.u_which_shadow_light, this.id);
+        
+        this.shadow_camera.draw_scene();
+        
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        this.filter.post_filter(this._texture);
+    }
+}
+
+
+var all_textures = [];
+function make_texture(arr) {
+    all_textures.push(make_gl_texture(10, 0, 256, 256, new Float32Array(arr)));
+    gl.generateMipmap(gl.TEXTURE_2D);
+    
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); 
+}
+
+
+function setup_graphics() {
+    gl.getExtension("EXT_color_buffer_float");
+    gl.getExtension("OES_texture_float_linear");
+
+/*
+var fragmentShaderSource = fragmentShaderHeader + `//SHADER
+
+float vsm(int which_texture, vec2 texpos) {
+  vec4 coded_distance = get_shader(which_texture, texpos);
+  float depth_mean = coded_distance.x;
+
+  float variance = max(coded_distance.y - depth_mean*depth_mean, 0.1);
+
+  float dist_to_camera = distance(u_light_position[which_texture], world_position);
+
+  return clamp(max(clamp((variance / (variance + (dist_to_camera-depth_mean)*(dist_to_camera-depth_mean))-.2)/.8, 0., 1.), 
+                   smoothstep(dist_to_camera-0.02, dist_to_camera, depth_mean)), 0., 1.);
+}
+
+void main() {
+  if (u_render_direct) {
+    out_color = v_color;
+    return;
+  }
+
+  vec3 v_normal_ = normalize(v_normal.xyz);
+  float light_add;
+
+  light_add += clamp(dot(vec3(0, 0, -1), v_normal_),0.,1.);
+  light_add += clamp(dot(vec3(1, 0, .5), v_normal_),0.,1.);
+  light_add += clamp(dot(vec3(-.5, -.86, .5), v_normal_),0.,1.);
+  light_add += clamp(dot(vec3(-.5, .86, .5), v_normal_),0.,1.);
+
+  light_add *= u_ambient_light*(1.-smoothstep(0.,1.,clamp(length(u_light_position[4] - world_position)/150.-.3,0.,.9)));
+
+  for (int i = 0; i < 4; i++) {
+  if (!u_is_light_shadow[i] || v_project_onto_light[i].z > 0.) {
+
+    vec2 scaled = v_project_onto_light[i].xy/v_project_onto_light[i].w;
+    float in_light_amt = u_is_light_shadow[i] ? vsm(i, scaled*.5+.5) : 1.;
+    if (in_light_amt > 0.) {
+      vec4 v_to_light = u_light_position[i] - world_position;
+      float fade_amt = u_is_light_shadow[i] ? clamp(.9-dot(scaled, scaled), .0, .095)*10.0/.95 : 1.;
+  
+      float light_amt = dot(v_normal_, normalize(v_to_light.xyz))+1.;
+  
+      vec4 halfVector = normalize(normalize(v_to_light) + normalize(v_to_light));
+      float specular = pow(abs(dot(v_normal_, halfVector.xyz)), 1e2) * .1;
+      light_amt += specular;
+  
+      float dist_to_light = distance(u_light_position[i], world_position);
+      light_amt *= u_light_brightness[i]*fade_amt*fade_amt*in_light_amt/(u_is_light_shadow[i] ?1.:sqrt(dist_to_light));
+
+      light_add += u_ambient_light*pow(light_amt,3.);
+    }
+  }}
+  out_color.rgb += pow(light_add,.33);
+
+  out_color *= v_color;
+  if (u_render_texture > 0) {
+      out_color *= get_shader(u_texture_mux+5, u_render_texture == 1 ? world_position.xy/32. : vec2(dot(world_position.xy,vec2(sin(v_angle.x), -cos(v_angle.x))),world_position.z)/16.);
+  }
+  out_color.w = 1.;
+}
+`;
+//*/
+    
+    [program1, locations1] = createProgram(gl, fragmentShaderHeader + program1Shader);
+    [program2, locations2] = createProgram(gl, fragmentShaderHeader + `//SHADER
+
+void main() {
+    out_color.r = distance(u_light_position[u_which_shadow_light], world_position);
+    out_color.g = out_color.r*out_color.r;
+}
+`);
+
+    var lerp = (x,y,r) => (r= r*r*(3-2*r), x * (1-r) + y * r);
+    var random_points = range(16).map(_=>range(16).map(_=>NewVector(urandom(), urandom(),0)._normalize()))
+
+    var perlin_noise = cartesian_product_map(range(256),range(256),(y,x) => {
+        y /= 16;
+        x /= 16;
+        var up_left = NewVector(x|0, y|0, 0)
+        var out = cartesian_product_map(range(2),range(2),(dy,dx) => 
+                                        random_points[y+dy&15][x+dx&15].dot(up_left.add(NewVector(dx-x,dy-y,0)))
+                                       )
+        out = lerp(lerp(out[0], out[1], x-up_left.x),
+                   lerp(out[2], out[3], x-up_left.x),
+                   y-up_left.y)
+        return 2*out+.2
+            
+    })
+
+    // ceil texture
+    make_texture(perlin_noise.map(x=>[x,x,x,1]).flat())
+    make_texture(perlin_noise.map(x=>[x,0,0,1]).flat())
+    
+    // Make the brick texture for the walls
+    make_texture(cartesian_product_map(range(256),range(256),(y,x) => {
+        if ((y%64) <= 2 || Math.abs(x-(((y/64)|0)%2)*128) <= 2) {
+            return [0,0,0,1];
+        } else {
+            var r = .9-perlin_noise[x*256+y]/20;
+            return [r,r,r,1];
+        }
+    }).flat())
+    
+    var r = cartesian_product_map(range(16),range(8),(y,x) => 
+                                  [32*y, 64*(x + (y%2)/2), 1 + y%2]
+                                 )
+    
+    make_texture(cartesian_product_map(range(256),range(256),(y,x) => {
+        var tmp = r.map(p=>[p[2]*(Math.abs(p[0]-x)+Math.abs(p[1]-y)),p[2]]).sort((a,b)=>a[0]-b[0])
+
+        if (Math.abs(tmp[0][0]-tmp[1][0]) < 4) {
+            return [1,1,1,1];
+        }
+        return [.1,.1,.1,1];
+    }).flat())
+
+    // Noise texture
+    make_texture(perlin_noise.map(x=>[x,0,0,1]).flat())    
+    
+}
+
+</script>
+<script>
+// game.js -- the logic for the game objects
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/* A hitbox that is something that can be collided with.
+ * When a collision happens, it proxies the collision to the parent node.
+ * This way any given node can have multiple boxes to collide with.
+ */ 
+class HitBox {
+    constructor(parent, theta, width, height, offset) {
+        if (parent instanceof Vector) { this.dead = true; this.position=ZERO; parent=this; theta=0; width=0; height=0; } // DEBUGONLY
+        this.parent_obj = parent;
+        this.solid = true;
+        this.position = parent.position;
+        this.theta = theta;
+        this._width = width;
+        this._height = height;
+        this.parallel_dir = NewVector(-Math.sin(this.theta)*this._width,
+                                      Math.cos(this.theta)*this._width,
+                                      0)
+        this.offset = offset || 0;
+    }
+    update() {
+        this.position = this.parent_obj.position.add(Z_DIR.scalar_multiply(this.offset));
+        this.dead = this.parent_obj.dead;
+    }
+    render() {}
+    onhit(other) {
+        return this.parent_obj.onhit(other);
+    }
+}
+
+/* A wall is just a hitbox with a null parent.
+ */ 
+class Wall extends HitBox {
+    constructor(position, theta, width, height) {
+        if (height < 0) {
+            height = -height;
+            position.z -= height;
+        }
+        
+        super({position: position,
+               onhit: _=>{}}, theta, width, height);
+    }
+}
+
+/* This is a locked door that needs a key.
+ * Finding the key removes this door.
+ */ 
+class LockedDoor extends Wall {
+    constructor(position, theta) {
+        super(position, theta, 32, 30);
+        this.uid = theta;
+
+        this.sprite = theta == Math.PI/2 ? new Sprite(makecube(NewVector(1,64,40)),
+                                              this.position,
+                                              matrix_rotate_xy(theta),
+                                              null, [1,1,1], [21,2])
+            :
+            merge_sprites(range(20).map(off=>new Sprite(make_cylinder(NewVector(1,1,40)),
+                                                        position.add(mat_vector_product(matrix_rotate_xy(theta),
+                                                                                        NewVector(0,off*4-40,0))),
+                                                        matrix_rotate_xz(Math.PI/2),
+                                                        1, pallet[theta*8/Math.PI])))
+
+    }
+
+    render() {
+        this.sprite.render();
+    }
+}
+
+/* Objects that respect physics: they have velocity and fall.
+ * Also, when colliding with walls or floors, bounce off them.
+ */ 
+class PhysicsObject {
+    constructor(sprite, position, velocity, ghost) {
+        this.sprite = sprite;
+        this.position = position;
+        this.velocity = velocity;
+        this.ghost = ghost;
+        this.still = undefined;
+        this.dead = undefined;
+        this.dz = .003;
+        this.slow = .999;
+        this.floor_cache = {};
+    }
+
+    update(dt) {
+        if (this.still) return true;
+        this.velocity.z -= this.dz*dt;
+
+        this.velocity = this.velocity.scalar_multiply(this.slow**dt);
+        this.position = this.position.add(this.velocity.scalar_multiply(dt/16));
+
+        var floor = map.get_floor_height(this.position, this.floor_cache)+.5;
+        if (!this.ghost) {
+            if (this.position.z < floor) {
+                this.still = this.velocity.vector_length() < .1;
+                this.position.z = floor;
+                this.velocity.z = -this.velocity.z;
+                this.velocity = this.velocity.scalar_multiply(.8);
+            }
+            var hits = detect_collision_positions(this.position, this.position.add(this.velocity.scalar_multiply(2)));
+
+            hits.map(x=> {
+                this.onhit && this.onhit(x[1]);
+                x[1].onhit && x[1].onhit(this);
+                var delta = x[0].subtract(this.position);
+                // more correct would be to actually bounce off the right angle
+                // but this is good enough if most walls are vertical or horizontal
+                this.velocity.y *= (Math.abs(delta.y) > .1) ? -1 : 1;
+                this.velocity.x *= (Math.abs(delta.x) > .1) ? -1 : 1;
+                this.position = this.position.lerp(x[0], 1.3)
+            });
+        } else {
+            if (this.position.z < floor) {
+                this.die && this.die();
+                this.dead = true;
+            }
+        }
+    }
+
+    render() {
+        this.sprite.position = this.position;
+        this.sprite.render();
+    }
+}
+
+/* Part of an enemy that has exploded and will spin until it dies.
+ */ 
+class BodyPart extends PhysicsObject {
+    constructor(sprite, position, velocity) {
+        super(sprite, position, velocity)
+        this.spins = urandom_vector();
+    }
+
+    update(dt) {
+        if (super.update(dt)) return;
+
+        var speed = dt * this.velocity.vector_length() * .005;
+
+        // TODO space make a function for doing this rotation-by-three
+        this.sprite.rotation = multiply(this.sprite.rotation,
+                                        [matrix_rotate_xy(this.spins.x*speed),
+                                         matrix_rotate_yz(this.spins.y*speed),
+                                         matrix_rotate_xz(this.spins.z*speed)].reduce(multiply));
+        
+    }
+}
+
+/* An enemy bullet flies straight until it hits something.
+ */ 
+class EnemyBullet extends PhysicsObject {
+    constructor(position, direction) {
+        position = position.add(direction);
+        super(new Sprite(enemy_bullet, position,
+                         matrix_rotate_xy(Math.atan2(direction.y,direction.x)), 1,
+                         [5,0,0], [22,1]),
+              position, direction);
+        this.dz = 0;
+        this.slow = 1;
+        this.start = last_now
+    }
+
+    update(dt) {
+        super.update(dt);
+        if (this.position.distance_to(camera.position) < 5) {
+            user_hit(this.position);
+            this.dead = true;
+        }
+        this.dead |= last_now-this.start > 10000;
+    }
+    
+    onhit() {
+        range(30).map(_=> objects.push(new Hit(this.position,2)));
+        this.dead = true;
+    }
+}
+
+/* An enemy is the main opponent for the game.
+ * They are a simple finite state machine that will either
+ * pace back and forth until they see the player, and then will
+ * forever after try to follow them and attack.
+ */
+var killed_enemies = 0;
+class BaseEnemy {
+    constructor(position, theta, height, size) {
+        this.position = position.add(Z_DIR.scalar_multiply(5));
+
+        this.theta = theta||0;
+        //this.hp = 10;
+        this.floor_cache = {};
+        this.state = 0;
+        this.timer = 0;
+        this._height = height;
+
+        objects.push(new HitBox(this, 0, size, size*2, -height));
+        objects.push(new HitBox(this, Math.PI/2, size, size*2, -height));
+
+        this.patrol = undefined;
+        this.waypoint = position
+        this.attacking = 0;
+        this.time = urandom()*100;
+        this.spin_rate = .1
+        this.speedinv = 50
+        this.grounded = 0
+        this.dead = undefined;
+    }
+
+    gethelp() {
+        objects.map(x=> {
+            if (x instanceof BaseEnemy) {
+                if (x.position.distance_to(this.position) < 100 &&
+                    !detect_collision_positions(x.position,
+                                                this.position,
+                                                false, true).length) {
+                    x.attacking = x.state = 1;
+                }
+            }
+        })
+    }
+    
+    /* Explode when hit by a bullet from the user
+     */
+    onhit(other) {
+        if (other) return;
+        this.dead = true;
+        if (killed_enemies++%(5+DIFFICULTY*2) == 0) {
+            objects.push(new Health(this.position.noz().add(Z_DIR.scalar_multiply(map.get_floor_height(this.position, this.floor_cache)))))
+        }
+        
+
+        range(30).map(_=> objects.push(new Hit(this.position,4)));
+
+        this.gethelp()
+        
+        play(sounds.boom)
+        
+        this.components.map(x=> {
+            objects.push(new BodyPart(x,
+                                      this.position.add(x.position),
+                                      mat_vector_product(matrix_rotate_xy(-camera.theta),
+                                                         NewVector(urandom(),
+                                                                   3+urandom(),
+                                                                   1+Math.random()))));
+        })
+    }
+    
+    /* Logic to move around through a simple state machine.
+     * State list:
+     * 0: move towards the target location
+     * 1: attack the enemy by either moving towards them or shooting
+     * 2: nop
+     * 3: shoot at the player
+     */
+    update(dt) {
+        this.patrol = this.patrol || [detect_collision_positions(
+            this.position,
+            this.position.add(mat_vector_product(matrix_rotate_xy(this.theta),NewVector(1e5,0,0))), 0, 1)[0][0].subtract(
+                mat_vector_product(matrix_rotate_xy(this.theta),NewVector(5,0,0))),
+                                      this.position];
+        var angle_to_me = -angle_between(this.position, camera.position);
+        var r = Math.random() < 1/dt;
+
+        // Look to see if I'm visible
+        if (r && !this.attacking &&
+            (Math.abs(angle_to_me-this.theta-Math.PI/2) < Math.PI/3 ||
+             Math.abs(angle_to_me-this.theta-Math.PI/2) > 2*Math.PI-Math.PI/3) &&
+            !detect_collision_positions(camera.position,
+                                        this.position,
+                                        false, true).length) {
+            this.gethelp();
+            this.attacking = this.state = 1;
+        }
+
+        if (this.state == 0) { // GOTO
+            // WONTFIX clips through the corner of walls
+            // Run the detection for x, x+width and x-width
+            var next_pos = this.position.add(NewVector(Math.cos(this.theta)*dt/this.speedinv,
+                                                       Math.sin(this.theta)*dt/this.speedinv,
+                                                       0))
+
+            var next_height = map.get_floor_height(next_pos, this.floor_cache);
+
+            // If I can't go forward, pick a new random direction to walk in.
+            var is_close = camera.position.subtract(this.position).vector_length() < 10
+                && next_pos.distance_to(camera.position) < this.position.distance_to(camera.position);
+            is_close && user_hit(this.position);
+
+            if (detect_collision_positions(this.position, this.waypoint, false, true).length > 0
+                || is_close
+                || (Math.abs(next_height - this.position.z + this._height) > 5+this.grounded)) {
+
+                this.waypoint = this.position.add(urandom_vector().scalar_multiply(20).noz());
+                this.theta = Math.PI*urandom();
+                //console.log("Pick new direction");
+                this.state += (Math.random() < .1)
+                return;
+            }
+
+            var delta_pos = this.waypoint.subtract(this.position).noz();
+            var goal_angle = Math.atan2(delta_pos.y, delta_pos.x);
+
+            // They sometimes spin in place.
+            while (goal_angle - this.theta > Math.PI) this.theta += Math.PI*2;
+            while (this.theta - goal_angle > Math.PI) this.theta -= Math.PI*2;
+            
+            // Face towards the waypoint
+            this.theta += (goal_angle-this.theta)*this.spin_rate;
+
+            // Move towards the waypoint
+            this.position = next_pos;
+            this.position.z = next_height*(this.grounded<10)+this._height;
+            // If they go fast or spin slowly, then it's hard to reach the target exactly
+            if (delta_pos.vector_length() < 30/this.spin_rate/this.speedinv) {
+                if (this.attacking) {
+                    this.state = 1;
+                } else {
+                    this.patrol.unshift(this.waypoint = this.patrol.pop());
+                }
+            }
+        }
+
+        if (this.state == 1) { // ATTACK
+            var delta_pos = camera.position.subtract(this.position)._normalize();
+            
+            this.waypoint = this.position.add(delta_pos.scalar_multiply(10));
+            if (Math.random() < .1 && !this.grounded) {
+                objects.push(new EnemyBullet(this.position.add(Z_DIR.scalar_multiply(5)),
+                                             camera.position.subtract(this.position.add(Z_DIR.scalar_multiply(8)))._normalize().scalar_multiply(2+DIFFICULTY)));
+            } else {
+                this.state = 0;
+            }
+        }
+    }
+    render(inner_multiply, outer_divide, N, which_rot) {
+        this.sprites.map((x,i)=>x.rotation = multiply(matrix_rotate_xy(this.theta+Math.PI/2),
+                                                      which_rot(Math.sin(inner_multiply[i]*this.time)/outer_divide[i])));
+        this.sprites.map((x,i)=>x.position = this.position.add(Z_DIR.scalar_multiply(Math.cos(this.time*2)/3 + (i > N)*5)));
+        this.sprites.map(x=>x.render());
+    }
+}
+
+class Enemy extends BaseEnemy {
+    constructor(position, theta) {
+        super(position, theta, 5, 6);
+        this.components = [
+            [[2,3,5], [1.5,0,-5]], // leg1
+            [[2,3,5], [-1.5,0,-5]], // leg2
+            [[1.5,2,5], [-3.25,0,-5]], // arm1
+            [[1.5,2,5], [3.25,0,-5]], // arm2
+            [[5,2,5], [0,-.5,0], [.8,.8,.8]],
+            [[4,5,4], [0,0,5], [.8, 0, 0]], // head
+            [[.5,1.25,.5], [1,-2,7],  [5,0,0]], // eye
+            [[.5,1.25,.5], [-1,-2,7], [5,0,0]], // eye
+            [[5,1,5], [0,1,0], [.4, .4, .4]] // back
+        ].map(x=>
+              new Sprite(makecube(NewVectorFromList(x[0])),
+                         NewVectorFromList(x[1]), null, false, x[2]))
+        this.sprites = [merge_sprites(this.components.slice(4)),
+                        ...this.components.slice(0,4).map(x=>merge_sprites([x])),
+                       ]
+        
+    }
+    update(dt) {
+        super.update(dt);
+        if (this.time < 100 && DIFFICULTY) {
+            this.time += 100
+            objects.push(new FlyingEnemy(this.position, this.theta))
+        }
+        this.time += dt/160;
+    }
+
+    /* Render and animate the sprite. 
+     * Keep track of the current time and rotate the objects at a given rate.
+     */
+    render() {
+        super.render([0, 1, -1, 1, -1], [1, 1, 1, 2, 2], 2, matrix_rotate_yz)
+    }
+}
+
+/* Enemies that fly. They're just enemies on the ground except
+ * (1) their position isn't offset from the ground and
+ * (2) they turn slower and so look like they have momentum.
+ */
+class FlyingEnemy extends BaseEnemy {
+    constructor(position, theta) {
+        super(position.copy(), theta, 8, 6);
+        this.components = this.sprites = [
+            new Sprite(makecube_fn(x=>x.vector_multiply(NewVector(3,(.7-x.x)*3,.1)).subtract(X_DIR.scalar_multiply(1.5))),
+                       ZERO, 0, 0, [.3, .3, .3]),
+            new Sprite(makecube_fn(x=>mat_vector_product(matrix_rotate_xy(Math.PI), x.vector_multiply(NewVector(3,(.7-x.x)*3,.1)).subtract(X_DIR.scalar_multiply(1.5)))),
+                       ZERO, 0, 0, [.3, .3, .3]),
+            new Sprite(makecube(NewVector(.8,3,.4)),
+                       ZERO, 0, 0, [.3, .3, .3]),
+            new Sprite(makecube_fn(x=>x.vector_multiply(NewVector(.2,3.3,.2)).add(NewVector(0,0,.1))),
+                       ZERO, 0, 1, [8,0,0]),
+
+        ];
+        this.height_offset = 5*urandom();
+        this.spin_rate = .1;
+        this.speedinv = 20
+        this.grounded = 50
+    }
+    update(dt) {
+        super.update(dt);
+        if (this.floor_cache.o) this._height += .1*((this.floor_cache.o.floor_height + this.floor_cache.o.ceil_height)/2 + this.height_offset - this._height);
+        var deltaz1 = Math.sin(this.time/5)*2 + Math.sin(this.time);
+        this.time += dt*(2+Math.sin(this.time))/200;
+        var deltaz2 = Math.sin(this.time/5)*2 + Math.sin(this.time);
+        this.position.z += deltaz2- deltaz1;
+        var alpha = 1-1.01**(-camera.position.subtract(this.position).noz().length_squared());
+        
+        this.position.z = this.position.z*alpha + (camera.position.z-10)*(1-alpha)
+    }
+    render() {
+        super.render([1, -1, 0, 0], [1, 1, 1, 1], 9, matrix_rotate_xz)
+    }
+}
+
+/*
+ * Detect collisions with any objects between two points.
+ * Normally only detects collisions for objects that are flat.
+ * To do this, check line intersections in the direction with anything solid.
+ * Optionally also detect collisions with floors and ceilings.
+ * 
+ * Returns [[position, object], ...]
+ */
+function detect_collision_positions(pos, them, do_floors, only_walls) {
+    var delta = them.subtract(pos).noz()
+    var len = delta.vector_length();
+    
+    return objects.map(x=> {
+        // Optimize away when it's too far to possibly hit.
+        if (!x.solid
+            || (only_walls && !(x instanceof Wall))
+            || len + x._width*2 <
+            ((x.position.x-pos.x)**2+(x.position.y-pos.y)**2)**.5
+           )
+            return;
+        // If there's a chance for a hit, figure out how far out it is
+        var dist_to_and_along = ray_line_intersect(pos, delta, x.position.add(x.parallel_dir), x.position.subtract(x.parallel_dir));
+        // Make sure (1) it's between [pos, them], and (2) it's at the right height
+        if (dist_to_and_along && dist_to_and_along[0] <= 1 &&
+            (x.position.z < pos.lerp(them, dist_to_and_along[0]).z &&
+             pos.lerp(them, dist_to_and_along[0]).z < x.position.z+x._height)
+            && (!do_floors || !(x instanceof LockedDoor) || x.uid == Math.PI/2 || dist_to_and_along[1]%.05 < .02)
+           ) {
+            return [pos.lerp(them, dist_to_and_along[0]), x];
+        }
+    }).concat(map.regions.map(region=> {
+        if (!do_floors) return;
+        var hit_pos;
+        if (them.z < region.ceil_height) {
+            hit_pos = pos.lerp(them,(region.floor_height-pos.z)/(them.z-pos.z))
+        }
+        if (region.ceil_height < them.z) {
+            hit_pos = pos.lerp(them,(region.ceil_height-pos.z)/(them.z-pos.z))                
+        }
+        if (hit_pos && map.get_region_at(hit_pos) == region) {
+            return [hit_pos, {}];
+        }
+    })).filter(x=>x).sort((x,y)=>x[0].distance_to(pos)-y[0].distance_to(pos));
+}
+
+
+/* Flash a light by the gun for a few frames, then go away.
+ */
+class Flash {
+    constructor(pos, forward, dist) {
+        this.sprite = new Sprite(sphere(5),
+                                 pos.add(NewVector(0, 0, -1.5))
+                                 .add(forward.scalar_multiply(2)),
+                                 0, 1,
+                                 [10,10,10]);
+
+        this.dead = undefined;
+        this.c = 0;
+    }
+
+    render() {
+        this.sprite.render();
+        //this.sprite2.render();
+        this.dead = (this.c++ > 2);
+    }
+}
+
+// TODO space make this a setTimeout also?
+/* Put a light at the collision position for a few frames.
+ */
+class LightFlash {
+    constructor(pos, c) {
+        this.dead = undefined;
+        this.c = c;
+        lights[3].position = pos.copy();
+    }
+
+    render() {
+        if (!this.c--) {
+            lights[3].position.z = 1e9;
+            this.dead = true;
+        }
+    }
+}
+
+/* Sprite for sparks after a collision.
+ * To be efficient create a cache where we store past sprites.
+ */
+var hit_sprite_pool = [];
+class Hit extends PhysicsObject {
+    constructor(position, r) {
+        var x = Math.random()*.8;
+        var sprite = hit_sprite_pool.pop() ||
+            new Sprite(explosion,
+                       position.add(urandom_vector().scalar_multiply(r)),
+                       0, 1,
+                       [10*Math.cos(x),10*Math.sin(x),0])
+        super(sprite,
+              position, new Vector(urandom()/2, urandom()/2, (1.5+urandom())),
+              true);
+        this.dz = .01;
+    }
+    die() {
+        // Put it off-screen so when we pop from the cache it doesn't
+        // flicker for one frame in its old position
+        this.sprite.position.z = 1e5
+        hit_sprite_pool.push(this.sprite);
+    }
+}
+
+class Shell extends BodyPart {
+    constructor(position, right) {
+        super(new Sprite(shell, position,
+                         multiply(chaingun.rotation,
+                                  matrix_rotate_xz(Math.PI/2)), 0,
+                         [.4, .4, .4]),
+              position, NewVector(urandom(), urandom(), 3.5+urandom()/2).subtract(right).scalar_multiply(.2));
+    }
+}
+
+/* We can pick up collectable object by walking close to them.
+ */
+class Collectable {
+    constructor(position, sprite) {
+        this.sprite = sprite
+        this.sprite.position = (this.position = position.add(Z_DIR.scalar_multiply(2))).copy();
+        //if (this.position.z < -50) sdf;
+        this.dead = undefined;
+        this.time = 0;
+        this.collect_dist = 10
+    }
+
+    collect() {
+        play(sounds.collect)
+        setTimeout(() => play(sounds.collect2), 150)
+    }
+
+    update(dt) {
+        if (this.position.noz().distance_to(camera.position.noz()) < this.collect_dist*(1+going_back/2)) {
+            this.collect()
+            this.dead = true;
+        }
+    }
+    
+    render() {
+        this.sprite.render()
+    }
+}
+
+/* Give the user health back when picked up.
+ */
+class Health extends Collectable {
+    constructor(position) {
+        var sprite = lathe([.5,-.5,
+                            .6,.5,
+                            .3,.5,
+                            .3,.8,
+                            0, .5,
+                            -.2, .3,
+                            -.3, .3,
+                            -.4, .3,
+                            -.3, .3,
+                            -.1, .3,
+                            0, .5,
+                            -.2, .8],
+                           16, 0, true)
+        super(position, new Sprite(sprite, null, IDENTITY,
+                                   false,
+                                   [.1,.1,1]));
+    }
+    
+    collect() {
+        super.collect()
+        update_health(1)
+        fade_to([0,0,1,.5])
+    }
+}
+
+/* Give the user the flashlight when picked up.
+ */
+class Flashlight extends Collectable {
+    constructor(position, theta) {
+        position = position.add(NewVector(4,0,0))
+        var sprite = lathe([.9, 0,
+                            .1, .1,
+                            0, 4,
+                            .5, 1,
+                            0, 1,
+                            -.1, 0,
+                            -.4, -1],
+                           32, 0, true)
+        
+        var rot = multiply(
+            matrix_rotate_xy(-theta),
+            matrix_rotate_yz(-1.4));
+        super(position,
+              [new Sprite(sprite, null, rot,
+                          false,
+                          [.4,.4,.4]),
+               new Sprite(sphere(2),
+                          null,
+                          0, 1,
+                          [5,5,5])])
+        this.collect_dist = 15;
+        this.sprite[1].position = (this.sprite[0].position=this.position).add(mat_vector_product(rot, Z_DIR.scalar_multiply(5.8)))
+        lights[0].position = position.add(mat_vector_product(rot, Z_DIR.scalar_multiply(8)));
+        lights[0].shadow_camera.theta = theta
+    }
+    
+
+    collect() {
+        super.collect()
+        fade_to([.4,.4,.4,1])
+        light_is_held = true;
+    }
+
+    render() {
+        this.sprite.map(x=>x.render())
+    }
+}
+
+var pallet = [[.47, .74, .6],
+              [.12, .4, .6],
+              [.95, .85, .35],
+              [.95, .33, .22],
+              [0,1,0]];
+
+/* Reach the end goal before saying we need to get back
+ */
+class Goal extends Collectable {
+    constructor(position, rotation) {
+        var color = pallet[rotation*8/Math.PI]
+        var sprite = rotation == Math.PI/2 ? new Sprite(lathe([0, 0,
+                                                       2, 2,
+                                                       0, .1,
+                                                       -1, .6,
+                                                      ],
+                                                      8, 0, true), position, IDENTITY,
+                                                        true,
+                                                        color)
+            :
+            sprite = merge_sprites([
+                new Sprite(lathe([1.3,0,
+                                  .8,0,
+                                  0,.8,
+                                  -.8,0,
+                                  0,-.8],
+                                 16, 0, false),
+                           NewVector(-3,0,0), matrix_rotate_yz(Math.PI/2),
+                           true,
+                           color),
+                new Sprite(make_cylinder(NewVector(.6,.6,9)),
+                           NewVector(-1,0,0), null, false, color),
+                new Sprite(makecube(NewVector(2,1,1.5)),
+                           NewVector(6,0,-1.5), null, false, color),
+                new Sprite(makecube(NewVector(.6,1,.5)),
+                           NewVector(5.25,0,-2), null, false, color),
+                new Sprite(makecube(NewVector(.6,1,.5)),
+                           NewVector(6.75,0,-2), null, false, color),
+                
+            ]);
+        sprite.rotation = matrix_rotate_xy(rotation);
+        position.z += 6*(map.levels.length == 1 && !color[4])
+
+        super(position,
+              sprite
+             );
+        this.collect_dist = 15;
+        this.uid = rotation;
+    }
+
+    update(dt) {
+        super.update(dt);
+        this.sprite.rotation = multiply(matrix_rotate_xy(dt/400),this.sprite.rotation);
+        this.sprite.position.z = this.position.z + Math.sin(this.time += dt/300)*4 + 4;
+    }
+    
+    collect() {
+        var exitdoors = objects.filter(x=>x instanceof LockedDoor && this.uid == x.uid)
+        exitdoors[0].parent_obj.dead = true;
+
+        // The last door is the final exit.
+        // Open the passage way to the next level.
+        if (this.uid == Math.PI/2) {
+            play(sounds.clock)
+            fade_to([1,1,1,1])
+            objects.push(new RealDoor(exitdoors[0].position.subtract(NewVector(0,40,-10))));
+            map.put_objects(map.remake.filter(obj=>BaseEnemy.isPrototypeOf(obj[1]) || obj[1] == ManyEnemies), objects)
+            objects.map(x=>x.attacking = 1)
+            going_back = true;
+            music_timeouts.map(clearTimeout);
+            music_timeouts=[];
+        } else {
+            super.collect();
+            fade_to([0,.5,0,.5]);
+        }
+    }
+}
+
+class RealDoor extends Collectable {
+    constructor(position) {
+        super(position.subtract(Z_DIR.scalar_multiply(20)),
+              new Sprite(makecube(NewVector(1,40,40)),
+                         position,
+                         matrix_rotate_xy(Math.PI/2),
+                         1, [10,10,10])
+             )
+        lights[2].position = position.add(NewVector(0,-20,0));
+        lights[2].shadow_camera.theta = 0;
+        lights[2].shadow = true;
+        this.count = 0;
+    }
+    update(dt) {
+        super.update(dt);
+        if ((this.count+=dt) > 200 && !this.w) {
+            this.w=1;
+            var orig = objects;
+            objects = objects.filter(x=>x.q); // keep only the walls
+            lights[2].compute_shadowmap()
+            objects = orig;
+        }
+    }
+    collect() {
+        fade_to([1,1,1,1])
+        if (map.levels.length>1) {
+            keys = {}
+            setTimeout(_=>{
+                set_resolution(-1);
+                reset();
+                map.levels.shift();
+                map.load_level();
+            }, 200)
+        } else {
+            hQ.style.display="none";
+            qQ.style.top="40vh";
+            setTimeout(_ => {
+                end_screen = true;
+                document.exitPointerLock()
+                global_screen_color = [1,1,1,0];
+                cancelAnimationFrame(frame);
+                hE.innerHTML=`You got back in ${last_now/60000|0}m ${last_now/1000%60|0}s.<br><br>`
+                if (DIFFICULTY) {
+                    setTimeout(_=>hE.innerHTML+="Congratulations.<br><br>Developer Par: 9m 00s<br><br>Reload to play again.",2000);
+                    DIFFICULTY=1;
+                } else {
+                    setTimeout(_=>hE.innerHTML+="Get ready for hard difficulty.",2000);
+                    DIFFICULTY=1;
+                    setTimeout(_=>{
+                        global_screen_color = [0,0,0,1];
+                        end_screen=false;
+                        health=5;
+                        reset();
+                        map.levels = [...map.all_levels];
+                        map.load_level();
+                        requestAnimationFrame(game_step);
+                    },5000)
+                }
+            }, 200)
+                       
+        }
+         
+    }
+}
+
+var last_user_hit = 0;
+function update_health(amt) {
+    hW.style.width=(health=Math.min(health+amt,9))+1+"vw";
+    hW.className="b"[health>2|0]
+}
+function user_hit(where) {
+    if (last_now-last_user_hit > 450-DIFFICULTY*200) {
+        play(sounds.hit)
+        last_user_hit = last_now;
+        objects.push(new LightFlash(where));
+        range(15).map(_=> objects.push(new Hit(where,4)));
+        camera_shake++;
+        fade_to([.3,0,0,.7]);
+        update_health(-1)
+    }
+}
+
+/* Fade the screen to a given color for effect.
+ */
+var last_fades= [];
+function fade_to(color) {
+    global_screen_color = color.map(x=>x)
+    last_fades.map(clearTimeout);
+    last_fades = range(20).map(i=>
+                   ((r) =>
+                    setTimeout(_ => global_screen_color = [color[0]*r,color[1]*r,color[2]*r,color[3]*r + (1-r)],
+                               (1-r)*400+200)
+                   )(i/20)
+                 )
+}
+
+// Better would be to rewrite the object code. Just add bytes to add enemies.
+function ManyEnemies(position, count) {
+    range(DIFFICULTY*5+5+count*Math.PI|0).map(_=> objects.push(new ([Enemy,FlyingEnemy][_%2])(position.add(urandom_vector().noz().scalar_multiply(20)),
+                                                  urandom()*10)));
+    return {render: range, dead:1}
+}
+
+var make_cylinder = dims => lathe([1, 0,
+                                   0, .001,
+                                   0, 1,
+                                   0, .001,
+                                  ], 32, 0, true,
+                                  x => (mat_vector_product(matrix_rotate_xz(-Math.PI/2),x.vector_multiply(dims))));
+var makecube_fn = fn => lathe([.71, 0,
+                                  0, 1], 4, 0, true,
+                                 x => fn(mat_vector_product(matrix_rotate_xy(-Math.PI/4),x)));
+
+var makecube = dims => makecube_fn(x=> x.vector_multiply(dims));
+
+var all_objects = [
+    /*0*/null, null,
+    /*2*/Enemy, FlyingEnemy,
+    /*4*/Health, Goal,
+    /*6*/LockedDoor, Flashlight,
+    /*8*/null, ManyEnemies]
+
+var explosion;
+var sphere;
+var shell;
+var enemy_bullet;
+var my_body;
+function setup_game() {
+    sphere = m => lathe([0, -.5,
+                             .35, .15,
+                             .15, .35,
+                             -.15, .35,
+                             -.35, .15,
+                            ].map(x=>x*m),
+                            8, 0, false)
+    explosion = sphere(1)
+
+    shell = lathe([.5, 0,
+                   0, .05,
+                   -.1, 0,
+                   0, .01,
+                   0, 1.5,
+                   0, .01,
+                   -.05, 0,
+                   0, -1.4
+                  ],
+                  8, 0, true);
+
+    enemy_bullet = lathe([.2, 0,
+                          .2, 2,
+                          .4, 1,
+                          .4, .4,
+                          0, .6,
+                          -.4, .4,
+                          -.4, .2]
+                        , 32, 0, true,
+                         x => mat_vector_product(matrix_rotate_xz(-Math.PI/2),x));
+
+    
+    [2,5,6].map(x=>
+                chaingun.push(new Sprite(make_cylinder(NewVector(1.8,1.8,.5)),
+                                         NewVector(x,0,0),
+                                         null, false, [.7, .7, .7])));
+    
+    range(8).map(x=> {
+        chaingun.push(new Sprite(make_cylinder(NewVector(.5,.5,8.5)),
+                                 mat_vector_product(matrix_rotate_yz(x*Math.PI/4),Y_DIR), null, false))
+    });
+    
+    chaingun = merge_sprites(chaingun)
+    chaingun.recoil = ZERO;
+}
+
+</script>
+<script>
+// map.js -- store, uncompress, and load the game maps
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/* The map is represented as a collection of n-sided non-convex polygons.
+ * When two polygons share a complete edge then it is possible to move
+ * from one polygonal map region to the other. 
+ * Otherwise, there is a wall between them.
+ *
+ * Maps are stored compressed with a turtle-graphics like program,
+ * implemented and documented below.
+ */
+class Map {
+    constructor() {
+        this.levels = [
+            // Level 1
+            "rgt413aHp9UFRwdXm2S6cGajdGc0csIDhMeKwQUngnOne8qtCa19bVwnkHBQZ2LYdcSzFERiVTdZmLd7N3NWfFtGTMrYttSyYil4xasKMDBwscKcTWx9vGJ5cMQDUslqsQiEm3iHe2d4RwnLt8RGZ3YXeGfCjgNz13uQB3OHdqd+RnbPkq0DeDd2ZZ10246xA7d7Nw==",
+
+            // Level 2, lava
+            "ISyRA4qoQGbRdGKrcGV7co0JrseGo4VBdwd3rAOEx4rBBSeCg4eLzAVL26uTRWYjcmQ2cGR6cMGMsgmu445716NQFAfEkQNKKJNiO37CCKSqvG45FHKzwqoC2ihlhnRpknDIjbQIGyc2Y7LEjIzEkQVUVVyquGdDdMONA7CMS2PScJEEo4mXPMEEV6PjTAWMjJNzYMcES2Vikw==",
+            
+            // jump down level
+            "IcCVBWJhZ21sZqd0ZTRxZzpykbMVemdseVdemunnhCVUpppIyYWBcTYzZNxwzK4DB3nnYlF0Ytd8Yt1wkQMHeedmbXFjnnCRAwd555EDB3nnkbQIiIe16RsYJUPEkQcFYZJ2o56NYyV0wgM1bZdldXRkRHDBgIuqA4FHbcGnA6ehF2KJcGKWcJGwBWJAxa6ewpAEKRJT52J9cMGRsQWbKnw2cGK2cMGRA7iOJpG1BzyNq5B1l4LBlgNXeZdjfXBiKHBkTXAh7iGHA6ZUSA==",
+            
+            // First real keys level
+            "Ia2OA7S3KmIKcAMsxsBk23DCjQPCRxtm63JlbXJifXCRBdO0KCpJjQdzoZS7uigqwpEFt1RDB7tmc3TBkKwDhMeKjLIGyLleC8BUwpGqECira1tLGorks6q6pEYThIDEkA1K59bJdCUYZkGzRyrOYppwwrQFMcHZfTtpUXDCAlU3ZalxZLpwy7EGoOXcPgklwZED5ZkKwQShkkk+aUJ1wQOlEklkenDCkasF2p44UzVmpXFlx3Bm6HPCA7aKJ2WWdNuLsQatKwcywOZnWXVmp3BpPnDCmAO8OjRip3BipXBl1HPThqwFJ4KDh4vQrQdsm6eVVlaD",
+
+            // Mid level
+            "IQQhZ5MCkqlmfXFlWnJm2HRnV3JkPHCLqwWZbFojhMKzC325p6aUclB3B3dsYo5wwawDhMeKwQUngoOHi8yasQNamIRlenRiVnhirHBiqHBjm3CMsAVqjOdgNmLbcGXtcQ64tMyOXhwbqdPhgHBABM2SrQOOh2CMsQTZfThlwQVLN5zTocK0CgcoNidxx6WnqchiSXjCqgNHdadjZnxiLXBjTXCNA0d1p40DR3WnjQNHdafPlQYbToy3YcNmHnLCBDeb5XO0CHvL6eWQRSQXaepw",
+        ]
+        this.all_levels=[...this.levels]
+    }
+
+    put_objects(which_objects,where) {
+        which_objects.map(([a,b,c,d,e,f])=> {
+            (where||a).push(new b(c.add(NewVector(0,0,this.get_floor_height(c.add(NewVector(2,2,0))))),d,e,f))
+        });
+    }
+    
+    /* Load the next map to play.
+     * 
+     */
+    load_level() {
+        var code = this.levels[0]; // DEBUGONLY
+        if (!turtledisplay) {  // DEBUGONLY
+            turtledisplay = new TurtleDisplay(this, uncompress(code));  // DEBUGONLY
+        } // DEBUGONLY
+        light_id = 0;
+        objects = [];
+        lights = range(4).map(_=>(new Light(NewVector(0,0,1e3), 0, 0)));
+        lights[0].shadow = lights[0].dynamic_shadow = true;
+        
+        var objs_list = []; // DEBUGONLY
+        [this.regions, this.remake] = run_turtle(uncompress(this.levels[0])
+                                  , objs_list // DEBUGONLY
+                                                );
+        map.put_objects(this.remake)
+
+        var to_render = range(32).map(_=>[[],[]]);
+
+        var potential_walls = {};
+
+        var angle;
+        
+        var add_and_reverse = (texture, coords) => {
+            to_render[texture][0].push(range(6*(coords.length-2)).map(_=>[angle,0,0])); // angle
+            to_render[texture][1].push(coords, [...coords].reverse()) // face
+        }
+        
+        // For each potental wall, get the left and right side ceil and floor heights.
+        this.regions.map(region => {
+            region.lines.map(key => {
+                key = key.map(p=>[p.x,p.y]).sort();
+                potential_walls[key] = push(potential_walls[key] || [],[region.floor_height, region.ceil_height]);
+            })
+
+            // (Also add the floor and ceiling)
+            // 22 is floor texture
+            add_and_reverse(region.floor_height < 0 ? 20 : 22, region.vertices.map(p=>NewVector(p.x,p.y,region.floor_height)));
+            // 21 is ceil texture TODOFIX
+            add_and_reverse(21, region.vertices.map(p=>NewVector(p.x,p.y,region.ceil_height)));
+                                                                      
+        });
+
+        // Now, add walls where the ceiling and floor heights are different.
+        Object.keys(potential_walls).map(coord => {
+            var [a,b,c,d] = coord.split(",").map(Number);
+            var heights = transpose(potential_walls[coord]);
+
+            // Heights is of the form [[floor1, floor2], [ceiling1, ceiling2]]
+            // Here we draw the vertical walls
+            // If we have it of the form [[floor], [ceiling]] then the ||0 will
+            // put a wall from the top to the bottom
+            heights.map(delta => {
+                var coords = [NewVector(a,b, delta[0]),
+                              NewVector(c,d, delta[0]),
+                              NewVector(c,d, delta[1]||0),
+                              NewVector(a,b, delta[1]||0)];
+
+                var mid = coords[0].lerp(coords[1], .5);
+
+                angle = -angle_between(coords[0], mid)
+
+                objects.push(new Wall(mid,
+                                      angle,
+                                      coords[0].distance_to(mid),
+                                      coords[2].z - coords[0].z));
+                add_and_reverse(21,coords)
+            });
+        });
+
+        // Actually add the walls to the list of objects so they show up
+        to_render.map(([angles, faces], i) => {
+            if (!angles.length) return;
+            objects.unshift(new Sprite(make_output_from_faces(faces), ZERO, null, null, [1,1,1], [i, (21==i)+1]));
+            objects[0].q=true; // mark this is a wall
+            objects[0].aq_angle = new Float32Array(angles.flat(2));
+            objects[0].rebuffer();
+        });
+
+        
+        objects.push(chaingun);
+        objects.push(my_body = merge_sprites(
+            new Enemy(NewVector(-1e6,0,0)).sprites.map((x,i)=>{
+                x.position = x.position.add(Z_DIR.scalar_multiply(5*(i==3 || i==4)));
+                return x;
+            })))
+
+        lights.map(light =>
+                   light.shadow && light.compute_shadowmap()
+                  )
+
+
+        music_timeouts.map(clearTimeout);
+        music_timeouts=[];
+        doplay();
+        
+    }
+
+    /* Get the floor height at the position by looking the region.
+     * If passing cache, then cache.o is the previous region that we were in
+     * This way we can check if we're in the same region as last time.
+     * Otherwise just scan every region by brute force.
+     */
+    get_floor_height(position, cache) {
+        cache = cache || {}
+        if (cache.o && this.is_in_region(cache.o, position)) return cache.o.floor_height;
+        cache.o = this.get_region_at(position);
+        return cache.o ? cache.o.floor_height : -100;
+    }
+    is_in_region(region, position) {
+        position = position.add(urandom_vector().scalar_multiply(.01))
+        return region.lines.filter(x=>ray_line_intersect(position, X_DIR, ...x)).length%2 == 1
+    }
+    get_region_at(position) {
+        for (var i in this.regions) {
+            if (this.is_in_region(this.regions[i], position)) return this.regions[i]
+        }
+    }
+
+    
+}
+
+
+/* A MapPolygon stores the data for each polygon, and does nothing else.
+ */
+class MapPolygon {
+    constructor(vertices, floor_height, ceil_height) {
+        this.vertices = vertices;
+        this.floor_height = floor_height;
+        this.ceil_height = ceil_height;
+        this.lines = pairs([...vertices,vertices[0]],(a,b)=>[a,b])
+            .sort() // DEBUGONLY
+    }
+}
+
+/* A small turtle-like language to create maps for the game.
+ * Each command is one byte represented as a 3-bit opcode and 5-bit argument.
+ *  - 000 arg: Create a new polygon with argument edges, to follow.
+ *  - 001 arg: Move to a new position to start another polygon, arg moves.
+ *  - 010 arg: unused
+ *  - 011 arg: create an object indexed by arg.
+ *  - 100 arg: adjust the floor height up (or down) by arg.
+ *  - 101 arg: adjust the ceiling height up (or down) by arg.
+ *  - 110 arg: move the turtle back to where it was arg steps ago.
+ *  - 111 arg: unused
+ */
+function run_turtle(commands) {
+} // DEBUGONLY
+function run_turtle(commands, objs_list) { // DEBUGONLY
+    var regions = []
+    var turtle_location = [ZERO];
+    var floor_height = 4;
+    var ceil_height = 40;
+
+    var do_later = [];
+    for (var i = 0; i < commands.length; ) {
+        var cmd = commands[i++];
+        var [low, high] = [cmd&31, cmd>>5];
+        if (high <= 1) { // make a region with [low] vertices
+            // 0: connect short
+            // 1: go short
+            //console.log(i,"NEW REGION STARTING AT", turtle_location[0])
+            regions.push(new MapPolygon([turtle_location[0],
+                                          ...range(low).map(x=>
+                                                            (turtle_location.unshift(turtle_location[0].add(NewVector(((commands[i]>>4)-7)*8, ((commands[i++]%16)-7)*8, 0))),turtle_location[0])
+                                                           )
+                                        ],
+                                        floor_height, ceil_height))
+
+            if (high == 1) { // goto, so delete the region
+                regions.pop();
+            }
+        }
+        if (high == 3) {
+            // just 5 bytes to have the offset go here
+            
+            do_later.push([objects,
+                           all_objects[low],
+                           turtle_location[0].add(NewVector(((commands[i]>>4)-7)*8,
+                                                            ((commands[i++]%16)-7)*8,
+                                                            ((commands[i]>>4)-7)*2)),
+                           (commands[i++]%16)/8*Math.PI,
+                           0,
+                           true]);
+            var it = do_later[do_later.length-1]; // DEBUGONLY
+            (objs_list||[]).push({class_idx: low, position: it[2].copy(), theta: it[3]})    // DEBUGONLY
+            if (!low && objs_list && objs_list[0]) objs_list[0].theta2 = it[4] // DEBUGONLY
+        }
+        floor_height += 2*(low-15)*(high==4);
+        ceil_height += 4*(low-15)*(high==5);
+        turtle_location.splice(0,low*(high==6));
+    }
+    return [regions, do_later];
+}
+
+
+/* Display and create game maps for the turtle map.
+ * This object is only used to create maps and not used into the real game.
+ * As a result, this 1000-line object is some of the ugliest code ever known to exist.
+ */
+class TurtleDisplay {
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////// <HEREBEDRAGONS> /////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+    constructor(map, code) {
+        this.map = map;
+        this.code = code;
+
+        this.objects = []
+        this.regions = run_turtle(code, this.objects)[0];
+        
+        console.log("Turtle objects", this.objects);
+        
+        var parent = document.createElement("div")
+        parent.style = "position: absolute; left: 850px; top: 20px";
+
+        elt = document.createElement("input");
+        elt.type = "button"
+        elt.value = "+"
+        elt.onclick = () => {
+            this.zoom /= 2;
+            this.x = this.x+100/this.zoom
+            this.y = this.y+100/this.zoom
+            this.render();
+        }
+        parent.appendChild(elt);
+
+        elt = document.createElement("input");
+        elt.type = "button"
+        elt.value = "-"
+        elt.onclick = () => {
+            this.zoom *= 2;
+            this.x = this.x-200/this.zoom
+            this.y = this.y-200/this.zoom
+            this.render();
+        }
+        parent.appendChild(elt);
+
+        elt = document.createElement("span");
+        elt.innerHTML = "&nbsp;&nbsp;pos:"
+        parent.appendChild(elt);
+        
+        this.mapx = elt = document.createElement("input");
+        elt.value = ""
+        elt.style = "width: 4em"
+        elt.id = "mapx";
+        parent.appendChild(elt);
+
+        this.mapy = elt = document.createElement("input");
+        elt.value = ""
+        elt.style = "width: 4em"
+        elt.id = "mapy";
+        parent.appendChild(elt);
+
+        this.mapx.onchange = this.mapy.onchange = (w) => {
+            this.regions.map(region => {
+                region.vertices.map(pos => {
+                    if (pos.distance_to(this.selectedv) < 1) {
+                        if (w.target == this.mapx) {
+                            pos.x = 0|this.mapx.value;
+                        } else {
+                            pos.y = 0|this.mapy.value;
+                        }
+                    }
+                });
+            });
+            this.updatemap()
+            this.get()
+            this.setcode();
+            this.render();
+        }
+
+        elt = document.createElement("span");
+        elt.innerHTML = "&nbsp;&nbsp;height:"
+        parent.appendChild(elt);
+        
+
+        this.mapf = elt = document.createElement("input");
+        elt.value = ""
+        elt.style = "width: 3em"
+        elt.id = "mapf";
+        parent.appendChild(elt);
+
+        this.mapf.onchange = (w) => {
+            if (this.selectedr) {
+                this.selectedr.floor_height = 0|this.mapf.value
+                this.updatemap()
+                this.get()
+                this.setcode();
+                this.render();
+            } else if (this.selectedo) {
+                this.selectedo.zoff = 0|this.mapf.value;
+            }
+        }
+        
+        this.mapc = elt = document.createElement("input");
+        elt.value = ""
+        elt.style = "width: 3em"
+        elt.id = "mapc";
+        parent.appendChild(elt);
+
+        this.mapc.onchange = (w) => {
+            this.selectedr.ceil_height = 0|this.mapc.value
+            this.updatemap()
+            this.get()
+            this.setcode();
+            this.render();
+        }
+
+        elt = document.createElement("span");
+        elt.innerHTML = "<br>light:"
+        parent.appendChild(elt);
+        
+
+        this.lightf = elt = document.createElement("input");
+        elt.value = ""
+        elt.style = "width: 3em"
+        parent.appendChild(elt);
+
+        this.lightf.onchange = (w) => {
+            this.selectedr.floor_light = (0|this.lightf.value)/15
+            this.updatemap()
+            this.get()
+            this.setcode();
+            this.render();
+        }
+        
+        this.lightc = elt = document.createElement("input");
+        elt.value = ""
+        elt.style = "width: 3em"
+        parent.appendChild(elt);
+
+        this.lightc.onchange = (w) => {
+            this.selectedr.ceil_light = (0|this.lightc.value)/15
+            this.updatemap()
+            this.get()
+            this.setcode();
+            this.render();
+        }
+
+        elt = document.createElement("span");
+        elt.innerHTML = "loopid:"
+        parent.appendChild(elt);
+        
+
+        this.loopid = elt = document.createElement("input");
+        elt.value = ""
+        elt.style = "width: 3em"
+        parent.appendChild(elt);
+        this.loopid.onchange = (w) => {
+            this.selectedr.loopid = (0|this.loopid.value)
+            this.updatemap()
+            this.get()
+            this.setcode();
+            this.render();
+        }
+        
+        
+        elt = document.createElement("input");
+        elt.type = "button"
+        elt.value = "Begin"
+        elt.onclick = () => {
+            this.get();
+            reset();
+            this.updatemap();
+        };
+        parent.appendChild(elt);
+
+        elt = document.createElement("input");
+        elt.type = "button"
+        elt.value = "Get"
+        elt.onclick = () => {
+            var options = range(100).map(_ => this.get(true));
+            console.log("Lengths",options.map(x=>x.length).sort((x,y) => x-y));
+            var out = options.map(x=>[x.length,x]).sort((x,y) => x[0]-y[0])[0][1];
+            console.log(out.length, btoa(out.map(x=>String.fromCharCode(x)).join("")))
+            this.lightf.value = btoa(out.map(x=>String.fromCharCode(x)).join(""));
+        }
+        this.get = (is_rand) => {
+            //console.log("Start map get");
+
+            var turtle_pos = [NewVector(0,0,0)];
+            var floor_height = 4;
+            var ceil_height = 40;
+            var floor_light = 1;
+            var ceil_light = 1;
+            var out = [];
+                             
+            var uid = Math.random();
+
+            // Make each region start with first coordinate in the
+            // upper left position.
+            var regions_ordered = this.regions.map(region => {
+                var UL_idx = 0;
+                region.vertices.map((p,i)=> {
+                    if (p.x < region.vertices[UL_idx].x ||
+                        (p.x == region.vertices[UL_idx].x &&
+                         p.y > region.vertices[UL_idx].y)) {
+                        UL_idx = i;
+                    }
+                })
+                region.vertices = [...region.vertices.slice(UL_idx),
+                                   ...region.vertices.slice(0,UL_idx)]
+                if (region.vertices[0].y == region.vertices[1].y) {
+                    //console.log("MOVE");
+                    region.vertices.reverse()
+                    region.vertices.unshift(region.vertices.pop())
+                }
+                
+                return region;
+            })
+
+            var regions_deltaencode = regions_ordered.map(region=> {
+                var prev = region.vertices[0];
+                return region.vertices.slice(1).map(pos => {
+                    var delta = pos.subtract(prev);
+                    prev = pos;
+                    return delta.id();
+                }).join(";");
+            })
+
+            // Compute regions that are the same shape
+            var equiv_class = [];
+            regions_deltaencode.map((r1,i) => {
+                var did = false;
+                equiv_class.map((r2s, j) => {
+                    if (regions_deltaencode[r2s[0]] == r1) {
+                        did = true;
+                        r2s.push(i);
+                    }
+                })
+                if (!did) {
+                    equiv_class.push([i]);
+                }
+            });
+
+            //console.log('equiv',equiv_class);
+
+            // And finally see if they're offset consistently
+            var del = []
+            equiv_class.map(region_idxs=> {
+                if (region_idxs.length >= 3) {
+                    region_idxs = region_idxs.sort((j,i) => (regions_ordered[i].vertices[0].x + regions_ordered[i].vertices[0].y/1000) - (regions_ordered[j].vertices[0].x + regions_ordered[j].vertices[0].y/1000))
+                    //console.log(region_idxs);
+                    //console.log(regions_ordered[region_idxs[0]]);
+                    var positions = region_idxs.map(i=>regions_ordered[i].vertices[0]);
+                    var offsets = pairs(positions, (prev,next) => {
+                        return next.subtract(prev).id();
+                    })
+                    //console.log(offsets);
+                    if ((new Set(offsets)).size == 1) {
+                    }
+                    del.push(...region_idxs.slice(1))
+                }
+            })
+
+            /*del.sort((a,b)=>b-a).map(x=>
+                                     regions_ordered.splice(x,1)
+                                    )*/
+
+
+            var bfs_order = [];
+            var queue = [regions_ordered[is_rand ? Math.floor(Math.random()*regions_ordered.length) : 0]];
+            while (queue.length > 0) {
+                var region = queue.pop();
+                if (bfs_order.some(x=>x==region)) continue;
+                bfs_order.push(region);
+                region.vertices.map(v=> {
+                    queue.push(...regions_ordered.filter(other => other.vertices.some(x=>x.distance_to(v)<1)))
+                })
+            }
+
+            if (bfs_order.length != regions_ordered.length) {
+                console.log("BAD");
+                //sdf;
+            }
+
+            if (is_rand) {
+                var r = Math.random();
+                if (r < .5) {
+                    bfs_order = bfs_order.reverse()
+                }
+                r = Math.random();
+                if (r < .5) {
+                    bfs_order.map(region => {
+                        var idx = Math.floor(Math.random()*region.vertices.length);
+                        region.vertices.reverse()
+                    })
+                }
+            }
+            
+            
+            bfs_order.map(region => {
+                var vertices = region.vertices.map(y=> {
+                    return NewVector(Math.round(y.x/8),
+                                     Math.round(y.y/8),
+                                     y.z);
+                })
+
+                // Move to the new region
+                // First: see if we can get there through backtracking
+                var found = 1e9;
+                var splitat;
+                vertices.map((vert,at)=> {
+                    turtle_pos.map((x,i)=> {
+                        if (x.distance_to(vert)<1 && i < found) {
+                            found = i;
+                            splitat = at;
+                        }
+                    })
+                })
+
+                if (found <= 31) {
+                    // We can get by backtracking
+                    if (found > 0) {
+                        turtle_pos.splice(0,found);
+                        //console.log("Backtrack", found);
+                        out.push((6<<5) + (found))
+                    }
+                    vertices = [...vertices.slice(splitat), ...vertices.slice(0,splitat)]
+                } else {
+                    // We can't. Instead move directly.
+                    //console.log("HAVE TO MOVE!", found);
+                    //console.log(turtle_pos[0], vertices)
+                    //turtle_pos.unshift(vertices[0])
+
+                    var closest = vertices[0];//vertices.map(x=>[x.distance_to(turtle_pos[0]),x]).sort((a,b)=>a-b)[0][1]
+                    //console.log(closest);
+
+                    while (closest.distance_to(turtle_pos[0]) > 0){
+                        out.push((1<<5)+1)
+                        var delta = closest.subtract(turtle_pos[0])
+                        out.push(((clamp(delta.x,-7,7)+7)<<4) | (clamp(delta.y,-7,7)+7));
+                        turtle_pos.unshift(turtle_pos[0].add(NewVector(((clamp(delta.x,-7,7))),
+                                                                       (clamp(delta.y,-7,7)),
+                                                                       0)));
+                    }
+                }
+                // adjust the floor height
+                while (Math.abs(floor_height-region.floor_height) >= 2) {
+                    var delta = ((region.floor_height-floor_height)/2 | 0);
+                    delta = Math.max(Math.min(delta, 15), -15);
+                    floor_height += delta*2;
+                    out.push((4<<5) + (delta+15));
+                }
+
+                // adjust the ceiling height
+                while (Math.abs(ceil_height-region.ceil_height) >= 4) {
+                    var delta = ((region.ceil_height-ceil_height)/4 | 0);
+                    delta = Math.max(Math.min(delta, 15), -15);
+                    ceil_height += delta*4;
+                    out.push((5<<5) + (delta+15));
+                }
+
+                /*
+                while (Math.abs(region.floor_light-floor_light) > .01) {
+                    var delta = Math.min(Math.max((region.floor_light-floor_light)*15+7, 0), 15);
+                    floor_light += (delta-7)/15;
+                    out.push(0x50+(delta));
+                }
+                */
+                
+                if (vertices[0].distance_to(turtle_pos[0]) > 0){
+                    sdf;
+                }
+                
+
+                var allsmall = pairs(vertices, (b,a) =>
+                                     a.subtract(b).x <= 8 &&
+                                     a.subtract(b).x >= -7 &&
+                                     a.subtract(b).y <= 8 &&
+                                     a.subtract(b).y >= -7)
+                    .every(x=>x)
+                if (vertices.length > 31) {
+                    sdf;
+                }
+                if (allsmall) {
+                    out.push(vertices.length-1)
+                    vertices.slice(1).map(pos=> {
+                        var delta = pos.subtract(turtle_pos[0])
+                        if (delta.x < -7 || delta.x > 8 ||
+                            delta.y < -7 || delta.y > 8) {
+                            console.log("FAILED TO SERIALIZE", region);
+                            console.log(delta.x, delta.y)
+                            sdf;
+                        }
+                        out.push(((delta.x+7)<<4) | (delta.y+7));
+                        turtle_pos.unshift(pos);
+                    })
+                } else {
+                    //sdf;
+                    /*
+                    out.push(vertices.length-1)
+                    vertices.slice(1).map(pos=> {
+                        var delta = pos.subtract(turtle_pos[0])
+                        if (delta.x < -127 || delta.x > 127 ||
+                            delta.y < -127 || delta.y > 127) {
+                            console.log("FAILED TO SERIALIZE", region);
+                        }
+                        out.push((delta.x)+128, (delta.y)+128)
+                        qq.push(delta.x, delta.y);
+                        turtle_pos.unshift(pos);
+                    })
+                    */
+                }
+
+
+                this.objects.map(obj => {
+                    if (obj.did != uid) {
+                        var delta = obj.position.subtract(turtle_pos[0].scalar_multiply(8));
+                        if (delta.x < -7*8 || delta.x > 7*8 ||
+                            delta.y < -7*8 || delta.y > 7*8) {
+                            // skip
+                        } else {
+                            //console.log("Do push an object", obj);
+                            obj.did = uid;
+                            /*
+                            var best_rot = 0;
+                            for (var i = 0; i < 255; i++) {
+                                if (Math.abs((i%(Math.PI*2))-(obj.theta%(Math.PI*2))) < Math.abs((best_rot%(Math.PI*2))-(obj.theta%(Math.PI*2)))) {
+                                    best_rot = i;
+                                }
+                            }
+                            */
+                            var best_rot = Math.round((obj.theta%(2*Math.PI))/Math.PI*8)%16
+                            //console.log("PUSH OFFSET", (((((obj.zoff||floor_height))-floor_height)+7)))
+                            out.push((3<<5) + obj.class_idx,
+                                     (((delta.x/8|0)+7)<<4) | ((delta.y/8|0)+7),
+                                     ((((obj.zoff||floor_height)-floor_height)/2+7)<<4) | (best_rot|0));
+                               
+                        }
+                    }
+                })
+                
+            });
+            //console.log("Did objects?", this.objects.map(x=>x.did == uid));
+            this.code = out;
+            console.log(out.length, btoa(out.map(x=>String.fromCharCode(x)).join("")))
+            return out;
+        }
+        
+        parent.appendChild(elt);
+        
+        parent.appendChild(document.createElement("br"));
+
+        
+        var elt = document.createElement("canvas");
+        elt.style = "border: 1px solid #000";
+        elt.height = elt.width = "400";
+        parent.appendChild(elt); // QQ
+        document.body.appendChild(parent); // QQ
+        this.ctx = elt.getContext("2d"); // QQ
+
+        this.mapdrag = false;
+        this.vertexdrag = false;
+        this.x = 0;
+        this.y = 0;
+        this.zoom = 1;
+        this.downtime = 0;
+        this.selectedv = undefined;
+        this.selectedr = undefined;
+        this.selectede = undefined;
+        this.selectedo = undefined;
+
+        var move_vertex = (from, to) => {
+            to = NewVector(Math.round(to.x/8)*8,
+                           Math.round(to.y/8)*8,
+                           to.z)
+            this.regions.map(region => {
+                region.vertices = region.vertices.map(pos => {
+                    if (pos.distance_to(from) < 1) {
+                        return to
+                    }
+                    return pos;
+                });
+            });
+            if (this.selectedv.distance_to(from) < 1) {
+                this.selectedv = to;
+            }
+
+        }
+
+        this.mousepos = undefined;
+        
+        elt.onmousemove = (e) => {
+            this.mousepos = NewVector((this.x+e.offsetX)*this.zoom-200, (-this.y-e.offsetY)*this.zoom+400,0);
+            
+            if (this.mapdrag) {
+                this.x -= e.movementX;
+                this.y -= e.movementY;
+            } else if (this.vertexdrag) {
+                if (this.selectedv && this.initvertexpos) {
+                    move_vertex(this.selectedv, this.initvertexpos.add(this.mousepos.subtract(this.mousedownpos).scalar_multiply(this.zoom)))
+                } else if (this.selectedo) {
+                    this.selectedo.position.x += e.movementX*this.zoom|0;
+                    this.selectedo.position.y -= e.movementY*this.zoom|0;
+                }
+                this.updatemap()
+            }
+            this.render()
+        };
+
+        this.listen = (e) => {
+            if (e.path[0] == this.mapx || e.path[0] == this.mapy) return;
+            if (e.path[0] == this.mapc || e.path[0] == this.mapf) return;
+            if (e.path[0] == this.lightc || e.path[0] == this.lightf) return;
+            if (e.path[0] == this.loopid) return;
+            if (e.path[0] == this.codearea) return;
+            //if (pointer_lock) return;
+            if (e.key == "q") {
+                if (this.selectede) {
+                    var adjacent = this.regions.filter(region => {
+                        return region.vertices.filter(pos => 
+                                                      pos.distance_to(this.selectede[0]) < 1
+                                                     ).length > 0 &&
+                            region.vertices.filter(pos => 
+                                                      pos.distance_to(this.selectede[1]) < 1
+                                                     ).length > 0
+                    });
+                    this.regions = this.regions.filter(region => region != adjacent[0] && region != adjacent[1]);
+
+                    var new_region = []
+
+                    adjacent = adjacent.map(x=>x.vertices);                    
+
+                    range(2).map(i=> {
+                        while (adjacent[i][1].distance_to(this.selectede[1]) > 1) {
+                            adjacent[i].push(adjacent[i].shift())
+                        }
+                        if (adjacent[i][0].distance_to(this.selectede[0]) > 1) {
+                            adjacent[i].reverse();
+                            while (adjacent[i][1].distance_to(this.selectede[1]) > 1) {
+                                adjacent[i].push(adjacent[i].shift())
+                            }
+                        }
+                    });
+                    var rev = adjacent[1].slice(2);
+                    rev.reverse();
+                    this.regions.push(new MapPolygon([...adjacent[0].slice(1),
+                                                      adjacent[0][0],
+                                                      ...rev],
+                                                     this.selectedr.floor_height, this.selectedr.ceil_height,
+                                                     this.selectedr.floor_light, this.selectedr.ceil_light,
+                                                     this.selectedr.floor_texture, this.selectedr.ceil_texture,
+                                                     this.selectedr.wall_texture));
+                    
+                    
+                    this.selectede = undefined;
+                    this.selectedv = undefined;
+                    this.selectedr = undefined;
+
+                } else if (this.selectedv) {
+                    this.regions.map(region => {
+                        region.vertices = region.vertices.filter(pos => 
+                                                                 pos.distance_to(this.selectedv) > 1
+                                                                )
+                    })
+                    this.selectede = undefined;
+                    this.selectedv = undefined;
+                    this.selectedr = undefined;
+                } else if (this.selectedo) {
+                    this.objects = this.objects.filter(x => x != this.selectedo);
+                    this.selectedo = undefined;
+                }
+            } else if (e.key == "Q") {
+                console.log('delete',this.selectedr);
+                this.regions = this.regions.filter(r => r != this.selectedr)
+                console.log("Now have", this.regions.length)
+                this.selectede = undefined;
+                this.selectedv = undefined;
+                this.selectedr = undefined;
+                this.updatemap();
+            } else if (e.key == "A" || e.key == "D") { // connect the line
+                if (this.selectedv) {
+                    var idx;
+                    this.selectedr.vertices.map((x,i) => {
+                        if (x.distance_to(this.selectedv) < 1) {
+                            idx = i;
+                        }
+                    });
+                    if (e.key == "A") idx += 1;
+                    if (e.key == "D") idx -= 1;
+                    this.selectede = [this.selectedv,
+                                      this.selectedr.vertices[(idx+this.selectedr.vertices.length)%this.selectedr.vertices.length]].sort();
+                }
+            } else if (e.key == "a" || e.key == "d") { // rotate around this poly
+                this.selectede = undefined;
+                if (this.selectedv) {
+                    var idx;
+                    this.selectedr.vertices.map((x,i) => {
+                        if (x.distance_to(this.selectedv) < 1) {
+                            idx = i;
+                        }
+                    });
+                    if (e.key == "a") idx += 1;
+                    if (e.key == "d") idx -= 1;
+                    this.selectedv = this.selectedr.vertices[(idx+this.selectedr.vertices.length)%this.selectedr.vertices.length];
+                }
+            } else if (e.key == "r") { // rotate the object
+                if (e.metaKey) return;
+                this.selectedo.theta += Math.PI/8;
+                this.updatemap();
+            } else if (e.key == "e") { // make a new region
+                var other = reduce_mean(this.selectede)
+                other = other.add(reduce_mean(this.selectedr.vertices).subtract(other).normalize().scalar_multiply(-10))
+                var vertices = [...this.selectede, other];
+                this.regions.push(new MapPolygon(vertices,
+                                                 this.selectedr.floor_height,
+                                                 this.selectedr.ceil_height,
+                                                 this.selectedr.floor_light, this.selectedr.ceil_light,
+                                                 this.selectedr.floor_texture, this.selectedr.ceil_texture,
+                                                 this.selectedr.wall_texture))
+                this.selectedv = other;
+                this.updatemap();
+            } else if (e.key == "f") { // move to make this a box
+                if (this.selectedv && this.selectedr && this.selectedr.vertices.length == 4) {
+                    var others = this.selectedr.vertices.filter(x=>x.distance_to(this.selectedv) > 1);
+                    var dist_to_others = others.map(x=> others.map(y=>x.distance_to(y)).reduce((a,b)=>a+b))
+                    var argmin = range(3).filter(i=>dist_to_others[i] == Math.min(...dist_to_others))[0];
+                    var target_pos = reduce_add(others).subtract(others[argmin].scalar_multiply(2));
+                    this.selectedv.x = target_pos.x|0
+                    this.selectedv.y = target_pos.y|0
+                    this.selectedv.z = target_pos.z|0
+                    this.updatemap();
+                }
+            } else if (e.key == "X") { // line up on x axis
+                if (this.selectedv && this.selectede) {
+                    var other = this.selectede.filter(x=>x.distance_to(this.selectedv) > 1)[0];
+
+                    move_vertex(this.selectedv, NewVector(other.x,
+                                                          this.selectedv.y,
+                                                          this.selectedv.z))
+                    
+                    this.selectede = null;
+                    this.updatemap();
+                }
+            } else if (e.key == "Y") { // line up on y axis
+                if (this.selectedv && this.selectede) {
+                    var other = this.selectede.filter(x=>x.distance_to(this.selectedv) > 1)[0];
+
+                    move_vertex(this.selectedv, NewVector(this.selectedv.x,
+                                                          other.y,
+                                                          this.selectedv.z))
+                    this.selectede = null;
+                    this.updatemap();
+                }
+            } else if ((e.key|0) > 0 || e.key == "0") { // create a new object
+                console.log("ADD");
+                var obj = {class_idx: (e.key|0),
+                           position:this.mousepos,
+                           theta: 0}
+                if (e.key == "0") {
+                    obj.theta2 = 0;
+                }
+                this.objects.push(obj)
+                this.updatemap();
+            } else if (e.key == "s") { // split the line in half
+                if (this.selectede) {
+                    var adjacent = this.regions.filter(region => {
+                        return region.vertices.filter(pos => 
+                                                      pos.distance_to(this.selectede[0]) < 1
+                                                     ).length > 0 &&
+                            region.vertices.filter(pos => 
+                                                      pos.distance_to(this.selectede[1]) < 1
+                                                     ).length > 0
+                    });
+                    var middle = reduce_mean(this.selectede);
+                    adjacent.map(region => {
+                        var idx = 0;
+                        for (var i in region.vertices) {
+                            i = i|0;
+                            if (region.vertices[i].distance_to(this.selectede[0]) < 1) {
+                                if (region.vertices[(i+1)%region.vertices.length].distance_to(this.selectede[1]) < 1) {
+                                    idx += i;
+                                }
+                                if (region.vertices[(i+region.vertices.length-1)%region.vertices.length].distance_to(this.selectede[1]) < 1) {
+                                    idx += i - 1;
+                                }
+                            }
+                        };
+                        region.vertices.splice(idx+1, 0, middle);
+                        region.lines = new MapPolygon(region.vertices, 0, 0).lines;
+                        this.selectedv = middle;
+                    });
+                    this.selectede = undefined;
+                    this.updatemap()
+                }
+            } else if (e.key == "w") {
+                this.selectede = undefined;
+                if (this.selectedv) {
+                    var adjacent = this.regions.filter(region => {
+                        return region.vertices.filter(pos => 
+                                                      pos.distance_to(this.selectedv) < 1
+                                                     ).length > 0
+                    });
+                    var nextr;
+                    adjacent.map((x,i) => {
+                        if (x === this.selectedr) {
+                            nextr = adjacent[(i+1)%adjacent.length]
+                        }
+                    })
+                    this.selectedr = nextr;
+                    this.selectedr
+                }
+            } else if (e.key == "x") {
+                this.mapx.select();
+                this.updatemap()
+                return false;
+            }
+            this.render();
+            this.get();
+            this.setcode();
+        };
+        window.addEventListener('keydown', this.listen);
+        elt.onmousedown = (e) => {
+            this.mousedownpos = NewVector((this.x+e.offsetX)*this.zoom-200, (-this.y-e.offsetY)*this.zoom+400,0);
+            var dx = e.offsetX
+            var dy = e.offsetY
+            var p = NewVector((this.x+dx)*this.zoom-200, (-this.y-dy)*this.zoom+400,0);
+            this.downtime = +new Date();
+            if (this.selectedv && this.selectedv.distance_to(p) < 10*this.zoom) {
+                this.vertexdrag = true;
+                this.initvertexpos = this.selectedv;
+            } else if (this.selectedo && this.selectedo.position.vector_multiply(NewVector(1,1,0)).distance_to(p) < 10*this.zoom) {
+                this.vertexdrag = true;
+            } else{
+                this.mapdrag = true;
+            }
+        }
+        elt.onmouseup = (e) => {
+            var dx = e.offsetX;
+            var dy = e.offsetY;
+            this.mapdrag = false;
+            this.vertexdrag = false;
+            if (+new Date() - this.downtime < 500) {
+                var p = NewVector((this.x+dx)*this.zoom-200, (-this.y-dy)*this.zoom+400,0);
+                var prev_vertex = this.selectedv;
+                this.selectedv = undefined;
+                this.regions.map(region => {
+                    region.vertices.map(pos => {
+                        if (pos.distance_to(p) < 10*this.zoom) {
+                            this.selectedv = pos;
+                            this.selectedo = undefined;
+                            this.selectedr = region;
+                        }
+                    })
+                })
+
+                if (this.selectedv == undefined) {
+                    this.objects.map(obj=> {
+                        p.z = obj.position.z;
+                        if (obj.position.distance_to(p) < 10*this.zoom) {
+                            this.selectedo = obj;
+                            this.selectedr = undefined;
+                            this.selectedv = undefined;
+                        }
+                    })
+                }
+                
+                if (this.selectedv && e.shiftKey) {
+                    var old_poly = this.regions.filter(region => {
+                        return region.vertices.filter(pos => 
+                                                      pos.distance_to(this.selectedv) < 1
+                                                     ).length > 0 &&
+                            region.vertices.filter(pos => 
+                                                   pos.distance_to(prev_vertex) < 1
+                                                  ).length > 0;
+                    })[0];
+                    
+                    var new_poly_1 = [];
+                    var new_poly_2 = [];
+                    old_poly.vertices.map(x=> {
+                        new_poly_1.push(x.copy())
+                        if (x.distance_to(prev_vertex) < 1 ||
+                            x.distance_to(this.selectedv) < 1) {
+                            new_poly_2.push(x.copy());
+                            [new_poly_1, new_poly_2] = [new_poly_2, new_poly_1]
+                        }
+                    })
+                    this.regions = this.regions.filter(x=>x != old_poly)
+                    this.regions.push(new MapPolygon(new_poly_1,
+                                                     old_poly.floor_height,
+                                                     old_poly.ceil_height,
+                                                     old_poly.floor_light, old_poly.ceil_light,
+                                                     old_poly.floor_texture, old_poly.ceil_texture,
+                                                     old_poly.wall_texture));
+                    this.regions.push(new MapPolygon(new_poly_2,
+                                                     old_poly.floor_height,
+                                                     old_poly.ceil_height,
+                                                     old_poly.floor_light, old_poly.ceil_light,
+                                                     old_poly.floor_texture, old_poly.ceil_texture,
+                                                     old_poly.wall_texture));
+                    this.selectedr = this.regions[this.regions.length-1]
+                }
+
+                this.updatemap();
+                this.render();
+                this.get();
+                this.setcode();
+            }
+        }
+
+
+        this.codearea = elt = document.createElement("textarea");
+        elt.style = "font-family: mono; font-size: 14px"
+        elt.rows = "20"
+        elt.cols = "40"
+        elt.onkeyup = () => {
+            this.code = this.codearea.value.split("\n").map(line => {
+                if (line[0] == '.') {
+                    var cmds = line.split(" ").filter(x=>x.length);
+                    //console.log(cmds);
+                    if (cmds[0] == ".move") {
+                        return [0x11, Number(cmds[1])+128, Number(cmds[2])+128];
+                    } else if (cmds[0] == ".region" && cmds.length > 2 && cmds.length%2 == 1) {
+                        //console.log([(cmds.length-1)/2, ...cmds.slice(1).map(x=>Number(x)+128)]);
+                        return [(cmds.length-1)/2, ...cmds.slice(1).map(x=>Number(x)+128)];
+                    } else if (cmds[0] == ".floor") {
+                        return [0x30 + Number(cmds[1])+7];
+                    } else if (cmds[0] == ".ceil") {
+                        return [0x40 + Number(cmds[1])+7];
+                    }
+                } else {
+                    return line.split(" ").filter(x=>x).map(x=>parseInt(x,16));
+                }
+            }).flat();
+            //console.log(this.code);
+            if (this.code.every(x=>x !== undefined) &&
+                this.code.every(x=>!isNaN(x))) {
+                console.log("RUN");
+                this.updatemap();
+                this.render();
+                this.selectedr = undefined;
+                this.selectedv = undefined;
+                this.selectede = undefined;
+            }
+        }
+        parent.appendChild(elt);
+        this.get()
+        this.setcode();
+        
+        this.render();
+    }
+
+    setcode() {
+        //console.log("CODE is", this.code);
+        var txt = "";
+        var numberlen = 0;
+        var howprint = 1;
+        this.code.map((x,i)=> {
+            if (numberlen > 0) {
+                if (howprint == 0) {
+                    txt += (x-128) + " ";
+                } else if (howprint == 1) {
+                    txt += ((x>>4)-7)*8 + " " + ((x&15)-7)*8 + " ";
+                } else if (howprint == 2) {
+                    txt += ((x>>4)-7) + " " + ((x&15)-7) + " ";
+                }
+                numberlen -= 1;
+            } else if ((x>>5) == 0) {
+                txt += "\n.region ";
+                numberlen = x;
+                howprint = 1;
+            } else if ((x>>5) == 1) {
+                txt += "\n.goto ";
+                numberlen = (x%32);
+                howprint = 1;
+            } else if ((x>>5) == 3) {
+                txt += "\n.object "
+                numberlen = 2;
+                howprint = 2;
+            } else if ((x>>5) == 4) {
+                txt += "\n.floor " + ((x%32)-15);
+            } else if ((x>>5) == 5) {
+                txt += "\n.ceil " + ((x%32)-15);
+            } else if ((x>>5) == 6) {
+                txt += "\n.backtrack " + ((x%32));
+            } else {
+                txt += "\n"+x.toString(16).padStart(2,'0');
+            }
+                
+        })
+        this.codearea.value = txt;
+    }
+
+    updatemap() {
+        /// needs to be this hacky way so object can spawn sub-objects
+        //objects.push(...this.objects.map(x=>new x.constructor(x.position.copy(), x.theta)))
+        //console.log('here',this.objects);
+        this.get();
+        var code = btoa(this.code.map(x=>String.fromCharCode(x)).join(""));
+        map.levels.unshift(code)
+        map.load_level()
+    }
+
+    fill_poly(vertices) {
+        this.ctx.beginPath();
+        this.ctx.fillStyle = "rgb("+(255*Math.random())+","+(255*Math.random())+","+(255*Math.random())+")"
+        this.ctx.moveTo(0|((vertices[0].x+200)/this.zoom)-this.x, 0|((-vertices[0].y+400)/this.zoom)-this.y); // QQ
+        vertices.map(pos => this.ctx.lineTo(0|((pos.x+200)/this.zoom)-this.x, 0|((-pos.y+400)/this.zoom)-this.y));
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
+    }
+    
+    
+    render() {
+        var regions = this.regions;
+        this.regions.map(x=> {
+            x.lines = x.vertices.map((coord,i) =>
+                                  [coord,x.vertices[(i+1)%x.vertices.length]].sort()
+                                 );
+        });
+
+        
+        this.ctx.fillStyle = "#000000";
+        this.ctx.clearRect(0, 0, 400, 400);
+        this.ctx.fillStyle = "#888";
+        this.ctx.fillRect(0, 0, 400, 400);
+        this.ctx.beginPath();
+
+        
+        regions.map(region => {
+            var vertices = region.vertices;
+
+            this.ctx.lineWidth = 2;
+            this.ctx.moveTo(0|((vertices[0].x+200)/this.zoom)-this.x, 0|((-vertices[0].y+400)/this.zoom)-this.y); // QQ
+            vertices.map(pos => this.ctx.lineTo(0|((pos.x+200)/this.zoom)-this.x, 0|((-pos.y+400)/this.zoom)-this.y));
+            this.ctx.closePath();
+
+            
+        });
+
+        this.ctx.strokeStyle = "#000000";
+        this.ctx.fillStyle = "#FFFFFF";
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        if (this.selectedr) {
+            this.ctx.beginPath();
+            this.ctx.fillStyle = "#FFFF80";
+            var vertices = this.selectedr.vertices;
+            this.ctx.moveTo(0|((vertices[0].x+200)/this.zoom)-this.x, 0|((-vertices[0].y+400)/this.zoom)-this.y); // QQ
+            vertices.map(pos => this.ctx.lineTo(0|((pos.x+200)/this.zoom)-this.x, 0|((-pos.y+400)/this.zoom)-this.y));
+            this.ctx.closePath();
+            this.ctx.fill();
+            this.ctx.stroke();
+        }
+
+        this.ctx.fillStyle = "#0000FF";
+        regions.map(region=> {
+            region.vertices.map(pos => this.ctx.fillRect(0|((pos.x+200)/this.zoom)-this.x-2, 0|((-pos.y+400)/this.zoom)-this.y-2, 4, 4))
+            if (Math.max(...region.vertices.map(x=>x.x)) - Math.min(...region.vertices.map(x=>x.x)) > 20) {
+                var middle = reduce_mean(region.vertices);
+                this.ctx.fillStyle = "#0000FF";
+                this.ctx.fillText(region.floor_height, (middle.x+200)/this.zoom-this.x, (-middle.y+400)/this.zoom-this.y);
+            }
+        })
+
+        this.objects.map(obj=> {
+            this.ctx.fillStyle = "#00AA00";
+            this.ctx.fillRect(0|((obj.position.x+200)/this.zoom)-this.x-3,
+                              0|((-obj.position.y+400)/this.zoom)-this.y-3, 6, 6); // QQ
+        });
+        if (this.selectedo) {
+            this.ctx.fillStyle = "#00FFFF";
+            this.ctx.fillRect(0|((this.selectedo.position.x+200)/this.zoom)-this.x-3,
+                              0|((-this.selectedo.position.y+400)/this.zoom)-this.y-3, 6, 6); // QQ
+        }
+
+        regions.map(region => {
+            var vertices = region.vertices;
+
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = "#00FF00";
+            this.ctx.lineWidth = 3;
+            pairs([...vertices,vertices[0]], (a,b) => {
+                if (a.subtract(b).x > 7*8 ||
+                    a.subtract(b).x < -7*8 ||
+                    a.subtract(b).y > 7*8 ||
+                    a.subtract(b).y < -7*8) {
+                    this.ctx.moveTo(0|((a.x+200)/this.zoom)-this.x, 0|((-a.y+400)/this.zoom)-this.y);
+                    this.ctx.lineTo(0|((b.x+200)/this.zoom)-this.x, 0|((-b.y+400)/this.zoom)-this.y);
+                }
+            });
+            this.ctx.stroke();
+
+                    
+        });
+        
+        if (this.selectedv) {
+            //console.log(this.selectedr);
+            this.mapx.value = this.selectedv.x;
+            this.mapy.value = this.selectedv.y;
+            this.mapc.value = this.selectedr.ceil_height;
+            this.mapf.value = this.selectedr.floor_height;
+            this.lightc.value = this.selectedr.ceil_light*15;
+            this.lightf.value = this.selectedr.floor_light*15;
+            this.loopid.value = this.selectedr.loopid|0;
+            this.ctx.fillStyle = "#FF0000";
+            this.ctx.fillRect(0|((this.selectedv.x+200)/this.zoom)-this.x-3, 0|((-this.selectedv.y+400)/this.zoom)-this.y-3, 6, 6); // QQ
+        }
+        
+        if (this.selectede) {
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = "#FF0000";
+            this.ctx.moveTo(0|((this.selectede[0].x+200)/this.zoom)-this.x,
+                            0|((-this.selectede[0].y+400)/this.zoom)-this.y); // QQ
+            this.ctx.lineTo(0|((this.selectede[1].x+200)/this.zoom)-this.x,
+                            0|((-this.selectede[1].y+400)/this.zoom)-this.y); // QQ
+            this.ctx.stroke();
+        }
+
+    }
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////// </HEREBEDRAGONS> ////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+}
+
+var turtledisplay;
+
+var chaingun=[];
+
+function setup_map() {
+    map = new Map();
+    map.load_level();
+}
+
+</script>
+<script>
+// main.js -- the main init and game loop
+
+// Copyright (C) 2019, Nicholas Carlini <nicholas@carlini.com>.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+var gl;
+
+var map;
+
+var objects = [];
+var camera, real_camera, lights = [];
+
+var camera_shake = 0;
+var program, program1, program2;
+var locations, locations1, locations2;
+
+var keys = {};
+
+
+var can_play_music = false;
+var page_has_focus = true;
+var end_screen = false;
+
+/* Main game setup.
+ * When the game loads, hook the keybindings and start the game loop.
+ */
+function main_run() {
+    setup_utils()
+    setup_graphics()
+    setup_game()
+    setup_audio();
+}
+
+function main_go() {
+    
+    window.onkeydown = e => {
+        keys[e.key] = true;
+    };
+    window.onkeyup = e => {
+        delete keys[e.key];
+    }
+
+    gl.canvas.onclick = _ => {
+        gl.canvas.requestPointerLock();
+    };
+
+    document.onpointerlockchange = _ => {
+        can_play_music = true;
+        doplay();
+        gl.canvas.onmousemove = (document.pointerLockElement == gl.canvas) && (e => {
+            if (!player_dead) {
+                // Adjust the view, but don't look too far up or down
+                camera.theta += e.movementX/200;
+                camera.theta2 = clamp(camera.theta2+e.movementY/200, -1.3, 1.3)
+            }
+        });
+        gl.canvas.onmousedown = _ => {
+            keys._ = true;
+        }
+        gl.canvas.onmouseup = _ => {
+            delete keys._;
+        }
+    }
+
+    reset();
+    setup_map();
+    fade_to([0,0,0,0])
+    game_step(1);
+    
+}
+
+/* Reset the level and start up a new camera.
+ */
+function reset() {
+    hQ.style.display="block";
+    qQ.style.top="5vh";
+    qQ.style.left="45vw";
+    hE.innerHTML=""
+    
+    camera = new Camera(NewVector(24, -16, 10 + (map && map.levels.length == 3)*10), [gl.canvas.width, gl.canvas.height],
+                        1.22, false, 28);
+    global_screen_color = [0,0,0,1]
+    player_dead = 0;
+    light_is_held = 0;
+    going_back = 0;
+    lights = [];
+    objects = [];
+    if (!DIFFICULTY) health = 5
+    update_health(0);
+    
+    real_camera = new DrawToScreen$();
+}
+
+var DIFFICULTY = 0;
+var GRAPHICS = 0;
+
+class RunningAverage { // DEBUGONLY
+    constructor(n) { // DEBUGONLY
+        this.count = 0; // DEBUGONLY
+        this.n = n; // DEBUGONLY
+    } // DEBUGONLY
+    update(val) { // DEBUGONLY
+        this.count = this.count * (1 - 1./this.n) + val; // DEBUGONLY
+        return Math.round(this.count/this.n*100)/100; // DEBUGONLY
+    } // DEBUGONLY
+} // DEBUGONLY
+
+var fps = new RunningAverage(10); // DEBUGONLY
+var actual_fps = new RunningAverage(10); // DEBUGONLY
+var running_sprites = new RunningAverage(10); // DEBUGONLY
+var running_verts = new RunningAverage(10); // DEBUGONLY
+var last_now = 0;
+var moved = 0;
+var last_gunshot = 0;
+var speed = 0;
+var global_screen_color = [0,0,0,1];
+var spin_speed = 0;
+var player_dead = false;
+var health=5;
+
+// Have we picked up the key and are we supposed to now go back?
+var going_back = false;
+
+var gunswap = 0;
+var minor_badness = 0;
+var total_badness = 0;
+
+// Are we holding the flashlight?
+// If so, move it to our location
+var light_is_held = false;
+
+var frame;
+
+/* Main game loop.
+ * This is quite ugly in order to be nicely compressable, 
+ * as we do all of the work right in this loop top-to-bottom.
+ * (Insetad of just a simple update-render loop.)
+ */
+function game_step(now) {
+    if (end_screen) return;
+    frame = requestAnimationFrame(game_step);
+
+    var current_pos = camera.position;
+
+    //createImageFromTexture(gl, all_textures[1], 256, 256, "depth");
+
+    // When the player dies, do a little animation.
+    // We've already set a timeout to reset, so it'll go back to normal.
+    if (player_dead) {
+        var rate = ((now-player_dead)**.8 - (last_now-player_dead)**.8)/400;
+        global_screen_color[3] -= .01 * (global_screen_color[3] > 0) ;
+
+        camera.theta += rate;
+        camera.theta3 += rate
+        camera.theta2 -= rate/3;
+
+        // TODO space better to assign program1 to the camera and have it call use?
+        gl.useProgram(program1);
+        locations = locations1;
+        camera.draw_scene();
+        
+        real_camera(camera._texture);
+        last_now = now;
+        return;
+    }
+    var dt = Math.min(now-last_now,50)//*.1
+
+    // Figure out how the player wants to move.
+    var move_dir = [];
+    for (var key in keys) {
+        var godir = "sawd".indexOf(key);
+        if (godir != -1) {
+            speed += (speed < 1)*.1;
+            move_dir.push(mat_vector_product(matrix_rotate_xy(-camera.theta-Math.PI/2*godir),Y_DIR.scalar_multiply(-dt/12)));
+        }
+    }
+
+    // Matrix rotation for the forward direction
+    var screen_forward_dir = multiply(matrix_rotate_xy(-camera.theta), matrix_rotate_yz(-camera.theta2))
+    // Right correponds to moving along the x axis
+    var screen_right_pos = mat_vector_product(screen_forward_dir, X_DIR.scalar_multiply(-3));
+    // Forward corresopnds to moving along the  y axis
+    var screen_forward_pos = mat_vector_product(screen_forward_dir, Y_DIR);
+
+    // The offset of the gun on the screen
+    var offset = NewVector(.2 + Math.sin(moved)*.2,
+                           1,
+                           -.3-Math.abs(moved%Math.PI-Math.PI/2)/20);
+    
+    if (keys._) {
+        camera_shake += .15*(camera_shake < 1.5);
+        if (now-last_gunshot > 100) {
+            last_gunshot = now;
+            play(sounds.gun)
+            
+            var hits = detect_collision_positions(camera.position,
+                                                  camera.position.add(
+                                                      screen_forward_pos.scalar_multiply(1e4)).add(
+                                                          urandom_vector().scalar_multiply(320*camera_shake)), true);
+            
+            // Render the bullet somewhere between the gun and the hit
+            var dist_to_hit = 100;
+            if (hits.length > 0) {
+                hits = hits[0]
+                dist_to_hit = hits[0].distance_to(chaingun.position)
+                objects.push(new LightFlash(hits[0].lerp(camera.position,0.2),
+                                            3))
+                range(30).map(_=> objects.push(new Hit(hits[0],2)));
+                hits[1].onhit && hits[1].onhit()
+            }
+            objects.push(new Flash(chaingun.position, screen_forward_pos, dist_to_hit))
+            objects.push(new Shell(chaingun.position, screen_right_pos));
+            chaingun.recoil = NewVector(0,-.2,0);
+        }
+        
+        camera.position = camera.position.subtract(screen_forward_pos.scalar_multiply(.1));
+        speed *= .8;
+    }
+
+    // Actually move the camera if we're moving
+    if (move_dir.length) {
+        camera.position = camera.position.add(reduce_mean(move_dir).scalar_multiply(speed));
+        moved += dt/180;
+    } else {
+        // Slow down in order to return to a stop
+        speed -= (speed > 0)*dt/160;
+        // keep it positive though
+        speed *= speed>0;
+
+        // Want to return to a resting position
+        // So slowly move so that moved%Math.PI==0
+        moved -= (moved%Math.PI - Math.PI*(moved%Math.PI > Math.PI/2))*dt/160;
+    }
+
+    // lava hurts you
+    if (camera.position.z < 10 && map.get_floor_height(camera.position) < 0 && last_now-last_user_hit > 500) {
+        user_hit(NewVector(0,0,-1e9))
+    }
+
+    // Here we check collisions with walls so we don't clip through.
+    // The logic here is somewhat ugly.
+    // We cast out 8 rays for 4 units in each direction
+    // If a ray hits an object, then push the camera back
+    // this makes sure we're exactly 4 units from the nearest wall
+    range(8).map(alpha=> {
+        var hits = detect_collision_positions(camera.position.subtract(Z_DIR.scalar_multiply(5)),
+                                              camera.position.add(NewVector(6*Math.sin(alpha/4*Math.PI),
+                                                                            6*Math.cos(alpha/4*Math.PI),
+                                                                            -5)));
+        // Clip direction vector for each hit
+        hits.filter(x=>x[1] instanceof Wall).map(hit => {
+            var obj_perp = mat_vector_product(matrix_rotate_xy(hit[1].theta), X_DIR);
+            var obj_parallel = mat_vector_product(matrix_rotate_xy(hit[1].theta), Y_DIR);
+            // Figure out where we are projected onto the surface we've hit
+            var where = hit[1].position.add(obj_parallel.scalar_multiply(obj_parallel.dot(camera.position.subtract(hit[1].position))))
+            // Project us 6 units away from that position.
+            camera.position = where.add(obj_perp.scalar_multiply(
+                6*(where.add(obj_perp).distance_to(current_pos) < where.distance_to(current_pos) ? 1 : -1)));
+            camera.position.z = current_pos.z;
+        })
+    })
+
+    // Fall or rise up or down to be at ground level
+    var fall_rate = map.get_floor_height(camera.position)+10-camera.position.z;
+    camera.position.z += clamp(fall_rate*dt/30,-2,3);
+    // Shake the camera if we fall fast
+    camera_shake = clamp(camera_shake-fall_rate*.15*(fall_rate<0)-.1, 0, 4);
+
+    // If we've picked up the flashlight, then move it to us
+    if (light_is_held) {
+        lights[0].position = lights[0].position.lerp(camera.position.subtract(screen_right_pos),.2);
+
+        // todo space make shadowcamera extend vector so I can use lerp here?
+        lights[0].shadow_camera.theta += (camera.theta-lights[0].shadow_camera.theta)/2
+        lights[0].shadow_camera.theta2 += (camera.theta2-lights[0].shadow_camera.theta2)/2
+    }
+
+    // save camera
+    var [camera_theta, camera_theta2, camera_z, light_z] = [camera.theta, camera.theta2, camera.position.z, lights[0].position.z];
+
+    // Do the doom-style up-and-down movement when walking
+    camera.position.z += Math.cos(moved*2)*2 + (speed-1)*4;
+    lights[0].position.z += light_is_held && Math.cos(moved*2)*2 + (speed-1)*4;
+    camera.theta3 = Math.sin(moved)/50;
+
+    // Spin the chaingun to make it look like it's doing something
+    var spinning = keys._ ? matrix_rotate_yz(now/100) : IDENTITY;
+
+    chaingun.position = camera.position.add(mat_vector_product(screen_forward_dir, offset.add(chaingun.recoil)).scalar_multiply(8));
+    chaingun.recoil = chaingun.recoil.lerp(ZERO, .1)
+    chaingun.rotation = multiply(multiply(screen_forward_dir, matrix_rotate_xy(-Math.PI/2)), spinning);
+    my_body.position = camera.position.subtract(mat_vector_product(my_body.rotation=matrix_rotate_xy(-camera.theta), NewVector(0,4+light_is_held*10,5)))
+
+    // And shake the camera
+    var amt = Math.min(camera_shake,2)**2/200;
+    camera.theta += (urandom())*amt;
+    camera.theta2 += (urandom())*amt;
+    camera.theta3 += (urandom())*amt;
+
+    // Cast light shadows now
+    lights.map(light =>
+               light.dynamic_shadow && light.compute_shadowmap()
+              )
+
+    // And finally render the scene 
+    gl.useProgram(program1);
+    locations = locations1;
+    camera.draw_scene();
+    
+    real_camera(camera._texture);
+
+    if (health < 0 && !player_dead) {
+        setTimeout(_ => {
+            set_resolution(-1);
+            health=5;
+            reset();
+            if (DIFFICULTY) {
+                map.levels = [...map.all_levels];
+            }
+            map.load_level();
+        },3000)
+        last_now = player_dead = now;
+        return;
+    }
+    
+    // restore camera
+    [camera.theta, camera.theta2, camera.position.z, lights[0].position.z] = [camera_theta, camera_theta2, camera_z, light_z];
+
+    // todo space can cut the x.update && if all classes have an update method
+    objects.map(x=>x.update && x.update(dt));
+
+    // If we have a bunch of still objects, garbage collect them.
+    // This lets us call render once to draw them all
+    var still_objects = objects.filter(x=>x.still);
+    if (still_objects.length > 30) {
+        // garbage collect
+        // todo if I need to can merge the merged objects
+        objects = objects.filter(x=>!x.still || x.gc);
+        still_objects = merge_sprites(still_objects.map(x=>x.sprite).filter(x=>x))
+        still_objects.still = still_objects.gc = true;
+        objects.push(still_objects);
+    }
+
+    // Keep track of how slow we're going
+    minor_badness = minor_badness*.9 + (dt > 30)
+    total_badness = total_badness*.99 + (dt > 30) + 5*(dt > 100);
+    if (minor_badness > 8) {
+        // If it's bad, clean up and remove the gc'd objects
+        objects = objects.filter(x=>!x.gc);
+    }
+    if (total_badness*page_has_focus > 30 && GRAPHICS<2) {
+        total_badness = 0;
+        set_resolution(1);
+        var fake_camera = {shadow_camera: camera};
+        [fake_camera, ...lights].map((light,i)=>{
+            if (i == 0 && camera.dimensions[0] > 400 ||
+                i > 0 && camera.dimensions[0] > 100) {
+                light.shadow_camera = new Camera(light.shadow_camera.position, light.shadow_camera.dimensions.map(x=>x/2),
+                                                 light.shadow_camera.fov, light.shadow_camera.camera_is_light,
+                                                 light.shadow_camera.texture_id,
+                                                 light.shadow_camera.theta, light.shadow_camera.theta2);
+                light._texture = light.shadow_camera._texture;
+            }
+        });
+        camera = fake_camera.shadow_camera;
+        real_camera = new DrawToScreen$();
+        
+    }
+
+    objects = objects.filter(x=>!x.dead);
+    
+    document.getElementById("fps").innerText = "ms/frame: " + fps.update(performance.now()-now) + "\nFPS: " + actual_fps.update(1000./(now-last_now)) + "\nminor badness: " + Math.round(minor_badness*100)/100 + "\ntotal badness: "+(Math.round(total_badness*100)/100); // DEBUGONLY
+    last_now = now;
+}
+
+function set_resolution(j) {
+    cQ.height = (cQ.width = 1600>>((GRAPHICS=clamp(GRAPHICS+j,0,2))))/window.innerWidth*window.innerHeight;
+}
+
+function setup() {
+    gl = cQ.getContext("webgl2"); // QQ
+    [gl, gl.canvas, window, document, document.body].map(obj => { // QQ
+        for (var k in obj) {
+            try{
+                obj[(k[k.length-8]||"_")+k[k.length-2]+k[3]] = obj[k]
+            }catch(q){}
+        };
+    });
+    set_resolution(1);
+    global_screen_color=[0,0,0,0];
+    main_run();
+}
+
+window.onload = _=>setTimeout(setup, 1)
+
+</script>
+<style>
+  #fps ~ div {
+  display: none;
+  }
+</style>
+<div id="fps" style="position: absolute; left: 50px; top: 500px; color:#fff"></div>
+</html>
