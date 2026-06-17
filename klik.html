@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Would You Press? - Mind Control Edition</title>
+    <style>
+      :root {
+        --bg-dark: #080810;
+        --panel-bg: #10101c;
+        --neon-cyan: #00f0ff;
+        --neon-magenta: #ff0077;
+        --neon-green: #39ff14;
+        --text-main: #f0f0f5;
+      }
+
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        user-select: none;
+        overflow: hidden;
+      }
+
+      .arcade-cabinet {
+        background: var(--panel-bg);
+        border: 4px solid #1a1a3a;
+        border-radius: 24px;
+        width: 90%;
+        max-width: 550px;
+        padding: 25px;
+        box-shadow:
+          0 0 40px rgba(0, 0, 0, 0.8),
+          inset 0 0 20px rgba(0, 240, 255, 0.1);
+        position: relative;
+        border-color: var(--neon-cyan);
+      }
+
+      .matrix-header {
+        display: flex;
+        justify-content: space-between;
+        background: #05050a;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        color: var(--neon-cyan);
+        border: 1px solid #1a1a3a;
+        letter-spacing: 1px;
+      }
+      .matrix-header strong {
+        color: #fff;
+        text-shadow: 0 0 5px var(--neon-cyan);
+      }
+
+      .screen-display {
+        background: #030307;
+        border: 2px solid #1a1a3a;
+        border-radius: 12px;
+        margin: 20px 0;
+        padding: 20px;
+        min-height: 140px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      #prompt-text {
+        font-size: 1.3rem;
+        text-align: center;
+        line-height: 1.5;
+        margin: 0;
+        font-weight: bold;
+        text-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+      }
+
+      #symbol-slot {
+        font-size: 4.5rem;
+        height: 80px;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .button-deck {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+      }
+      .arcade-btn {
+        width: 170px;
+        height: 170px;
+        background: radial-gradient(
+          circle,
+          var(--neon-magenta) 0%,
+          #990044 100%
+        );
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        position: relative;
+        box-shadow:
+          0 12px 0 #66002d,
+          0 15px 25px rgba(0, 0, 0, 0.6),
+          0 0 30px rgba(255, 0, 119, 0.4);
+        transition: all 0.05s ease;
+        outline: none;
+      }
+      .arcade-btn:active {
+        transform: translateY(10px);
+        box-shadow:
+          0 2px 0 #66002d,
+          0 4px 10px rgba(0, 0, 0, 0.4),
+          0 0 40px rgba(255, 0, 119, 0.6);
+      }
+
+      .timer-container {
+        background: #05050a;
+        height: 12px;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid #1a1a3a;
+        margin-top: 15px;
+        position: relative;
+      }
+      #timer-zone {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        opacity: 0.75;
+        border-radius: 6px;
+        z-index: 1;
+        display: none;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        box-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+      }
+      #timer-bar {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 240, 255, 0.45),
+          rgba(0, 68, 255, 0.45)
+        );
+        box-shadow: 0 0 8px rgba(0, 240, 255, 0.35);
+        position: relative;
+        z-index: 2;
+      }
+
+      .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--panel-bg);
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+      }
+      .hidden {
+        display: none !important;
+      }
+
+      .action-btn {
+        background: transparent;
+        border: 2px solid var(--neon-cyan);
+        color: var(--neon-cyan);
+        padding: 15px 35px;
+        font-size: 1.1rem;
+        font-family: inherit;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        margin-top: 20px;
+        text-transform: uppercase;
+      }
+      .action-btn:hover {
+        background: var(--neon-cyan);
+        color: #000;
+        box-shadow: 0 0 25px var(--neon-cyan);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="arcade-cabinet" id="cabinet">
+      <div id="screen-start" class="overlay">
+        <h1
+          style="
+            color: var(--neon-magenta);
+            font-size: 2.2rem;
+            text-shadow: 0 0 10px var(--neon-magenta);
+            margin-bottom: 0;
+          "
+        >
+          MIND CONTROL
+        </h1>
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 30px">
+          ELK LEVEL HEEFT EEN VASTE REEKS DIE JE KUNT MEMORISEREN
+        </p>
+        <button class="action-btn" onclick="initiateSystem()">
+          START INITIALISATIE
+        </button>
+      </div>
+
+      <div id="screen-over" class="overlay hidden">
+        <h1 style="color: red; text-shadow: 0 0 10px red">SYSTEEM CRASH</h1>
+        <p
+          id="fail-reason"
+          style="
+            text-align: center;
+            color: #aaa;
+            max-width: 80%;
+            font-size: 0.9rem;
+          "
+        ></p>
+        <button
+          class="action-btn"
+          onclick="initiateSystem()"
+          style="
+            border-color: red;
+            color: red;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+          "
+        >
+          Begin opnieuw
+        </button>
+      </div>
+
+      <div class="matrix-header">
+        <span>LVL: <strong id="ui-lvl">1/30</strong></span>
+        <span>VRAAG: <strong id="ui-q">0/0</strong></span>
+        <span>LIFE: <strong id="ui-lives">❤❤❤</strong></span>
+      </div>
+
+      <div class="screen-display" id="main-display">
+        <p id="prompt-text">Systeem stand-by...</p>
+        <div id="symbol-slot"></div>
+      </div>
+
+      <div class="button-deck">
+        <button
+          class="arcade-btn"
+          id="core-btn"
+          onmousedown="triggerClick()"
+        ></button>
+      </div>
+
+      <div class="timer-container">
+        <div id="timer-zone"></div>
+        <div id="timer-bar"></div>
+      </div>
+    </div>
+
+    <script>
+      function SeededRandom(seed) {
+        this.seed = seed;
+        this.next = function () {
+          let x = Math.sin(this.seed++) * 10000;
+          return x - Math.floor(x);
+        };
+      }
+
+      let state = {
+        level: 1,
+        totalLevels: 30,
+        qIndex: 0,
+        questions: [],
+        lives: 3,
+        clicksThisTurn: [],
+        timeoutRef: null,
+        turnStartTime: 0,
+      };
+
+      const animalRulesPool = [
+        {
+          emoji: "🐀",
+          text: "Als je een RAT ziet, negeer de tekst en klik exact 3x!",
+          target: 3,
+        },
+        {
+          emoji: "🕷️",
+          text: "Als je een SPIN ziet, klik je absoluut 0x!",
+          target: 0,
+        },
+        {
+          emoji: "🐱",
+          text: "Als je een KAT ziet, klik je exact 1x!",
+          target: 1,
+        },
+      ];
+
+      function initiateSystem() {
+        document.getElementById("screen-start").classList.add("hidden");
+        document.getElementById("screen-over").classList.add("hidden");
+        state.lives = 3;
+        state.qIndex = 0;
+        buildDeterministicLevel();
+        runQuestion();
+      }
+
+      function buildDeterministicLevel() {
+        let rng = new SeededRandom(state.level * 9876);
+        state.questions = [];
+        let totalQ = state.level * 10;
+
+        let levelSecretNumber = Math.floor(rng.next() * 6) + 2; // Vaste waarde 2-7
+        let levelAnimalRule =
+          animalRulesPool[Math.floor(rng.next() * animalRulesPool.length)];
+
+        // Vraag 1 is ALTIJD de initiatie (deze moet je onthouden!)
+        state.questions.push({
+          text: `ONTHOUD DEZE CODES VOOR DIT LEVEL:<br><span style="color:var(--neon-cyan)">Getal = ${levelSecretNumber}</span><br><span style="color:yellow">${levelAnimalRule.text}</span><br><br>(Klik 1x om te starten)`,
+          clicks: 1,
+          time: 6000,
+          emoji: "🧠",
+          type: "init",
+        });
+
+        // Bouw de rest van de opbouwende reeks vragen
+        for (let i = 1; i < totalQ; i++) {
+          let qType = rng.next();
+          // Tijd krimpt naarmate het level vordert (snellere reflexen nodig)
+          let allowedTime = Math.max(900, 3200 - state.level * 70 - i * 15);
+          let question = {
+            text: "Druk 1x",
+            clicks: 1,
+            time: allowedTime,
+            emoji: "",
+            type: "standard",
+            color: "default",
+          };
+
+          // Bepaal de creatieve vraagcategorieën
+          if (qType < 0.2) {
+            // Categorie 1: Symbool-overrule (De valstrik)
+            question.emoji = levelAnimalRule.emoji;
+            let fakeTexts = ["Druk 4 keer!", "Klik NIET!", "Druk snel 2x!"];
+            question.text =
+              fakeTexts[Math.floor(rng.next() * fakeTexts.length)];
+            question.clicks = levelAnimalRule.target; // Overruled door symbool
+            question.type = "symbol_trap";
+          } else if (qType < 0.4) {
+            // Categorie 2: Geheugentests
+            if (rng.next() > 0.5) {
+              question.text =
+                "Druk zo vaak als het ONTHOUDEN GETAL van de start!";
+              question.clicks = levelSecretNumber;
+            } else {
+              question.text = `Druk het onthouden getal MIN 1!`;
+              question.clicks = levelSecretNumber - 1;
+            }
+            question.emoji = "🎲";
+          } else if (qType < 0.55) {
+            // Categorie 3: Paradoxen & Leugens
+            if (rng.next() > 0.5) {
+              question.text =
+                "De volgende zin is een LEUGEN:<br>Je moet nu op de knop drukken.";
+              question.clicks = 0;
+            } else {
+              question.text = "De volgende zin is WAAR:<br>Druk absoluut NIET.";
+              question.clicks = 0;
+            }
+            question.emoji = "🎭";
+          } else if (qType < 0.75) {
+            // Categorie 4: Timing Snipe (Wisselende periodes)
+            let timingVar = rng.next();
+            if (timingVar < 0.33) {
+              question.text = "Druk zodra de balk in de GEKLEURDE zone komt.";
+              question.minTimeRatio = 0.0;
+              question.maxTimeRatio = 0.25;
+            } else if (timingVar < 0.66) {
+              question.text = "Druk zodra de balk in de GEKLEURDE zone komt.";
+              question.minTimeRatio = 0.5;
+              question.maxTimeRatio = 0.75;
+            } else {
+              question.text = "Druk zodra de balk in de GEKLEURDE zone komt.";
+              question.minTimeRatio = 0.75;
+              question.maxTimeRatio = 1.0;
+            }
+            question.clicks = 1;
+            question.type = "timing_snipe";
+            question.emoji = "⏳";
+          } else if (qType < 0.9) {
+            // Categorie 5: Visuele Kleur-manipulatie
+            let colors = ["BLAUW", "GROEN", "ROZE"];
+            let pickedColor = colors[Math.floor(rng.next() * colors.length)];
+            const colorValue =
+              pickedColor === "BLAUW"
+                ? "cyan"
+                : pickedColor === "GROEN"
+                  ? "var(--neon-green)"
+                  : "var(--neon-magenta)";
+
+            question.text = `Druk alleen 2x als de knop <span style="color:${colorValue}">${pickedColor}</span> is, anders 0x!`;
+
+            let triggerMatch = rng.next() > 0.5;
+            if (triggerMatch) {
+              question.color = pickedColor;
+              question.clicks = 2;
+            } else {
+              let wrongColors = colors.filter((c) => c !== pickedColor);
+              question.color = wrongColors[0];
+              question.clicks = 0;
+            }
+            question.emoji = "🔮";
+          } else {
+            let clicks = Math.floor(rng.next() * 3) + 2; // 2, 3 of 4
+            question.text = `Druk exact ${clicks} keer snel achter elkaar!`;
+            question.clicks = clicks;
+            question.emoji = "⚡";
+          }
+
+          state.questions.push(question);
+        }
+      }
+
+      function runQuestion() {
+        let q = state.questions[state.qIndex];
+        state.clicksThisTurn = [];
+
+        document.getElementById("ui-lvl").innerText =
+          `${state.level}/${state.totalLevels}`;
+        document.getElementById("ui-q").innerText =
+          `${state.qIndex + 1}/${state.questions.length}`;
+        document.getElementById("ui-lives").innerText =
+          "❤".repeat(state.lives) + "🖤".repeat(3 - state.lives);
+
+        document.getElementById("prompt-text").innerHTML = q.text;
+        document.getElementById("symbol-slot").innerText = q.emoji;
+
+        let btn = document.getElementById("core-btn");
+        if (q.color === "BLAUW") btn.style.background = "cyan";
+        else if (q.color === "GROEN")
+          btn.style.background = "var(--neon-green)";
+        else if (q.color === "ROZE")
+          btn.style.background = "var(--neon-magenta)";
+        else
+          btn.style.background =
+            "radial-gradient(circle, var(--neon-magenta) 0%, #990044 100%)";
+
+        let bar = document.getElementById("timer-bar");
+        let zone = document.getElementById("timer-zone");
+
+        bar.style.transition = "none";
+        bar.style.width = "100%";
+
+        if (q.type === "timing_snipe") {
+          zone.style.display = "block";
+          let zoneWidth = (q.maxTimeRatio - q.minTimeRatio) * 100 * 0.66;
+          let zoneLeft = q.minTimeRatio * 100;
+          if (zoneLeft + zoneWidth > 50) {
+            zoneLeft = Math.max(0, 50 - zoneWidth);
+          }
+          q.displayMinTimeRatio = zoneLeft / 100;
+          q.displayMaxTimeRatio = (zoneLeft + zoneWidth) / 100;
+          zone.style.left = `${zoneLeft}%`;
+          zone.style.width = `${zoneWidth}%`;
+          if (q.minTimeRatio === 0 && q.maxTimeRatio === 0.25) {
+            zone.style.background = "rgba(0, 240, 255, 0.65)";
+          } else if (q.minTimeRatio === 0.5 && q.maxTimeRatio === 0.75) {
+            zone.style.background = "rgba(57, 255, 20, 0.65)";
+          } else {
+            zone.style.background = "rgba(255, 0, 119, 0.65)";
+          }
+        } else {
+          zone.style.display = "none";
+          q.displayMinTimeRatio = undefined;
+          q.displayMaxTimeRatio = undefined;
+        }
+
+        setTimeout(() => {
+          bar.style.transition = `width ${q.time}ms linear`;
+          bar.style.width = "0%";
+        }, 20);
+
+        state.turnStartTime = Date.now();
+        clearTimeout(state.timeoutRef);
+        state.timeoutRef = setTimeout(verifyTurn, q.time);
+      }
+
+      function triggerClick() {
+        state.clicksThisTurn.push(Date.now() - state.turnStartTime);
+      }
+
+      function verifyTurn() {
+        let q = state.questions[state.qIndex];
+        let clickCount = state.clicksThisTurn.length;
+        let passed = true;
+
+        if (clickCount !== q.clicks) {
+          passed = false;
+        }
+
+        if (passed && q.type === "timing_snipe" && q.clicks > 0) {
+          let minRatio =
+            q.displayMinTimeRatio !== undefined
+              ? q.displayMinTimeRatio
+              : q.minTimeRatio;
+          let maxRatio =
+            q.displayMaxTimeRatio !== undefined
+              ? q.displayMaxTimeRatio
+              : q.maxTimeRatio;
+          let minTime = q.time * (1 - maxRatio);
+          let maxTime = q.time * (1 - minRatio);
+
+          let badClick = state.clicksThisTurn.some(
+            (timestamp) => timestamp < minTime || timestamp > maxTime,
+          );
+
+          if (badClick) {
+            passed = false;
+          }
+        }
+
+        if (passed) {
+          state.qIndex++;
+          if (state.qIndex >= state.questions.length) {
+            state.level++;
+            if (state.level > state.totalLevels) {
+              alert("GEWELDIG! Je hebt alle 30 levels overleefd en gekraakt!");
+              state.level = 1;
+              document
+                .getElementById("screen-start")
+                .classList.remove("hidden");
+            } else {
+              alert(
+                `LEVEL ${state.level - 1} VOLTOOID!\n\nMaak je klaar voor Level ${state.level} (${state.level * 10} opeenvolgende vragen).`,
+              );
+              state.qIndex = 0;
+              buildDeterministicLevel();
+              runQuestion();
+            }
+          } else {
+            runQuestion();
+          }
+        } else {
+          state.lives--;
+          if (state.lives <= 0) {
+            state.level = 1;
+            state.qIndex = 0;
+            document.getElementById("fail-reason").innerHTML =
+              `Gecrasht op vraag ${state.qIndex + 1} van level ${state.level}.<br><br>Verwachte actie: <strong>${q.clicks}x klikken (met juiste timing)</strong>.<br>Jouw actie: <strong>${clickCount}x geklikt</strong>.<br><br>Je begint nu helemaal opnieuw.`;
+            document.getElementById("screen-over").classList.remove("hidden");
+          } else {
+            alert(
+              `FOUT! Verkeerde timing of aantal klikken. Je verliest een leven.`,
+            );
+            runQuestion();
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
