@@ -2,14 +2,19 @@
 <html lang="nl">
   <head>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-HQ0MWMX965"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-HQ0MWMX965"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-  gtag('config', 'G-HQ0MWMX965');
-</script>
+      gtag("config", "G-HQ0MWMX965");
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Online Latu</title>
@@ -931,6 +936,42 @@
           0 0 12px var(--accent)
         ); /* Geeft een neon-blauwe gloed die strak de contouren van het logo volgt (in plaats van een vierkante box-shadow) */
       }
+      .social-links {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .social {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 42px;
+        overflow: hidden;
+        text-decoration: none;
+        color: white;
+        transition: width 0.3s ease;
+      }
+
+      .social:hover {
+        width: 120px;
+      }
+
+      .social svg {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+      }
+
+      .social span {
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .social:hover span {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
@@ -964,6 +1005,35 @@
                 >
                 en neem contact op met lauran.calliauw@gmail.com.
               </p>
+              <br /><br />
+              <p>volg ons op:</p>
+              <div class="social-links">
+                <a
+                  href="https://www.tiktok.com/@online_latu"
+                  target="_blank"
+                  class="social"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.13v12.4a2.67 2.67 0 1 1-2.67-2.67c.23 0 .45.03.67.09V8.65a5.8 5.8 0 1 0 5.13 5.75V8.09a7.9 7.9 0 0 0 4.77 1.6V6.69z"
+                    />
+                  </svg>
+                  <span>TikTok</span>
+                </a>
+
+                <a
+                  href=""
+                  target="_blank"
+                  class="social"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.6 3.5 12 3.5 12 3.5s-7.6 0-9.4.6A3 3 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.8.6 9.4.6 9.4.6s7.6 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"
+                    />
+                  </svg>
+                  <span>binnenkort</span>
+                </a>
+              </div>
               <div class="hero-actions">
                 <a class="button button-primary" href="#games">Start spelen</a>
                 <a class="button button-secondary" href="legal.html"
