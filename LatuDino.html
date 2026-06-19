@@ -1,204 +1,497 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-HQ0MWMX965"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-HQ0MWMX965");
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dino Run v2.2 (Smooth Progression)</title>
     <style>
-        body {
-            margin: 0; padding: 0; background-color: #f7f7f7;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; font-family: 'Courier New', Courier, monospace;
-            overflow: hidden; user-select: none;
-        }
-        #gameContainer {
-            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-radius: 8px; overflow: hidden; background-color: #f7f7f7;
-            width: 800px; max-width: 100%;
-        }
-        canvas { display: block; width: 100%; image-rendering: pixelated; }
-        .ui-layer {
-            position: absolute; top: 20px; right: 30px; font-size: 18px;
-            font-weight: bold; color: #535353; letter-spacing: 1px; pointer-events: none;
-        }
-        #menu {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            text-align: center; color: #535353; background: rgba(247, 247, 247, 0.95);
-            padding: 30px 40px; border-radius: 12px; border: 2px solid #e0e0e0;
-        }
-        h1 { margin: 0 0 10px 0; font-size: 26px; letter-spacing: 2px; }
-        p { color: #777; margin: 5px 0 20px 0; font-size: 14px; }
-        .btn {
-            background: transparent; color: #535353; border: 2px solid #535353;
-            padding: 10px 24px; font-size: 14px; font-family: 'Courier New', Courier, monospace;
-            font-weight: bold; cursor: pointer; transition: all 0.1s; margin: 5px;
-        }
-        .btn:hover { background: #535353; color: #f7f7f7; }
-        .btn:active { transform: scale(0.95); }
-        .hidden { display: none !important; }
-        #skinDisplay { font-weight: bold; font-size: 16px; margin-bottom: 15px; display: block; }
-        .ver { position: absolute; bottom: 10px; left: 10px; font-size: 10px; color: #aaa; }
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f7f7f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: "Courier New", Courier, monospace;
+        overflow: hidden;
+        user-select: none;
+      }
+      #gameContainer {
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #f7f7f7;
+        width: 800px;
+        max-width: 100%;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        image-rendering: pixelated;
+      }
+      .ui-layer {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #535353;
+        letter-spacing: 1px;
+        pointer-events: none;
+      }
+      #menu {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #535353;
+        background: rgba(247, 247, 247, 0.95);
+        padding: 30px 40px;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+      }
+      h1 {
+        margin: 0 0 10px 0;
+        font-size: 26px;
+        letter-spacing: 2px;
+      }
+      p {
+        color: #777;
+        margin: 5px 0 20px 0;
+        font-size: 14px;
+      }
+      .btn {
+        background: transparent;
+        color: #535353;
+        border: 2px solid #535353;
+        padding: 10px 24px;
+        font-size: 14px;
+        font-family: "Courier New", Courier, monospace;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.1s;
+        margin: 5px;
+      }
+      .btn:hover {
+        background: #535353;
+        color: #f7f7f7;
+      }
+      .btn:active {
+        transform: scale(0.95);
+      }
+      .hidden {
+        display: none !important;
+      }
+      #skinDisplay {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 15px;
+        display: block;
+      }
+      .ver {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        font-size: 10px;
+        color: #aaa;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <canvas id="gameCanvas" width="800" height="300"></canvas>
+      <div class="ui-layer">
+        HI <span id="hiScore">00000</span> <span id="currentScore">00000</span>
+      </div>
+      <div class="ver">v2.2 | Ultra-Smooth Speed Progression</div>
 
-<div id="gameContainer">
-    <canvas id="gameCanvas" width="800" height="300"></canvas>
-    <div class="ui-layer">HI <span id="hiScore">00000</span> <span id="currentScore">00000</span></div>
-    <div class="ver">v2.2 | Ultra-Smooth Speed Progression</div>
-    
-    <div id="menu">
+      <div id="menu">
         <h1>DINO RUN</h1>
         <p>SPACE / UP to Jump &bull; DOWN to Duck</p>
-        <span id="skinDisplay" style="color: #535353;">SKIN: CLASSIC</span>
+        <span id="skinDisplay" style="color: #535353">SKIN: CLASSIC</span>
         <button class="btn" onclick="changeSkin()">CHANGE SKIN</button>
-        <br><br>
+        <br /><br />
         <button class="btn" onclick="startGame()">START GAME</button>
+      </div>
     </div>
-</div>
 
-<script>
-    // --- SAFE LOCAL STORAGE ---
-    let highScore = 0;
-    try { highScore = parseInt(localStorage.getItem('dinoHi')) || 0; } catch (e) { highScore = 0; }
+    <script>
+      // --- SAFE LOCAL STORAGE ---
+      let highScore = 0;
+      try {
+        highScore = parseInt(localStorage.getItem("dinoHi")) || 0;
+      } catch (e) {
+        highScore = 0;
+      }
 
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const scoreEl = document.getElementById('currentScore');
-    const hiScoreEl = document.getElementById('hiScore');
-    const menu = document.getElementById('menu');
-    const skinDisplay = document.getElementById('skinDisplay');
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const scoreEl = document.getElementById("currentScore");
+      const hiScoreEl = document.getElementById("hiScore");
+      const menu = document.getElementById("menu");
+      const skinDisplay = document.getElementById("skinDisplay");
 
-    hiScoreEl.innerText = String(highScore).padStart(5, '0');
+      hiScoreEl.innerText = String(highScore).padStart(5, "0");
 
-    // --- SKINS SYSTEM ---
-    const SKINS = [
-        { name: 'CLASSIC', color: '#535353' }, { name: 'NEON', color: '#00FFFF' },
-        { name: 'GOLD', color: '#D4AF37' }, { name: 'MATRIX', color: '#00FF00' }, { name: 'SUNSET', color: '#FF4500' }
-    ];
-    let skinIndex = 0;
-    let currentColor = SKINS[0].color;
+      // --- SKINS SYSTEM ---
+      const SKINS = [
+        { name: "CLASSIC", color: "#535353" },
+        { name: "NEON", color: "#00FFFF" },
+        { name: "GOLD", color: "#D4AF37" },
+        { name: "MATRIX", color: "#00FF00" },
+        { name: "SUNSET", color: "#FF4500" },
+      ];
+      let skinIndex = 0;
+      let currentColor = SKINS[0].color;
 
-    function changeSkin() {
+      function changeSkin() {
         skinIndex = (skinIndex + 1) % SKINS.length;
         currentColor = SKINS[skinIndex].color;
         skinDisplay.innerText = "SKIN: " + SKINS[skinIndex].name;
         skinDisplay.style.color = currentColor;
         drawStatic();
-    }
+      }
 
-    // --- SPRITE MAPS ---
-    const SCALE = 4;
-    const DINO_R1 = ["00000011110","00000110111","00000111110","00000111100","00000111100","00000111100","10000111100","11001111100","11111111100","01111111100","00110011000","00100001000"];
-    const DINO_R2 = ["00000011110","00000110111","00000111110","00000111100","00000111100","00000111100","10000111100","11001111100","11111111100","01111111100","00100011000","00100001000"];
-    const DINO_DUCK1 = ["000000000000000000","000000000000000000","000000000000000000","000000000000000000","000000000000000000","000000000000111100","000000000001101110","000000000001111100","000000000001111000","100000000001111000","110000000011111000","111111111111111000","011111111111110000","001100110000000000","001000010000000000"];
-    const DINO_DUCK2 = ["000000000000000000","000000000000000000","000000000000000000","000000000000000000","000000000000000000","000000000000111100","000000000001101110","000000000001111100","000000000001111000","100000000001111000","110000000011111000","111111111111111000","011111111111110000","001000110000000000","001000010000000000"];
-    const DINO_DEAD = ["00000011110","00000101011","00000111110","00000111100","00000111100","00000111100","10000111100","11001111100","11111111100","01111111100","00110011000","00100001000"];
-    const CACTUS_SMALL = ["0011100","0111110","1111111","1111111","0111110","0111110","0111110","0111110","0111110","0111110","0111110","0111110","1111111"];
-    const CACTUS_LARGE = ["000111000","001111100","011111110","111111111","111111111","101111101","101111101","001111100","001111100","001111100","001111100","001111100","001111100","001111100","011111110"];
-    const BIRD_R1 = ["00000000100000000000","00000011110000000000","00000111111000000000","00001111111100000000","00011111111110000000","00111111111111000000","01111111111111100000","11111111111111110000","00000111111111111111","00000011111111111110","00000001111111111100","00000000111111111000","00000000011111110000","00000000001111100000","00000000000111000000"];
-    const BIRD_R2 = ["00000000000111000000","00000000001111100000","00000000011111110000","00000000111111111000","00000001111111111100","00000011111111111110","00000111111111111111","11111111111111110000","01111111111111100000","00111111111111000000","00011111111110000000","00001111111100000000","00000111111000000000","00000011110000000000","00000000100000000000"];
+      // --- SPRITE MAPS ---
+      const SCALE = 4;
+      const DINO_R1 = [
+        "00000011110",
+        "00000110111",
+        "00000111110",
+        "00000111100",
+        "00000111100",
+        "00000111100",
+        "10000111100",
+        "11001111100",
+        "11111111100",
+        "01111111100",
+        "00110011000",
+        "00100001000",
+      ];
+      const DINO_R2 = [
+        "00000011110",
+        "00000110111",
+        "00000111110",
+        "00000111100",
+        "00000111100",
+        "00000111100",
+        "10000111100",
+        "11001111100",
+        "11111111100",
+        "01111111100",
+        "00100011000",
+        "00100001000",
+      ];
+      const DINO_DUCK1 = [
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000111100",
+        "000000000001101110",
+        "000000000001111100",
+        "000000000001111000",
+        "100000000001111000",
+        "110000000011111000",
+        "111111111111111000",
+        "011111111111110000",
+        "001100110000000000",
+        "001000010000000000",
+      ];
+      const DINO_DUCK2 = [
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000000000",
+        "000000000000111100",
+        "000000000001101110",
+        "000000000001111100",
+        "000000000001111000",
+        "100000000001111000",
+        "110000000011111000",
+        "111111111111111000",
+        "011111111111110000",
+        "001000110000000000",
+        "001000010000000000",
+      ];
+      const DINO_DEAD = [
+        "00000011110",
+        "00000101011",
+        "00000111110",
+        "00000111100",
+        "00000111100",
+        "00000111100",
+        "10000111100",
+        "11001111100",
+        "11111111100",
+        "01111111100",
+        "00110011000",
+        "00100001000",
+      ];
+      const CACTUS_SMALL = [
+        "0011100",
+        "0111110",
+        "1111111",
+        "1111111",
+        "0111110",
+        "0111110",
+        "0111110",
+        "0111110",
+        "0111110",
+        "0111110",
+        "0111110",
+        "0111110",
+        "1111111",
+      ];
+      const CACTUS_LARGE = [
+        "000111000",
+        "001111100",
+        "011111110",
+        "111111111",
+        "111111111",
+        "101111101",
+        "101111101",
+        "001111100",
+        "001111100",
+        "001111100",
+        "001111100",
+        "001111100",
+        "001111100",
+        "001111100",
+        "011111110",
+      ];
+      const BIRD_R1 = [
+        "00000000100000000000",
+        "00000011110000000000",
+        "00000111111000000000",
+        "00001111111100000000",
+        "00011111111110000000",
+        "00111111111111000000",
+        "01111111111111100000",
+        "11111111111111110000",
+        "00000111111111111111",
+        "00000011111111111110",
+        "00000001111111111100",
+        "00000000111111111000",
+        "00000000011111110000",
+        "00000000001111100000",
+        "00000000000111000000",
+      ];
+      const BIRD_R2 = [
+        "00000000000111000000",
+        "00000000001111100000",
+        "00000000011111110000",
+        "00000000111111111000",
+        "00000001111111111100",
+        "00000011111111111110",
+        "00000111111111111111",
+        "11111111111111110000",
+        "01111111111111100000",
+        "00111111111111000000",
+        "00011111111110000000",
+        "00001111111100000000",
+        "00000111111000000000",
+        "00000011110000000000",
+        "00000000100000000000",
+      ];
 
-    function drawSprite(ctx, sprite, x, y, color) {
+      function drawSprite(ctx, sprite, x, y, color) {
         ctx.fillStyle = color;
         for (let r = 0; r < sprite.length; r++) {
-            for (let c = 0; c < sprite[r].length; c++) {
-                if (sprite[r][c] === '1') ctx.fillRect(x + c * SCALE, y + r * SCALE, SCALE, SCALE);
-            }
+          for (let c = 0; c < sprite[r].length; c++) {
+            if (sprite[r][c] === "1")
+              ctx.fillRect(x + c * SCALE, y + r * SCALE, SCALE, SCALE);
+          }
         }
-    }
+      }
 
-    // --- GAME STATE ---
-    let gameRunning = false;
-    let frame = 0;
-    let score = 0;
-    let gameSpeed = 6;
-    
-    const BASE_SPEED = 6;
-    const MAX_SPEED = 13; // Caps speed so it never becomes literally impossible
-    
-    let obstacles = [];
-    let clouds = [];
-    let particles = [];
-    let animationId = null;
+      // --- GAME STATE ---
+      let gameRunning = false;
+      let frame = 0;
+      let score = 0;
+      let gameSpeed = 6;
 
-    const GRAVITY = 0.6;
-    const JUMP_FORCE = -10;
-    const GROUND_Y = 220;
+      const BASE_SPEED = 6;
+      const MAX_SPEED = 13; // Caps speed so it never becomes literally impossible
 
-    const dino = {
-        x: 50, y: GROUND_Y, w: 11 * SCALE, h: 12 * SCALE,
-        dy: 0, grounded: true, legTimer: 0, isDead: false, isDucking: false,
-        jump() { if (this.grounded && !this.isDead && !this.isDucking) { this.dy = JUMP_FORCE; this.grounded = false; createDust(this.x + 10, this.y + this.h); } },
+      let obstacles = [];
+      let clouds = [];
+      let particles = [];
+      let animationId = null;
+
+      const GRAVITY = 0.6;
+      const JUMP_FORCE = -10;
+      const GROUND_Y = 220;
+
+      const dino = {
+        x: 50,
+        y: GROUND_Y,
+        w: 11 * SCALE,
+        h: 12 * SCALE,
+        dy: 0,
+        grounded: true,
+        legTimer: 0,
+        isDead: false,
+        isDucking: false,
+        jump() {
+          if (this.grounded && !this.isDead && !this.isDucking) {
+            this.dy = JUMP_FORCE;
+            this.grounded = false;
+            createDust(this.x + 10, this.y + this.h);
+          }
+        },
         duck(active) {
-            if (this.isDead) return;
-            this.isDucking = active;
-            if (active) { this.w = 18 * SCALE; this.h = 8 * SCALE; if (this.grounded) this.y = GROUND_Y + (12 * SCALE) - this.h; }
-            else { this.w = 11 * SCALE; this.h = 12 * SCALE; if (this.grounded) this.y = GROUND_Y; }
+          if (this.isDead) return;
+          this.isDucking = active;
+          if (active) {
+            this.w = 18 * SCALE;
+            this.h = 8 * SCALE;
+            if (this.grounded) this.y = GROUND_Y + 12 * SCALE - this.h;
+          } else {
+            this.w = 11 * SCALE;
+            this.h = 12 * SCALE;
+            if (this.grounded) this.y = GROUND_Y;
+          }
         },
         update() {
-            this.dy += GRAVITY; this.y += this.dy;
-            let targetY = this.isDucking ? GROUND_Y + (12 * SCALE) - this.h : GROUND_Y;
-            if (this.y > targetY) { this.y = targetY; this.dy = 0; this.grounded = true; }
-            else { this.grounded = false; }
-            if (this.isDucking && !this.grounded) this.dy += 0.5; // Fast fall
-            if (this.grounded && !this.isDead) this.legTimer++;
+          this.dy += GRAVITY;
+          this.y += this.dy;
+          let targetY = this.isDucking
+            ? GROUND_Y + 12 * SCALE - this.h
+            : GROUND_Y;
+          if (this.y > targetY) {
+            this.y = targetY;
+            this.dy = 0;
+            this.grounded = true;
+          } else {
+            this.grounded = false;
+          }
+          if (this.isDucking && !this.grounded) this.dy += 0.5; // Fast fall
+          if (this.grounded && !this.isDead) this.legTimer++;
         },
         draw() {
-            let sprite = DINO_R1;
-            if (this.isDead) sprite = DINO_DEAD;
-            else if (this.isDucking) sprite = Math.floor(this.legTimer / 6) % 2 === 0 ? DINO_DUCK1 : DINO_DUCK2;
-            else if (this.grounded) sprite = Math.floor(this.legTimer / 6) % 2 === 0 ? DINO_R1 : DINO_R2;
-            drawSprite(ctx, sprite, this.x, this.y, currentColor);
-        }
-    };
+          let sprite = DINO_R1;
+          if (this.isDead) sprite = DINO_DEAD;
+          else if (this.isDucking)
+            sprite =
+              Math.floor(this.legTimer / 6) % 2 === 0 ? DINO_DUCK1 : DINO_DUCK2;
+          else if (this.grounded)
+            sprite =
+              Math.floor(this.legTimer / 6) % 2 === 0 ? DINO_R1 : DINO_R2;
+          drawSprite(ctx, sprite, this.x, this.y, currentColor);
+        },
+      };
 
-    class Cactus {
+      class Cactus {
         constructor() {
-            this.isLarge = Math.random() > 0.6;
-            this.sprite = this.isLarge ? CACTUS_LARGE : CACTUS_SMALL;
-            this.w = this.sprite[0].length * SCALE; this.h = this.sprite.length * SCALE;
-            this.x = canvas.width; this.y = GROUND_Y + (12 * SCALE) - this.h; this.marked = false;
-        }
-        update() { this.x -= gameSpeed; if (this.x + this.w < 0) this.marked = true; }
-        draw() { drawSprite(ctx, this.sprite, this.x, this.y, currentColor); }
-    }
-
-    class Bird {
-        constructor() {
-            this.sprite = BIRD_R1; this.w = 20 * SCALE; this.h = 15 * SCALE;
-            this.x = canvas.width; this.frameTimer = 0;
-            this.y = [GROUND_Y - 10, GROUND_Y - 40, GROUND_Y - 70][Math.floor(Math.random() * 3)];
-            this.marked = false;
+          this.isLarge = Math.random() > 0.6;
+          this.sprite = this.isLarge ? CACTUS_LARGE : CACTUS_SMALL;
+          this.w = this.sprite[0].length * SCALE;
+          this.h = this.sprite.length * SCALE;
+          this.x = canvas.width;
+          this.y = GROUND_Y + 12 * SCALE - this.h;
+          this.marked = false;
         }
         update() {
-            this.x -= gameSpeed; this.frameTimer++;
-            this.sprite = Math.floor(this.frameTimer / 15) % 2 === 0 ? BIRD_R1 : BIRD_R2;
-            if (this.x + this.w < 0) this.marked = true;
+          this.x -= gameSpeed;
+          if (this.x + this.w < 0) this.marked = true;
         }
-        draw() { drawSprite(ctx, this.sprite, this.x, this.y, currentColor); }
-    }
-
-    class Cloud {
-        constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * 100 + 20; this.speed = 0.5 + Math.random() * 0.5; }
-        update() { this.x -= this.speed; if (this.x < -60) this.x = canvas.width + 60; }
         draw() {
-            ctx.fillStyle = '#dcdcdc'; ctx.beginPath();
-            ctx.arc(this.x, this.y, 15, 0, Math.PI * 2); ctx.arc(this.x + 15, this.y - 8, 20, 0, Math.PI * 2);
-            ctx.arc(this.x + 35, this.y, 15, 0, Math.PI * 2); ctx.fill();
+          drawSprite(ctx, this.sprite, this.x, this.y, currentColor);
         }
-    }
+      }
 
-    class Particle {
-        constructor(x, y) { this.x = x; this.y = y; this.size = Math.random() * 3 + 1; this.life = 1; this.vx = (Math.random() - 0.5) * 2; this.vy = (Math.random() - 1) * 2; }
-        update() { this.x += this.vx - (gameSpeed * 0.5); this.y += this.vy; this.life -= 0.06; }
-        draw() { ctx.fillStyle = currentColor; ctx.globalAlpha = this.life; ctx.fillRect(this.x, this.y, this.size, this.size); ctx.globalAlpha = 1.0; }
-    }
+      class Bird {
+        constructor() {
+          this.sprite = BIRD_R1;
+          this.w = 20 * SCALE;
+          this.h = 15 * SCALE;
+          this.x = canvas.width;
+          this.frameTimer = 0;
+          this.y = [GROUND_Y - 10, GROUND_Y - 40, GROUND_Y - 70][
+            Math.floor(Math.random() * 3)
+          ];
+          this.marked = false;
+        }
+        update() {
+          this.x -= gameSpeed;
+          this.frameTimer++;
+          this.sprite =
+            Math.floor(this.frameTimer / 15) % 2 === 0 ? BIRD_R1 : BIRD_R2;
+          if (this.x + this.w < 0) this.marked = true;
+        }
+        draw() {
+          drawSprite(ctx, this.sprite, this.x, this.y, currentColor);
+        }
+      }
 
-    function createDust(x, y) { for(let i = 0; i < 4; i++) particles.push(new Particle(x, y)); }
+      class Cloud {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * 100 + 20;
+          this.speed = 0.5 + Math.random() * 0.5;
+        }
+        update() {
+          this.x -= this.speed;
+          if (this.x < -60) this.x = canvas.width + 60;
+        }
+        draw() {
+          ctx.fillStyle = "#dcdcdc";
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, 15, 0, Math.PI * 2);
+          ctx.arc(this.x + 15, this.y - 8, 20, 0, Math.PI * 2);
+          ctx.arc(this.x + 35, this.y, 15, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
 
-    // --- BULLETPROOF RESET ---
-    function startGame() {
+      class Particle {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          this.size = Math.random() * 3 + 1;
+          this.life = 1;
+          this.vx = (Math.random() - 0.5) * 2;
+          this.vy = (Math.random() - 1) * 2;
+        }
+        update() {
+          this.x += this.vx - gameSpeed * 0.5;
+          this.y += this.vy;
+          this.life -= 0.06;
+        }
+        draw() {
+          ctx.fillStyle = currentColor;
+          ctx.globalAlpha = this.life;
+          ctx.fillRect(this.x, this.y, this.size, this.size);
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
+      function createDust(x, y) {
+        for (let i = 0; i < 4; i++) particles.push(new Particle(x, y));
+      }
+
+      // --- BULLETPROOF RESET ---
+      function startGame() {
         if (animationId) cancelAnimationFrame(animationId); // Kill any old loops
         gameRunning = true;
         score = 0;
@@ -213,118 +506,145 @@
         dino.legTimer = 0;
         dino.grounded = true;
         scoreEl.innerText = "00000";
-        menu.classList.add('hidden');
+        menu.classList.add("hidden");
         loop();
-    }
+      }
 
-    function gameOver() {
+      function gameOver() {
         gameRunning = false;
         dino.isDead = true;
         if (score > highScore) {
-            highScore = score;
-            try { localStorage.setItem('dinoHi', highScore); } catch(e){}
-            hiScoreEl.innerText = String(highScore).padStart(5, '0');
+          highScore = score;
+          try {
+            localStorage.setItem("dinoHi", highScore);
+          } catch (e) {}
+          hiScoreEl.innerText = String(highScore).padStart(5, "0");
         }
         setTimeout(() => {
-            menu.classList.remove('hidden');
-            menu.querySelector('h1').innerText = "GAME OVER";
-            menu.querySelector('p').innerText = "Score: " + score;
-            menu.querySelector('.btn:last-child').innerText = "RESTART";
+          menu.classList.remove("hidden");
+          menu.querySelector("h1").innerText = "GAME OVER";
+          menu.querySelector("p").innerText = "Score: " + score;
+          menu.querySelector(".btn:last-child").innerText = "RESTART";
         }, 600);
-    }
+      }
 
-    function loop() {
+      function loop() {
         animationId = requestAnimationFrame(loop);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         if (gameRunning) {
-            frame++;
-            if (frame % 10 === 0) {
-                score++;
-                scoreEl.innerText = String(score).padStart(5, '0');
-            }
-            
-            // --- ULTRA-SMOOTH PROGRESSION ---
-            // Speed increases by exactly 1.0 for every 1000 points scored.
-            // This guarantees a very slow, gradual, and fair difficulty curve.
-            gameSpeed = BASE_SPEED + (score * 0.001);
-            
-            // Cap the maximum speed so it never becomes literally impossible
-            if (gameSpeed > MAX_SPEED) gameSpeed = MAX_SPEED;
+          frame++;
+          if (frame % 10 === 0) {
+            score++;
+            scoreEl.innerText = String(score).padStart(5, "0");
+          }
+
+          // --- ULTRA-SMOOTH PROGRESSION ---
+          // Speed increases by exactly 1.0 for every 1000 points scored.
+          // This guarantees a very slow, gradual, and fair difficulty curve.
+          gameSpeed = BASE_SPEED + score * 0.001;
+
+          // Cap the maximum speed so it never becomes literally impossible
+          if (gameSpeed > MAX_SPEED) gameSpeed = MAX_SPEED;
         }
 
-        clouds.forEach(c => { if(gameRunning) c.update(); c.draw(); });
+        clouds.forEach((c) => {
+          if (gameRunning) c.update();
+          c.draw();
+        });
 
-        ctx.strokeStyle = currentColor; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(0, GROUND_Y + 48); ctx.lineTo(canvas.width, GROUND_Y + 48); ctx.stroke();
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, GROUND_Y + 48);
+        ctx.lineTo(canvas.width, GROUND_Y + 48);
+        ctx.stroke();
 
         if (gameRunning) {
-            // Spawn rate dynamically adapts to the smooth speed increase
-            let spawnRate = Math.floor(900 / gameSpeed);
-            
-            // Ensure obstacles never spawn impossibly close together, scaling with speed
-            let minDistance = 200 + (gameSpeed * 15);
-            let canSpawn = obstacles.length === 0 || (canvas.width - obstacles[obstacles.length-1].x > minDistance);
-            
-            if (frame % spawnRate === 0 && canSpawn) {
-                if (score > 300 && Math.random() > 0.7) obstacles.push(new Bird());
-                else obstacles.push(new Cactus());
-            }
+          // Spawn rate dynamically adapts to the smooth speed increase
+          let spawnRate = Math.floor(900 / gameSpeed);
+
+          // Ensure obstacles never spawn impossibly close together, scaling with speed
+          let minDistance = 200 + gameSpeed * 15;
+          let canSpawn =
+            obstacles.length === 0 ||
+            canvas.width - obstacles[obstacles.length - 1].x > minDistance;
+
+          if (frame % spawnRate === 0 && canSpawn) {
+            if (score > 300 && Math.random() > 0.7) obstacles.push(new Bird());
+            else obstacles.push(new Cactus());
+          }
         }
 
         obstacles.forEach((obs, i) => {
-            if (gameRunning) obs.update();
-            obs.draw();
-            let p = 6; // Forgiving hitbox padding
-            if (gameRunning && !dino.isDead && 
-                dino.x + p < obs.x + obs.w - p && 
-                dino.x + dino.w - p > obs.x + p && 
-                dino.y + p < obs.y + obs.h - p && 
-                dino.y + dino.h - p > obs.y + p) {
-                gameOver();
-            }
-            if (obs.marked) obstacles.splice(i, 1);
+          if (gameRunning) obs.update();
+          obs.draw();
+          let p = 6; // Forgiving hitbox padding
+          if (
+            gameRunning &&
+            !dino.isDead &&
+            dino.x + p < obs.x + obs.w - p &&
+            dino.x + dino.w - p > obs.x + p &&
+            dino.y + p < obs.y + obs.h - p &&
+            dino.y + dino.h - p > obs.y + p
+          ) {
+            gameOver();
+          }
+          if (obs.marked) obstacles.splice(i, 1);
         });
 
-        particles.forEach((p, i) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(i, 1); });
+        particles.forEach((p, i) => {
+          p.update();
+          p.draw();
+          if (p.life <= 0) particles.splice(i, 1);
+        });
 
-        dino.update(); dino.draw();
-    }
-
-    function drawStatic() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        clouds.forEach(c => c.draw());
-        ctx.strokeStyle = currentColor; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(0, GROUND_Y + 48); ctx.lineTo(canvas.width, GROUND_Y + 48); ctx.stroke();
+        dino.update();
         dino.draw();
-    }
+      }
 
-    // --- INPUT ---
-    window.addEventListener('keydown', e => {
-        if (e.code === 'Space' || e.code === 'ArrowUp') { 
-            e.preventDefault(); 
-            if (gameRunning) dino.jump(); 
-            else if (!menu.classList.contains('hidden')) startGame(); 
-        }
-        if (e.code === 'ArrowDown') { 
-            e.preventDefault(); 
-            if (gameRunning) dino.duck(true); 
-        }
-    });
-    
-    window.addEventListener('keyup', e => { 
-        if (e.code === 'ArrowDown') dino.duck(false); 
-    });
-    
-    window.addEventListener('touchstart', e => { 
-        e.preventDefault(); 
-        if (gameRunning) dino.jump(); 
-        else if (!menu.classList.contains('hidden')) startGame(); 
-    }, {passive: false});
+      function drawStatic() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        clouds.forEach((c) => c.draw());
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, GROUND_Y + 48);
+        ctx.lineTo(canvas.width, GROUND_Y + 48);
+        ctx.stroke();
+        dino.draw();
+      }
 
-    // Initial setup
-    for(let i = 0; i < 4; i++) clouds.push(new Cloud());
-    drawStatic();
-</script>
-</body>
+      // --- INPUT ---
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space" || e.code === "ArrowUp") {
+          e.preventDefault();
+          if (gameRunning) dino.jump();
+          else if (!menu.classList.contains("hidden")) startGame();
+        }
+        if (e.code === "ArrowDown") {
+          e.preventDefault();
+          if (gameRunning) dino.duck(true);
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        if (e.code === "ArrowDown") dino.duck(false);
+      });
+
+      window.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          if (gameRunning) dino.jump();
+          else if (!menu.classList.contains("hidden")) startGame();
+        },
+        { passive: false },
+      );
+
+      // Initial setup
+      for (let i = 0; i < 4; i++) clouds.push(new Cloud());
+      drawStatic();
+    </script>
+  </body>
 </html>
