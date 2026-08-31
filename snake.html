@@ -588,14 +588,18 @@
                 this.alive = false;
                 this.corpseSegments = this.segments.slice();
                 const colors = ['#ff4444', '#ffaa00', '#ffff00', '#88ff88', '#44aaff', '#ff44ff'];
-                for (let i = 0; i < this.corpseSegments.length; i++) {
-                    const seg = this.corpseSegments[i];
-                    foods.push(new Food(
-                        seg.x + (Math.random() - 0.5) * 12,
-                        seg.y + (Math.random() - 0.5) * 12,
-                        3 + Math.random() * 3,
+                const dropCount = Math.min(this.corpseSegments.length, 12);
+                for (let i = 0; i < dropCount; i++) {
+                    const idx = Math.floor((i / dropCount) * this.corpseSegments.length);
+                    const seg = this.corpseSegments[idx];
+                    const corpseFood = new Food(
+                        seg.x + (Math.random() - 0.5) * 10,
+                        seg.y + (Math.random() - 0.5) * 10,
+                        4 + Math.random() * 4,
                         colors[Math.floor(Math.random() * colors.length)]
-                    ));
+                    );
+                    corpseFood.isCorpse = true;
+                    foods.push(corpseFood);
                 }
                 for (let i = 0; i < 30; i++) particles.push(new Particle(this.head.x, this.head.y, '#ff4444'));
             }
@@ -661,7 +665,24 @@
 
             checkSnakeCollision() {
                 for (let snake of snakes) {
-                    if (snake === this || !snake.alive) continue;
+                    if (snake === this) continue;
+
+                    if (!snake.alive) {
+                        for (let i = 0; i < snake.corpseSegments.length; i++) {
+                            const seg = snake.corpseSegments[i];
+                            const dist = Math.hypot(this.head.x - seg.x, this.head.y - seg.y);
+                            if (dist < this.radius + 8) {
+                                const eatenValue = Math.max(2, Math.ceil(snake.corpseSegments.length * 0.2));
+                                this.length += eatenValue;
+                                this.score += eatenValue;
+                                for (let j = 0; j < 8; j++) particles.push(new Particle(seg.x, seg.y, '#88ff88'));
+                                snake.corpseSegments.splice(i, 1);
+                                if (snake.corpseSegments.length === 0) snake.alive = false;
+                                return;
+                            }
+                        }
+                        continue;
+                    }
                     
                     // Head to head collision: smaller snake dies
                     const headDist = Math.hypot(this.head.x - snake.head.x, this.head.y - snake.head.y);
