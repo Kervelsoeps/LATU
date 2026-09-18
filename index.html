@@ -185,9 +185,12 @@
         content: "⌕";
         position: absolute;
         left: 15px;
-        top: 7px;
+        top: 50%;
         color: var(--muted);
-        font-size: 1.45rem;
+        font-size: 1.35rem;
+        line-height: 1;
+        transform: translateY(-50%);
+        pointer-events: none;
       }
       .games-search {
         max-width: 520px;
@@ -687,7 +690,6 @@
         <section class="section" id="games" aria-labelledby="games-title">
           <div class="section-heading">
             <h2 id="games-title">Alle games</h2>
-            <p>Open een kaart om te starten</p>
           </div>
           <div class="cards-grid" id="cards-grid"></div>
           <p class="no-results" id="no-results">
