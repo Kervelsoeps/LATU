@@ -42,16 +42,17 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #080b18;
-        --panel: #12172a;
-        --text: #f8f9ff;
-        --muted: #a7aec7;
-        --line: rgba(255, 255, 255, 0.1);
-        --pink: #ff4f9a;
-        --yellow: #ffd166;
-        --blue: #62b7ff;
-        --radius: 22px;
-        --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+        --bg: #0e151b;
+        --panel: #172128;
+        --panel-light: #1d2a31;
+        --text: #f4f1e8;
+        --muted: #a9b3b2;
+        --line: rgba(244, 241, 232, 0.13);
+        --pink: #ff8b4d;
+        --yellow: #d8e96b;
+        --blue: #8bd3c7;
+        --radius: 14px;
+        --shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
         font-family:
           Inter,
           ui-sans-serif,
@@ -69,18 +70,7 @@
       body {
         margin: 0;
         min-width: 320px;
-        background:
-          radial-gradient(
-            circle at 5% 0%,
-            rgba(98, 183, 255, 0.16),
-            transparent 28rem
-          ),
-          radial-gradient(
-            circle at 100% 15%,
-            rgba(255, 79, 154, 0.13),
-            transparent 26rem
-          ),
-          var(--bg);
+        background: var(--bg);
         color: var(--text);
         -webkit-font-smoothing: antialiased;
       }
@@ -89,7 +79,7 @@
         position: fixed;
         inset: 0;
         pointer-events: none;
-        opacity: 0.24;
+        opacity: 0.1;
         background-image:
           linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
           linear-gradient(
@@ -97,7 +87,7 @@
             rgba(255, 255, 255, 0.025) 1px,
             transparent 1px
           );
-        background-size: 42px 42px;
+        background-size: 48px 48px;
       }
       .container {
         width: min(1180px, calc(100% - 32px));
@@ -106,15 +96,15 @@
       }
       .site-header {
         position: sticky;
-        top: 12px;
+        top: 10px;
         z-index: 10;
         display: flex;
         align-items: center;
         gap: 18px;
-        padding: 13px 16px;
-        background: rgba(18, 23, 42, 0.88);
+        padding: 10px 14px;
+        background: rgba(23, 33, 40, 0.96);
         border: 1px solid var(--line);
-        border-radius: 18px;
+        border-radius: 10px;
         box-shadow: var(--shadow);
         backdrop-filter: blur(18px);
       }
@@ -134,8 +124,8 @@
         place-items: center;
         width: 36px;
         height: 36px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--pink), #8d5cff);
+        border-radius: 8px;
+        background: var(--pink);
         box-shadow: 0 8px 20px rgba(255, 79, 154, 0.28);
       }
       .brand-mark:after {
@@ -147,7 +137,7 @@
         display: block;
         width: 36px;
         height: 36px;
-        border-radius: 12px;
+        border-radius: 8px;
         object-fit: cover;
         box-shadow: 0 8px 20px rgba(255, 79, 154, 0.28);
       }
@@ -210,24 +200,19 @@
       .hero {
         display: grid;
         grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
-        gap: 22px;
-        margin-top: 24px;
+        gap: 18px;
+        margin-top: 20px;
       }
       .hero-copy,
       .featured {
         border: 1px solid var(--line);
-        border-radius: 28px;
+        border-radius: 14px;
         overflow: hidden;
         box-shadow: var(--shadow);
       }
       .hero-copy {
-        padding: clamp(28px, 5vw, 64px);
-        background: linear-gradient(
-          135deg,
-          rgba(98, 183, 255, 0.16),
-          rgba(255, 79, 154, 0.08) 60%,
-          rgba(255, 255, 255, 0.03)
-        );
+        padding: clamp(28px, 4vw, 48px);
+        background: var(--panel);
       }
       .eyebrow,
       .card-tag {
@@ -249,11 +234,11 @@
         box-shadow: 0 0 14px var(--yellow);
       }
       h1 {
-        max-width: 10ch;
+        max-width: 12ch;
         margin: 18px 0 14px;
-        font-size: clamp(2.7rem, 6vw, 5.5rem);
-        line-height: 0.92;
-        letter-spacing: -0.075em;
+        font-size: clamp(2.5rem, 5vw, 4.6rem);
+        line-height: 0.96;
+        letter-spacing: -0.065em;
       }
       h1 span {
         color: var(--pink);
@@ -290,7 +275,7 @@
       .button-primary {
         background: var(--pink);
         color: #fff;
-        box-shadow: 0 12px 26px rgba(255, 79, 154, 0.25);
+        box-shadow: none;
       }
       .button-secondary {
         color: var(--text);
@@ -300,7 +285,7 @@
       .featured {
         position: relative;
         min-height: 360px;
-        background: linear-gradient(145deg, #29234b, #10162d);
+        background: var(--panel-light);
       }
       .featured:after {
         content: "";
@@ -329,7 +314,7 @@
       .featured-content h2 {
         margin: 8px 0;
         font-size: clamp(1.6rem, 3vw, 2.4rem);
-        letter-spacing: -0.05em;
+        letter-spacing: -0.04em;
       }
       .featured-content p {
         margin: 0;
@@ -418,16 +403,16 @@
       }
       .card:hover,
       .card:focus-visible {
-        transform: translateY(-5px);
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3);
+        transform: translateY(-3px);
+        border-color: var(--pink);
+        box-shadow: var(--shadow);
         outline: none;
       }
       .card-image {
         position: relative;
         aspect-ratio: 1.35;
         overflow: hidden;
-        background: linear-gradient(135deg, #253452, #4b244b);
+        background: #27343a;
       }
       .card-image:after {
         content: "✦";
@@ -453,7 +438,10 @@
         transform: scale(1.06);
       }
       .card-body {
-        padding: 14px 15px 16px;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: 14px 15px 15px;
       }
       .card-tag {
         color: var(--blue);
@@ -465,15 +453,33 @@
         font-size: 1rem;
         line-height: 1.25;
       }
+      .card-description {
+        display: -webkit-box;
+        margin: 8px 0 0;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 0.8rem;
+        line-height: 1.45;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
       .card-meta {
         display: flex;
         gap: 8px;
-        margin-top: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 14px;
         color: var(--muted);
         font-size: 0.76rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+      .card-play {
+        flex: 0 0 auto;
+        color: var(--pink);
+        font-weight: 900;
       }
       .no-results {
         display: none;
@@ -860,9 +866,10 @@
       };
       const grid = document.querySelector("#cards-grid");
       games.forEach(([title, image, link, category, creator]) => {
+        const description = desc[title] || "Ontdek deze game en speel meteen.";
         grid.insertAdjacentHTML(
           "beforeend",
-          `<a class="card reveal" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${category}</span><h3>${title}</h3><div class="card-meta"><span>${creator}</span></div></div></a>`,
+          `<a class="card reveal" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${category}</span><h3>${title}</h3><p class="card-description">${description}</p><div class="card-meta"><span>${creator}</span><span class="card-play">Spelen &rarr;</span></div></div></a>`,
         );
       });
       const game = games[Math.floor(Math.random() * games.length)],
