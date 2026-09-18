@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <!-- Bestaande analytics en advertentie-integratie behouden -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-HQ0MWMX965"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-HQ0MWMX965");
+    </script>
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l !== "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-5WZ9ZJWX");
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Online Latu — ontdek en speel snelle browsergames."
+    />
+    <title>Online Latu — speel meteen</title>
+    <link rel="icon" type="image/x-icon" href="logo.ico" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6983682584738537"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #080b18;
+        --panel: #12172a;
+        --text: #f8f9ff;
+        --muted: #a7aec7;
+        --line: rgba(255, 255, 255, 0.1);
+        --pink: #ff4f9a;
+        --yellow: #ffd166;
+        --blue: #62b7ff;
+        --radius: 22px;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        min-width: 320px;
+        background:
+          radial-gradient(
+            circle at 5% 0%,
+            rgba(98, 183, 255, 0.16),
+            transparent 28rem
+          ),
+          radial-gradient(
+            circle at 100% 15%,
+            rgba(255, 79, 154, 0.13),
+            transparent 26rem
+          ),
+          var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+      }
+      body:before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.24;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.025) 1px,
+            transparent 1px
+          );
+        background-size: 42px 42px;
+      }
+      .container {
+        width: min(1180px, calc(100% - 32px));
+        margin: auto;
+        padding: 20px 0 64px;
+      }
+      .site-header {
+        position: sticky;
+        top: 12px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 13px 16px;
+        background: rgba(18, 23, 42, 0.88);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        font-size: 1.24rem;
+        white-space: nowrap;
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--pink), #8d5cff);
+        box-shadow: 0 8px 20px rgba(255, 79, 154, 0.28);
+      }
+      .brand-mark:after {
+        content: "✦";
+        font-size: 1.1rem;
+        color: #fff;
+      }
+      .brand-logo {
+        display: block;
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 8px 20px rgba(255, 79, 154, 0.28);
+      }
+      .main-nav {
+        display: flex;
+        gap: 4px;
+      }
+      .main-nav a,
+      .header-link {
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 700;
+        padding: 9px 12px;
+        border-radius: 10px;
+      }
+      .main-nav a:hover,
+      .main-nav a:focus-visible,
+      .header-link:hover,
+      .header-link:focus-visible {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.07);
+      }
+      .search {
+        position: relative;
+        flex: 1;
+        max-width: 390px;
+        margin-left: auto;
+      }
+      .search input {
+        width: 100%;
+        height: 42px;
+        padding: 0 16px 0 42px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #0c1122;
+        color: var(--text);
+        font: inherit;
+        outline: none;
+      }
+      .search input:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(98, 183, 255, 0.15);
+      }
+      .search:before {
+        content: "⌕";
+        position: absolute;
+        left: 15px;
+        top: 7px;
+        color: var(--muted);
+        font-size: 1.45rem;
+      }
+      .games-search {
+        max-width: 520px;
+        margin: 16px 0 0;
+      }
+      .header-link {
+        font-size: 0.92rem;
+        white-space: nowrap;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+        gap: 22px;
+        margin-top: 24px;
+      }
+      .hero-copy,
+      .featured {
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      .hero-copy {
+        padding: clamp(28px, 5vw, 64px);
+        background: linear-gradient(
+          135deg,
+          rgba(98, 183, 255, 0.16),
+          rgba(255, 79, 154, 0.08) 60%,
+          rgba(255, 255, 255, 0.03)
+        );
+      }
+      .eyebrow,
+      .card-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--yellow);
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .eyebrow:before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 99px;
+        background: var(--yellow);
+        box-shadow: 0 0 14px var(--yellow);
+      }
+      h1 {
+        max-width: 10ch;
+        margin: 18px 0 14px;
+        font-size: clamp(2.7rem, 6vw, 5.5rem);
+        line-height: 0.92;
+        letter-spacing: -0.075em;
+      }
+      h1 span {
+        color: var(--pink);
+      }
+      .hero-copy p {
+        max-width: 48ch;
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 20px;
+        border-radius: 13px;
+        text-decoration: none;
+        font-weight: 900;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .button:hover,
+      .button:focus-visible {
+        transform: translateY(-2px);
+      }
+      .button-primary {
+        background: var(--pink);
+        color: #fff;
+        box-shadow: 0 12px 26px rgba(255, 79, 154, 0.25);
+      }
+      .button-secondary {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--line);
+      }
+      .featured {
+        position: relative;
+        min-height: 360px;
+        background: linear-gradient(145deg, #29234b, #10162d);
+      }
+      .featured:after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          transparent 28%,
+          rgba(5, 7, 18, 0.96) 100%
+        );
+        pointer-events: none;
+      }
+      .featured-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 360px;
+        object-fit: cover;
+        background: linear-gradient(135deg, #273c68, #87325c);
+      }
+      .featured-content {
+        position: absolute;
+        z-index: 1;
+        inset: auto 24px 24px;
+      }
+      .featured-content h2 {
+        margin: 8px 0;
+        font-size: clamp(1.6rem, 3vw, 2.4rem);
+        letter-spacing: -0.05em;
+      }
+      .featured-content p {
+        margin: 0;
+        color: #d2d6e6;
+        line-height: 1.55;
+      }
+      .featured-content .button {
+        margin-top: 18px;
+      }
+      .recommended-creator {
+        margin-top: 6px !important;
+        color: var(--blue) !important;
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+      .section {
+        margin-top: 42px;
+      }
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+      .section-heading h2 {
+        margin: 0;
+        font-size: clamp(1.5rem, 3vw, 2.2rem);
+        letter-spacing: -0.05em;
+      }
+      .section-heading p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .categories {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 3px 0 8px;
+        scrollbar-width: none;
+      }
+      .categories::-webkit-scrollbar {
+        display: none;
+      }
+      .category {
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.045);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 10px 16px;
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .category:hover,
+      .category.is-active {
+        background: var(--text);
+        color: var(--bg);
+        border-color: var(--text);
+      }
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+      }
+      .card {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        color: inherit;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: var(--panel);
+        transition:
+          transform 0.22s ease,
+          border-color 0.22s ease,
+          box-shadow 0.22s ease;
+      }
+
+      .card[hidden] {
+        display: none;
+      }
+      .card:hover,
+      .card:focus-visible {
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3);
+        outline: none;
+      }
+      .card-image {
+        position: relative;
+        aspect-ratio: 1.35;
+        overflow: hidden;
+        background: linear-gradient(135deg, #253452, #4b244b);
+      }
+      .card-image:after {
+        content: "✦";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 2.2rem;
+        color: rgba(255, 255, 255, 0.35);
+        z-index: 0;
+      }
+      .card img {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.35s ease;
+      }
+      .card:hover img,
+      .card:focus-visible img {
+        transform: scale(1.06);
+      }
+      .card-body {
+        padding: 14px 15px 16px;
+      }
+      .card-tag {
+        color: var(--blue);
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+      }
+      .card h3 {
+        margin: 7px 0 0;
+        font-size: 1rem;
+        line-height: 1.25;
+      }
+      .card-meta {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .no-results {
+        display: none;
+        padding: 32px;
+        text-align: center;
+        color: var(--muted);
+        border: 1px dashed var(--line);
+        border-radius: var(--radius);
+      }
+      .no-results.is-visible {
+        display: block;
+      }
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-top: 52px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+      .footer a {
+        color: var(--muted);
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition:
+          opacity 0.55s ease,
+          transform 0.55s ease;
+      }
+      .reveal-visible {
+        opacity: 1;
+        transform: none;
+      }
+      @media (max-width: 1000px) {
+        .cards-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 720px) {
+        .container {
+          width: min(100% - 20px, 560px);
+          padding-top: 10px;
+        }
+        .site-header {
+          top: 6px;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .brand {
+          margin-right: auto;
+        }
+        .main-nav {
+          order: 3;
+          width: 100%;
+          border-top: 1px solid var(--line);
+          padding-top: 8px;
+        }
+        .main-nav a {
+          flex: 1;
+          text-align: center;
+        }
+        .search {
+          order: 2;
+          max-width: none;
+          flex-basis: 100%;
+          margin: 0;
+        }
+        .header-link {
+          display: none;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+          margin-top: 16px;
+        }
+        .hero-copy {
+          padding: 30px 24px;
+        }
+        .featured,
+        .featured-image {
+          min-height: 300px;
+        }
+        .cards-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+        .card {
+          border-radius: 17px;
+        }
+        .card-body {
+          padding: 11px 12px 13px;
+        }
+        .card h3 {
+          font-size: 0.92rem;
+        }
+        .card-meta {
+          font-size: 0.68rem;
+        }
+        .section {
+          margin-top: 30px;
+        }
+        .footer {
+          margin-top: 36px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *:before,
+        *:after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-5WZ9ZJWX"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <div class="container">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Online Latu home"
+          ><img class="brand-logo" src="logo.png" alt="Online Latu" /><span
+            >Online Latu</span
+          ></a
+        >
+        <nav class="main-nav" aria-label="Hoofdnavigatie">
+          <a href="index.html">Home</a><a href="#games">Games</a>
+        </nav>
+        <a class="header-link" href="legal.html">Over Latu</a>
+      </header>
+      <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-copy">
+            <span class="eyebrow">Jouw volgende favoriete game</span>
+            <h1 id="hero-title">Speel <span>lekker</span> weg.</h1>
+            <p>
+              Ontdek snelle browsergames, klassiekers en eigen creaties. Kies
+              een game, klik en begin meteen.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#games">Bekijk games →</a
+              ><a class="button button-secondary" href="legal.html"
+                >Over Online Latu</a
+              >
+            </div>
+          </div>
+          <article class="featured" id="recommended-card">
+            <img
+              class="featured-image recommended-image"
+              src=""
+              alt="Uitgelichte game"
+            />
+            <div class="featured-content">
+              <span class="eyebrow">Uitgelicht</span>
+              <h2 class="recommended-title">Laden...</h2>
+              <p class="recommended-description"></p>
+              <p class="recommended-creator"></p>
+              <a class="button button-primary recommended-play" href="#games"
+                >Spelen →</a
+              >
+            </div>
+          </article>
+        </section>
+        <section class="section" aria-labelledby="categories-title">
+          <div class="section-heading">
+            <h2 id="categories-title">Vind je game</h2>
+            <p id="game-count">18 games</p>
+          </div>
+          <div class="categories" role="tablist" aria-label="Gamecategorieën">
+            <button class="category is-active" type="button" data-filter="all">
+              Alles</button
+            ><button class="category" type="button" data-filter="actie">
+              Actie</button
+            ><button class="category" type="button" data-filter="arcade">
+              Arcade</button
+            ><button class="category" type="button" data-filter="puzzle">
+              Puzzle</button
+            ><button class="category" type="button" data-filter="casual">
+              Casual</button
+            ><button class="category" type="button" data-filter="racing">
+              Racing</button
+            ><button class="category" type="button" data-filter="strategie">
+              Strategie
+            </button>
+          </div>
+          <label class="search games-search" for="game-search"
+            ><input
+              id="game-search"
+              aria-label="Zoek games op titel, categorie of maker"
+              type="search"
+              placeholder="Zoek een game..."
+              autocomplete="off"
+          /></label>
+        </section>
+        <section class="section" id="games" aria-labelledby="games-title">
+          <div class="section-heading">
+            <h2 id="games-title">Alle games</h2>
+            <p>Open een kaart om te starten</p>
+          </div>
+          <div class="cards-grid" id="cards-grid"></div>
+          <p class="no-results" id="no-results">
+            Geen games gevonden. Probeer een andere zoekterm.
+          </p>
+        </section>
+      </main>
+      <footer class="footer">
+        <span>© 2026 Latu. Speel met plezier.</span
+        ><span
+          ><a
+            href="https://www.tiktok.com/@online_latu"
+            target="_blank"
+            rel="noopener"
+            >TikTok</a
+          >
+          · <a href="legal.html">Legal</a> ·
+          <a
+            href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
+            target="_blank"
+            rel="license noopener"
+            >Licentie</a
+          ></span
+        >
+      </footer>
+    </div>
+    <script>
+      const games = [
+        [
+          "Basketball Clicker",
+          "BasketBall.png",
+          "BasketballClicker.html",
+          "casual",
+          "Vince Wauters",
+        ],
+        [
+          "Pulse Runner",
+          "Pusle-runner.png",
+          "Pulse-Runner.html",
+          "actie",
+          "Tuur Depuydt",
+        ],
+        [
+          "Flappy Bird",
+          "Flappy-Bird.png",
+          "FlappyBird.html",
+          "arcade",
+          "Tuur Depuydt",
+        ],
+        [
+          "Tetris",
+         "Tetris.png",
+         "Tetris.html",
+         "puzzle", 
+         "Tuur Depuydt"
+        ],
+        [
+          "Blackjack", 
+          "Blackjack.png", 
+          "Blackjack.html", 
+          "casual", 
+          "Kaartspel"
+        ],
+        [
+          "Stickman Hook",
+          "Stickman-Hook.png",
+          "Stickmanhook.html",
+          "actie",
+          "Swing game",
+        ],
+        [
+          "Shooter Game",
+          "shootergame.png",
+          "shootergame.html",
+          "actie",
+          "Esben Shroër",
+        ],
+        [
+          "Tower Defense",
+          "towerdefense.png",
+          "towerdefense.html",
+          "strategie",
+          "Vince Wauters",
+        ],
+        [
+          "Stack",
+          "stack.png",
+          "stack.html",
+          "arcade",
+          "Tuur Depuydt"
+        ],
+        [
+          "Crossy Road",
+          "crossyroad.png",
+          "crossyroad.html",
+          "arcade",
+          "Esben Shroër",
+        ],
+        [
+          "Police Runner",
+          "police_runner.png",
+          "Police_runner.html",
+          "actie",
+          "Tuur Depuydt",
+        ],
+        [
+          "Latu Dino",
+          "LatuDino.png",
+          "LatuDino.html",
+          "arcade",
+          "Stefan Avadanei",
+        ],
+        [
+          "Chess", "chess.png", "chess.html", "strategie", "Tuur Depuydt"
+        ],
+        [
+          "Snake", "snake.png", "snake.html", "arcade", "Tuur Depuydt"
+        ],
+        [
+          "Drift", "drift.png", "drift.html", "racing", "Tuur Depuydt"
+        ],
+        [
+          "Klik", "klik.png", "klik.html", "casual", "Lauran Calliauw"
+        ],
+        [
+          "Geometry Dash",
+          "geometrydash.png",
+          "geometrydash.html",
+          "arcade",
+          "Online Latu",
+        ],
+        [
+          "3D Shooter",
+          "3d-shooter.png",
+          "3d-shooter.html",
+          "actie",
+          "Tuur Depuydt",
+        ],
+      ];
+      const desc = {
+        "Basketball Clicker":
+          "Scoor zoveel mogelijk punten door razendsnel te klikken en bouw jouw basketbalrecord steeds verder uit.",
+        "Pulse Runner":
+          "Ren door een levendige neonwereld, ontwijk obstakels en kijk hoe ver jij jouw highscore kunt opkrikken.",
+        "Flappy Bird":
+          "Tik op het juiste moment om door de buizen te vliegen en houd jouw vogel zo lang mogelijk in de lucht.",
+        Tetris:
+          "Draai en plaats vallende blokken slim om volledige rijen te maken en het speelveld vrij te houden.",
+        Blackjack:
+          "Speel een spannend potje blackjack, schat je kansen goed in en probeer zo dicht mogelijk bij 21 te komen.",
+        "Stickman Hook":
+          "Slinger jezelf met je haak door uitdagende levels, ontwijk obstakels en land veilig aan de overkant.",
+        "Shooter Game":
+          "Richt, schiet en blijf alert in een snelle actiegame waarin elke seconde telt.",
+        "Tower Defense":
+          "Bouw slimme verdedigingslinies, stop de vijandelijke golven en bescherm jouw basis tot het einde.",
+        Stack:
+          "Laat blokken precies op elkaar vallen en bouw een zo hoog mogelijke toren zonder de controle te verliezen.",
+        "Crossy Road":
+          "Steek drukke wegen en gevaarlijke hindernissen over, maar let goed op het verkeer om verder te komen.",
+        "Police Runner":
+          "Ontwijk obstakels, blijf uit handen van de politie en ren zo ver mogelijk door de stad.",
+        "Latu Dino":
+          "Spring over obstakels met Latu Dino en overleef zo lang mogelijk in deze vrolijke eindeloze runner.",
+        Chess:
+          "Daag jezelf uit met een klassiek schaakpotje en denk enkele zetten vooruit om de overwinning te behalen.",
+        Snake:
+          "Verzamel zoveel mogelijk lekkers, maak je slang langer en voorkom dat je tegen de rand of jezelf botst.",
+        Drift:
+          "Scheur over het circuit, beheers scherpe bochten en verdien punten met perfecte drifts.",
+        Klik: "Klik zo snel mogelijk en probeer jouw persoonlijke record te verbreken in deze eenvoudige maar verslavende game.",
+        "Geometry Dash":
+          "Spring op het ritme, ontwijk dodelijke obstakels en probeer het level foutloos uit te spelen.",
+        "3D Shooter":
+          "Verken een uitdagende 3D-wereld, schakel tegenstanders uit en blijf voortdurend in beweging.",
+      };
+      const grid = document.querySelector("#cards-grid");
+      games.forEach(([title, image, link, category, creator]) => {
+        grid.insertAdjacentHTML(
+          "beforeend",
+          `<a class="card reveal" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${category}</span><h3>${title}</h3><div class="card-meta"><span>${creator}</span></div></div></a>`,
+        );
+      });
+      const game = games[Math.floor(Math.random() * games.length)],
+        featureDesc = desc[game[0]] || "Ontdek deze game en speel meteen.";
+      document.querySelector(".recommended-title").textContent = game[0];
+      document.querySelector(".recommended-description").textContent =
+        featureDesc;
+      document.querySelector(".recommended-creator").textContent =
+        "Maker: " + game[4];
+      document.querySelector(".recommended-image").src = game[1];
+      document.querySelector(".recommended-image").alt = game[0] + " preview";
+      document.querySelector(".recommended-play").href = game[2];
+      const cards = [...document.querySelectorAll(".card")],
+        search = document.querySelector("#game-search"),
+        count = document.querySelector("#game-count"),
+        empty = document.querySelector("#no-results");
+      let activeFilter = "all";
+      function filterGames() {
+        const query = search.value.trim().toLocaleLowerCase("nl-NL");
+        let visible = 0;
+
+        cards.forEach((card) => {
+          const categoryMatches =
+            activeFilter === "all" || card.dataset.category === activeFilter;
+          const textMatches = card.textContent
+            .trim()
+            .toLocaleLowerCase("nl-NL")
+            .includes(query);
+          const match = categoryMatches && textMatches;
+
+          card.hidden = !match;
+          if (match) visible++;
+        });
+
+        count.textContent = visible + " game" + (visible === 1 ? "" : "s");
+        empty.classList.toggle("is-visible", visible === 0);
+      }
+
+      search.addEventListener("input", filterGames);
+      document.querySelectorAll(".category").forEach((button) => {
+        button.setAttribute(
+          "aria-pressed",
+          button.classList.contains("is-active"),
+        );
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".category").forEach((categoryButton) => {
+            const isActive = categoryButton === button;
+            categoryButton.classList.toggle("is-active", isActive);
+            categoryButton.setAttribute("aria-pressed", isActive);
+          });
+          activeFilter = button.dataset.filter || "all";
+          filterGames();
+        });
+      });
+
+      filterGames();
+      const revealObserver = new IntersectionObserver(
+        (entries, observer) =>
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("reveal-visible");
+              observer.unobserve(entry.target);
+            }
+          }),
+        { threshold: 0.08, rootMargin: "0px 0px -30px 0px" },
+      );
+      document
+        .querySelectorAll(".reveal")
+        .forEach((element) => revealObserver.observe(element));
+    </script>
+  </body>
+</html>
