@@ -200,6 +200,30 @@
         font-size: 0.92rem;
         white-space: nowrap;
       }
+      .language-picker {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .language-picker select {
+        min-height: 36px;
+        padding: 0 28px 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-light);
+        color: var(--text);
+        font: inherit;
+        cursor: pointer;
+      }
+      .language-picker select:focus-visible {
+        outline: 2px solid var(--blue);
+        outline-offset: 2px;
+      }
       .hero {
         display: grid;
         grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
@@ -464,7 +488,6 @@
         font-size: 0.8rem;
         line-height: 1.45;
         -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
       }
       .card-meta {
         display: flex;
@@ -558,6 +581,9 @@
         .header-link {
           display: none;
         }
+        .language-picker {
+          margin-left: auto;
+        }
         .hero {
           grid-template-columns: 1fr;
           margin-top: 16px;
@@ -613,29 +639,37 @@
     ></noscript>
     <div class="container">
       <header class="site-header">
-        <a class="brand" href="index.html" aria-label="Online Latu home"
+        <a class="brand" href="index.html" aria-label="Online Latu home" data-i18n-aria-label="homeLabel"
           ><img class="brand-logo" src="logo.png" alt="Online Latu" /><span
             >Online Latu</span
           ></a
         >
-        <nav class="main-nav" aria-label="Hoofdnavigatie">
+        <nav class="main-nav" aria-label="Hoofdnavigatie" data-i18n-aria-label="navLabel">
           <a href="index.html">Home</a><a href="#games">Games</a>
         </nav>
-        <a class="header-link" href="legal.html">Over Latu</a>
+        <a class="header-link" href="legal.html" data-i18n="aboutLatu">Over Latu</a>
+        <label class="language-picker" for="language-select">
+          <span data-i18n="languageLabel">Taal</span>
+          <select id="language-select" aria-label="Taal">
+            <option value="nl">NL</option>
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+          </select>
+        </label>
       </header>
       <main>
         <section class="hero" aria-labelledby="hero-title">
           <div class="hero-copy">
-            <span class="eyebrow">Jouw volgende favoriete game</span>
-            <h1 id="hero-title">Speel <span>lekker</span> weg.</h1>
-            <p>
+            <span class="eyebrow" data-i18n="heroEyebrow">Jouw volgende favoriete game</span>
+            <h1 id="hero-title" data-i18n-html="heroTitle">Speel <span>lekker</span> weg.</h1>
+            <p data-i18n="heroText">
               Ontdek snelle browsergames, klassiekers en eigen creaties. Kies
               een game, klik en begin meteen.
             </p>
             <div class="hero-actions">
-              <a class="button button-primary" href="#games">Bekijk games →</a
+              <a class="button button-primary" href="#games" data-i18n="viewGames">Bekijk games →</a
               ><a class="button button-secondary" href="legal.html"
-                >Over Online Latu</a
+                ><span data-i18n="aboutOnlineLatu">Over Online Latu</span></a
               >
             </div>
           </div>
@@ -646,11 +680,11 @@
               alt="Uitgelichte game"
             />
             <div class="featured-content">
-              <span class="eyebrow">Uitgelicht</span>
+              <span class="eyebrow" data-i18n="featured">Uitgelicht</span>
               <h2 class="recommended-title">Laden...</h2>
               <p class="recommended-description"></p>
               <p class="recommended-creator"></p>
-              <a class="button button-primary recommended-play" href="#games"
+              <a class="button button-primary recommended-play" href="#games" data-i18n="play"
                 >Spelen →</a
               >
             </div>
@@ -658,47 +692,49 @@
         </section>
         <section class="section" aria-labelledby="categories-title">
           <div class="section-heading">
-            <h2 id="categories-title">Vind je game</h2>
+            <h2 id="categories-title" data-i18n="findGame">Vind je game</h2>
             <p id="game-count">18 games</p>
           </div>
-          <div class="categories" role="tablist" aria-label="Gamecategorieën">
+          <div class="categories" role="tablist" aria-label="Gamecategorieën" data-i18n-aria-label="categoriesLabel">
             <button class="category is-active" type="button" data-filter="all">
-              Alles</button
+              <span data-category-label="all">Alles</span></button
             ><button class="category" type="button" data-filter="actie">
-              Actie</button
+              <span data-category-label="actie">Actie</span></button
             ><button class="category" type="button" data-filter="arcade">
-              Arcade</button
+              <span data-category-label="arcade">Arcade</span></button
             ><button class="category" type="button" data-filter="puzzle">
-              Puzzle</button
+              <span data-category-label="puzzle">Puzzle</span></button
             ><button class="category" type="button" data-filter="casual">
-              Casual</button
+              <span data-category-label="casual">Casual</span></button
             ><button class="category" type="button" data-filter="racing">
-              Racing</button
+              <span data-category-label="racing">Racing</span></button
             ><button class="category" type="button" data-filter="strategie">
-              Strategie
+              <span data-category-label="strategie">Strategie</span>
             </button>
           </div>
           <label class="search games-search" for="game-search"
             ><input
               id="game-search"
               aria-label="Zoek games op titel, categorie of maker"
+              data-i18n-aria-label="searchLabel"
               type="search"
               placeholder="Zoek een game..."
+              data-i18n-placeholder="searchPlaceholder"
               autocomplete="off"
           /></label>
         </section>
         <section class="section" id="games" aria-labelledby="games-title">
           <div class="section-heading">
-            <h2 id="games-title">Alle games</h2>
+            <h2 id="games-title" data-i18n="allGames">Alle games</h2>
           </div>
           <div class="cards-grid" id="cards-grid"></div>
           <p class="no-results" id="no-results">
-            Geen games gevonden. Probeer een andere zoekterm.
+            <span data-i18n="noResults">Geen games gevonden. Probeer een andere zoekterm.</span>
           </p>
         </section>
       </main>
       <footer class="footer">
-        <span>© 2026 Latu. Speel met plezier.</span
+        <span data-i18n="footerCopyright">© 2026 Latu. Speel met plezier.</span
         ><span
           ><a
             href="https://www.tiktok.com/@online_latu"
@@ -711,7 +747,7 @@
             href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
             target="_blank"
             rel="license noopener"
-            >Licentie</a
+            ><span data-i18n="license">Licentie</span></a
           ></span
         >
       </footer>
@@ -751,14 +787,14 @@
           "Blackjack.png", 
           "Blackjack.html", 
           "casual", 
-          "Kaartspel"
+          "Tuur Depuydt"
         ],
         [
           "Stickman Hook",
           "Stickman-Hook.png",
           "Stickmanhook.html",
           "actie",
-          "Swing game",
+          "Esben Shroër",
         ],
         [
           "Shooter Game",
@@ -866,31 +902,284 @@
         "3D Shooter":
           "Verken een uitdagende 3D-wereld, schakel tegenstanders uit en blijf voortdurend in beweging.",
       };
+      const englishDesc = {
+        "Basketball Clicker":
+          "Score as many points as possible by clicking fast and build your basketball record.",
+        "Pulse Runner":
+          "Run through a lively neon world, dodge obstacles and push your high score further.",
+        "Flappy Bird":
+          "Tap at the right moment to fly through the pipes and keep your bird in the air.",
+        Tetris:
+          "Rotate and place falling blocks wisely to complete rows and keep the board clear.",
+        Blackjack:
+          "Play a tense game of blackjack, read the odds and get as close to 21 as you can.",
+        "Stickman Hook":
+          "Swing through challenging levels with your grappling hook, dodge obstacles and land safely.",
+        "Shooter Game":
+          "Aim, shoot and stay alert in a fast-paced action game where every second counts.",
+        "Tower Defense":
+          "Build smart defenses, stop enemy waves and protect your base until the end.",
+        Stack:
+          "Drop blocks on top of each other and build the tallest tower you can.",
+        "Crossy Road":
+          "Cross busy roads and dangerous obstacles, but watch the traffic carefully to move ahead.",
+        "Police Runner":
+          "Dodge obstacles, stay ahead of the police and run as far as you can through the city.",
+        "Latu Dino":
+          "Jump over obstacles with Latu Dino and survive as long as possible in this cheerful runner.",
+        Chess:
+          "Challenge yourself with a classic game of chess and think several moves ahead to win.",
+        Snake:
+          "Collect as much as you can, grow your snake and avoid hitting the wall or yourself.",
+        Drift:
+          "Race around the track, master sharp corners and earn points with perfect drifts.",
+        Klik:
+          "Click as fast as you can and try to beat your personal record in this simple, addictive game.",
+        "Geometry Dash":
+          "Jump to the rhythm, dodge deadly obstacles and try to complete the level flawlessly.",
+        "3D Shooter":
+          "Explore a challenging 3D world, take down enemies and keep moving at all times.",
+      };
+      const frenchDesc = {
+        "Basketball Clicker":
+          "Marque un maximum de points en cliquant rapidement et améliore ton record de basket.",
+        "Pulse Runner":
+          "Cours dans un monde néon animé, évite les obstacles et améliore ton meilleur score.",
+        "Flappy Bird":
+          "Tape au bon moment pour passer entre les tuyaux et garder ton oiseau dans les airs.",
+        Tetris:
+          "Fais pivoter et place les blocs qui tombent pour compléter des lignes et libérer le plateau.",
+        Blackjack:
+          "Joue au blackjack, évalue bien tes chances et approche-toi le plus possible de 21.",
+        "Stickman Hook":
+          "Balance-toi avec ton grappin, évite les obstacles et atterris en sécurité de l'autre côté.",
+        "Shooter Game":
+          "Vise, tire et reste vigilant dans ce jeu d'action rapide où chaque seconde compte.",
+        "Tower Defense":
+          "Construis des défenses intelligentes, arrête les vagues ennemies et protège ta base.",
+        Stack:
+          "Empile les blocs avec précision et construis la tour la plus haute possible.",
+        "Crossy Road":
+          "Traverse les routes et les obstacles dangereux en surveillant attentivement la circulation.",
+        "Police Runner":
+          "Évite les obstacles, échappe à la police et cours aussi loin que possible dans la ville.",
+        "Latu Dino":
+          "Saute par-dessus les obstacles avec Latu Dino et survis le plus longtemps possible.",
+        Chess:
+          "Joue une partie d'échecs classique et anticipe plusieurs coups pour remporter la victoire.",
+        Snake:
+          "Ramasse un maximum de nourriture, fais grandir ton serpent et évite les collisions.",
+        Drift:
+          "Maîtrise les virages, dérape sur le circuit et gagne des points avec des drifts parfaits.",
+        Klik:
+          "Clique aussi vite que possible et tente de battre ton record personnel.",
+        "Geometry Dash":
+          "Saute au rythme de la musique, évite les obstacles et termine le niveau sans erreur.",
+        "3D Shooter":
+          "Explore un monde en 3D, élimine tes adversaires et reste constamment en mouvement.",
+      };
+      const translations = {
+        nl: {
+          homeLabel: "Online Latu home",
+          navLabel: "Hoofdnavigatie",
+          aboutLatu: "Over Latu",
+          languageLabel: "Taal",
+          heroEyebrow: "Jouw volgende favoriete game",
+          heroTitle: "Speel <span>lekker</span> weg.",
+          heroText:
+            "Ontdek snelle browsergames, klassiekers en eigen creaties. Kies een game, klik en begin meteen.",
+          viewGames: "Bekijk games →",
+          aboutOnlineLatu: "Over Online Latu",
+          featured: "Uitgelicht",
+          play: "Spelen →",
+          findGame: "Vind je game",
+          categoriesLabel: "Gamecategorieën",
+          searchLabel: "Zoek games op titel, categorie of maker",
+          searchPlaceholder: "Zoek een game...",
+          allGames: "Alle games",
+          noResults: "Geen games gevonden. Probeer een andere zoekterm.",
+          footerCopyright: "© 2026 Latu. Speel met plezier.",
+          license: "Licentie",
+          maker: "Maker",
+          game: "game",
+          games: "games",
+        },
+        en: {
+          homeLabel: "Online Latu home",
+          navLabel: "Main navigation",
+          aboutLatu: "About Latu",
+          languageLabel: "Language",
+          heroEyebrow: "Your next favorite game",
+          heroTitle: "Play <span>your</span> way.",
+          heroText:
+            "Discover quick browser games, classics and original creations. Pick a game, click and start playing.",
+          viewGames: "Browse games →",
+          aboutOnlineLatu: "About Online Latu",
+          featured: "Featured",
+          play: "Play →",
+          findGame: "Find your game",
+          categoriesLabel: "Game categories",
+          searchLabel: "Search games by title, category or creator",
+          searchPlaceholder: "Search for a game...",
+          allGames: "All games",
+          noResults: "No games found. Try another search term.",
+          footerCopyright: "© 2026 Latu. Have fun playing.",
+          license: "License",
+          maker: "By",
+          game: "game",
+          games: "games",
+        },
+        fr: {
+          homeLabel: "Accueil Online Latu",
+          navLabel: "Navigation principale",
+          aboutLatu: "À propos de Latu",
+          languageLabel: "Langue",
+          heroEyebrow: "Ton prochain jeu préféré",
+          heroTitle: "Joue <span>à ta</span> façon.",
+          heroText:
+            "Découvre des jeux rapides sur navigateur, des classiques et des créations originales. Choisis un jeu et commence immédiatement.",
+          viewGames: "Voir les jeux →",
+          aboutOnlineLatu: "À propos d'Online Latu",
+          featured: "À la une",
+          play: "Jouer →",
+          findGame: "Trouve ton jeu",
+          categoriesLabel: "Catégories de jeux",
+          searchLabel: "Rechercher par titre, catégorie ou créateur",
+          searchPlaceholder: "Rechercher un jeu...",
+          allGames: "Tous les jeux",
+          noResults: "Aucun jeu trouvé. Essaie un autre terme.",
+          footerCopyright: "© 2026 Latu. Amuse-toi bien.",
+          license: "Licence",
+          maker: "Créé par",
+          game: "jeu",
+          games: "jeux",
+        },
+      };
+      const categoryLabels = {
+        nl: {
+          all: "Alles",
+          actie: "Actie",
+          arcade: "Arcade",
+          puzzle: "Puzzle",
+          casual: "Casual",
+          racing: "Racing",
+          strategie: "Strategie",
+        },
+        en: {
+          all: "All",
+          actie: "Action",
+          arcade: "Arcade",
+          puzzle: "Puzzle",
+          casual: "Casual",
+          racing: "Racing",
+          strategie: "Strategy",
+        },
+        fr: {
+          all: "Tous",
+          actie: "Action",
+          arcade: "Arcade",
+          puzzle: "Puzzle",
+          casual: "Casual",
+          racing: "Course",
+          strategie: "Stratégie",
+        },
+      };
+      let language = "nl";
+      const getDescription = (title) =>
+        language === "en"
+          ? englishDesc[title] || "Discover this game and start playing."
+          : language === "fr"
+            ? frenchDesc[title] || "Découvre ce jeu et commence à jouer."
+            : desc[title] || "Ontdek deze game en speel meteen.";
       const grid = document.querySelector("#cards-grid");
       games.forEach(([title, image, link, category, creator]) => {
-        const description = desc[title] || "Ontdek deze game en speel meteen.";
+        const description = getDescription(title);
         grid.insertAdjacentHTML(
           "beforeend",
-          `<a class="card reveal" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${category}</span><h3>${title}</h3><p class="card-description">${description}</p><div class="card-meta"><span>${creator}</span><span class="card-play">Spelen &rarr;</span></div></div></a>`,
+          `<a class="card reveal" data-title="${title}" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${categoryLabels[language][category]}</span><h3>${title}</h3><p class="card-description">${description}</p><div class="card-meta"><span>${creator}</span><span class="card-play">${translations[language].play}</span></div></div></a>`,
         );
       });
       const game = games[Math.floor(Math.random() * games.length)],
-        featureDesc = desc[game[0]] || "Ontdek deze game en speel meteen.";
+        featureDesc = getDescription(game[0]);
       document.querySelector(".recommended-title").textContent = game[0];
       document.querySelector(".recommended-description").textContent =
         featureDesc;
       document.querySelector(".recommended-creator").textContent =
-        "Maker: " + game[4];
+        translations[language].maker + ": " + game[4];
       document.querySelector(".recommended-image").src = game[1];
       document.querySelector(".recommended-image").alt = game[0] + " preview";
       document.querySelector(".recommended-play").href = game[2];
       const cards = [...document.querySelectorAll(".card")],
         search = document.querySelector("#game-search"),
         count = document.querySelector("#game-count"),
-        empty = document.querySelector("#no-results");
+        empty = document.querySelector("#no-results"),
+        languageSelect = document.querySelector("#language-select");
       let activeFilter = "all";
+      const languagePreferenceKey = "latu-language-preference";
+      function applyLanguage(nextLanguage) {
+        language = translations[nextLanguage] ? nextLanguage : "nl";
+        const text = translations[language];
+
+        document.documentElement.lang = language;
+        document.title =
+          language === "en"
+            ? "Online Latu — play instantly"
+            : language === "fr"
+              ? "Online Latu — joue immédiatement"
+              : "Online Latu — speel meteen";
+        document.querySelector('meta[name="description"]').content =
+          language === "en"
+            ? "Online Latu — discover and play quick browser games."
+            : language === "fr"
+              ? "Online Latu — découvre et joue à des jeux rapides sur navigateur."
+              : "Online Latu — ontdek en speel snelle browsergames.";
+
+        document.querySelectorAll("[data-i18n]").forEach((element) => {
+          const key = element.dataset.i18n;
+          if (text[key] !== undefined) element.textContent = text[key];
+        });
+        document.querySelectorAll("[data-i18n-html]").forEach((element) => {
+          const key = element.dataset.i18nHtml;
+          if (text[key] !== undefined) element.innerHTML = text[key];
+        });
+        document
+          .querySelectorAll("[data-i18n-aria-label]")
+          .forEach((element) => {
+            const key = element.dataset.i18nAriaLabel;
+            if (text[key] !== undefined) element.setAttribute("aria-label", text[key]);
+          });
+        document
+          .querySelectorAll("[data-i18n-placeholder]")
+          .forEach((element) => {
+            const key = element.dataset.i18nPlaceholder;
+            if (text[key] !== undefined) element.placeholder = text[key];
+          });
+        document.querySelectorAll("[data-category-label]").forEach((element) => {
+          element.textContent = categoryLabels[language][element.dataset.categoryLabel];
+        });
+        cards.forEach((card) => {
+          card.querySelector(".card-tag").textContent =
+            categoryLabels[language][card.dataset.category];
+          card.querySelector(".card-description").textContent = getDescription(
+            card.dataset.title,
+          );
+          card.querySelector(".card-play").innerHTML = text.play;
+        });
+        document.querySelector(".recommended-description").textContent =
+          getDescription(game[0]);
+        document.querySelector(".recommended-creator").textContent =
+          text.maker + ": " + game[4];
+        languageSelect.value = language;
+        filterGames();
+      }
       function filterGames() {
-        const query = search.value.trim().toLocaleLowerCase("nl-NL");
+        const locale =
+          language === "en"
+            ? "en-US"
+            : language === "fr"
+              ? "fr-FR"
+              : "nl-NL";
+        const query = search.value.trim().toLocaleLowerCase(locale);
         let visible = 0;
 
         cards.forEach((card) => {
@@ -898,7 +1187,7 @@
             activeFilter === "all" || card.dataset.category === activeFilter;
           const textMatches = card.textContent
             .trim()
-            .toLocaleLowerCase("nl-NL")
+            .toLocaleLowerCase(locale)
             .includes(query);
           const match = categoryMatches && textMatches;
 
@@ -906,11 +1195,16 @@
           if (match) visible++;
         });
 
-        count.textContent = visible + " game" + (visible === 1 ? "" : "s");
+        count.textContent =
+          visible + " " + (visible === 1 ? translations[language].game : translations[language].games);
         empty.classList.toggle("is-visible", visible === 0);
       }
 
       search.addEventListener("input", filterGames);
+      languageSelect.addEventListener("change", () => {
+        applyLanguage(languageSelect.value);
+        localStorage.setItem(languagePreferenceKey, language);
+      });
       document.querySelectorAll(".category").forEach((button) => {
         button.setAttribute(
           "aria-pressed",
@@ -927,7 +1221,25 @@
         });
       });
 
-      filterGames();
+      function detectBrowserLanguage() {
+        const preferredLanguages = [
+          ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+          navigator.language,
+        ].filter(Boolean);
+        const supportedLanguage = preferredLanguages
+          .map((value) => value.toLowerCase().split("-")[0])
+          .find((value) => ["nl", "en", "fr"].includes(value));
+
+        return supportedLanguage || "en";
+      }
+
+      const savedLanguage = localStorage.getItem(languagePreferenceKey);
+      const defaultLanguage = detectBrowserLanguage();
+      applyLanguage(
+        savedLanguage === "nl" || savedLanguage === "en" || savedLanguage === "fr"
+          ? savedLanguage
+          : defaultLanguage,
+      );
       const revealObserver = new IntersectionObserver(
         (entries, observer) =>
           entries.forEach((entry) => {
