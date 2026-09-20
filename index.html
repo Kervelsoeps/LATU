@@ -720,7 +720,7 @@
         <section class="section" aria-labelledby="categories-title">
           <div class="section-heading">
             <h2 id="categories-title" data-i18n="findGame">Vind je game</h2>
-            <p id="game-count">18 games</p>
+            <p id="game-count">20 games</p>
           </div>
           <div class="categories" role="tablist" aria-label="Gamecategorieën" data-i18n-aria-label="categoriesLabel">
             <button class="category is-active" type="button" data-filter="all">
@@ -872,6 +872,9 @@
           "Snake", "snake.png", "snake.html", "arcade", "Tuur Depuydt"
         ],
         [
+          "Maze", "maze.png", "maze.html", "actie", "Lauran Calliauw"
+        ],
+        [
           "Drift", "drift.png", "drift.html", "racing", "Tuur Depuydt"
         ],
         [
@@ -890,6 +893,13 @@
           "3d-shooter.html",
           "actie",
           "Tuur Depuydt",
+        ],
+        [
+          "Voxelcraft",
+          "voxelcraft.png",
+          "voxelcraft.html",
+          "arcade",
+          "Lauran Calliauw",
         ],
       ];
       const desc = {
@@ -921,6 +931,8 @@
           "Daag jezelf uit met een klassiek schaakpotje en denk enkele zetten vooruit om de overwinning te behalen.",
         Snake:
           "Verzamel zoveel mogelijk lekkers, maak je slang langer en voorkom dat je tegen de rand of jezelf botst.",
+        Maze:
+          "Ontsnap uit het doolhof, ontwijk het monster en vind zo snel mogelijk de uitgang.",
         Drift:
           "Scheur over het circuit, beheers scherpe bochten en verdien punten met perfecte drifts.",
         Klik: "Klik zo snel mogelijk en probeer jouw persoonlijke record te verbreken in deze eenvoudige maar verslavende game.",
@@ -928,6 +940,8 @@
           "Spring op het ritme, ontwijk dodelijke obstakels en probeer het level foutloos uit te spelen.",
         "3D Shooter":
           "Verken een uitdagende 3D-wereld, schakel tegenstanders uit en blijf voortdurend in beweging.",
+        Voxelcraft:
+          "Bouw, ontdek en overleef in een blokkerige wereld vol mogelijkheden, helemaal in de stijl van Minecraft.",
       };
       const englishDesc = {
         "Basketball Clicker":
@@ -958,6 +972,8 @@
           "Challenge yourself with a classic game of chess and think several moves ahead to win.",
         Snake:
           "Collect as much as you can, grow your snake and avoid hitting the wall or yourself.",
+        Maze:
+          "Escape the maze, avoid the monster and find the exit as quickly as you can.",
         Drift:
           "Race around the track, master sharp corners and earn points with perfect drifts.",
         Klik:
@@ -966,6 +982,8 @@
           "Jump to the rhythm, dodge deadly obstacles and try to complete the level flawlessly.",
         "3D Shooter":
           "Explore a challenging 3D world, take down enemies and keep moving at all times.",
+        Voxelcraft:
+          "Build, explore and survive in a blocky world full of possibilities, inspired by Minecraft.",
       };
       const frenchDesc = {
         "Basketball Clicker":
@@ -996,6 +1014,8 @@
           "Joue une partie d'échecs classique et anticipe plusieurs coups pour remporter la victoire.",
         Snake:
           "Ramasse un maximum de nourriture, fais grandir ton serpent et évite les collisions.",
+        Maze:
+          "Échappe-toi du labyrinthe, évite le monstre et trouve la sortie le plus vite possible.",
         Drift:
           "Maîtrise les virages, dérape sur le circuit et gagne des points avec des drifts parfaits.",
         Klik:
@@ -1004,6 +1024,8 @@
           "Saute au rythme de la musique, évite les obstacles et termine le niveau sans erreur.",
         "3D Shooter":
           "Explore un monde en 3D, élimine tes adversaires et reste constamment en mouvement.",
+        Voxelcraft:
+          "Construis, explore et survis dans un monde en blocs plein de possibilités, inspiré de Minecraft.",
       };
       const translations = {
         nl: {
@@ -1143,11 +1165,11 @@
         );
       });
       const featuredGameTitles = [
-        "Stickman Hook",
-        "Snake",
+        "Maze",
         "Police Runner",
         "Flappy Bird",
         "3D Shooter",
+        "Voxelcraft",
       ];
       const featuredGames = games.filter(([title]) =>
         featuredGameTitles.includes(title),
