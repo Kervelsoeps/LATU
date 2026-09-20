@@ -14,19 +14,19 @@
   <body>
     <div class="container">
       <header class="site-header">
-        <a class="brand" href="index.html" aria-label="Online Latu home">
+        <a class="brand" href="index.html" aria-label="Online Latu home" data-i18n-aria-label="homeLabel">
           <img class="brand-logo" src="logo.png" alt="Online Latu" />
           <span>Online Latu</span>
         </a>
         <nav class="main-nav" aria-label="Hoofdnavigatie">
-          <a href="index.html">Home</a>
-          <a href="index.html#games">Games</a>
+          <a href="index.html" data-i18n="home">Home</a>
+          <a href="index.html#games" data-i18n="games">Games</a>
         </nav>
-        <a class="header-link" href="about.html">Over Latu</a>
-        <a class="header-link" href="legal.html" aria-current="page">Legal</a>
+        <a class="header-link" href="about.html" data-i18n="about">Over Latu</a>
+        <a class="header-link" href="legal.html" aria-current="page" data-i18n="legal">Legal</a>
         <label class="language-picker" for="language-select">
-          <span>Taal</span>
-          <select id="language-select" aria-label="Taal">
+          <span data-i18n="languageLabel">Taal</span>
+          <select id="language-select" aria-label="Taal" data-i18n-aria-label="languageAria">
             <option value="nl">NL</option>
             <option value="en">EN</option>
             <option value="fr">FR</option>
@@ -36,61 +36,61 @@
 
       <main class="page-main" id="legal">
         <section class="page-hero" aria-labelledby="legal-title">
-          <span class="eyebrow">Juridische informatie</span>
-          <h1 id="legal-title">Duidelijk en <span>transparant.</span></h1>
-          <p>
+          <span class="eyebrow" data-i18n="legalEyebrow">Juridische informatie</span>
+          <h1 id="legal-title" data-i18n-html="legalTitle">Duidelijk en <span>transparant.</span></h1>
+          <p data-i18n="legalIntro">
             Hier vind je het privacybeleid, de gebruiksvoorwaarden en informatie
             over cookies en lokale opslag van Online Latu.
           </p>
           <div class="page-actions">
-            <a class="button button-primary" href="about.html">Wat is Latu?</a>
-            <a class="button button-secondary" href="index.html">Terug naar home</a>
+            <a class="button button-primary" href="about.html" data-i18n="whatIsLatu">Wat is Latu?</a>
+            <a class="button button-secondary" href="index.html" data-i18n="backHome">Terug naar home</a>
           </div>
         </section>
 
         <nav class="legal-nav" aria-label="Juridische navigatie">
-          <a href="#privacy">Privacybeleid</a>
-          <a href="#terms">Gebruiksvoorwaarden</a>
-          <a href="#cookies">Cookies en lokale opslag</a>
+          <a href="#privacy" data-i18n="privacy">Privacybeleid</a>
+          <a href="#terms" data-i18n="terms">Gebruiksvoorwaarden</a>
+          <a href="#cookies" data-i18n="cookies">Cookies en lokale opslag</a>
         </nav>
 
         <details id="privacy" open>
-          <summary>Privacybeleid</summary>
+          <summary data-i18n="privacyHeading">Privacybeleid</summary>
           <div class="policy-content">
-            <h2>Privacybeleid</h2>
-            <p><strong>Laatst bijgewerkt:</strong> 20 september 2026</p>
-            <p>
+            <h2 data-i18n="privacyHeading">Privacybeleid</h2>
+            <p><strong data-i18n="updated">Laatst bijgewerkt:</strong> 20 september 2026</p>
+            <p data-i18n="privacyIntro">
               Dit beleid beschrijft wat Online Latu doet met persoonsgegevens bij
               het bezoeken van de website en het spelen van de games.
             </p>
 
-            <h3>Wie is verantwoordelijk?</h3>
-            <p>
+            <h3 data-i18n="responsibleHeading">Wie is verantwoordelijk?</h3>
+            <p data-i18n-html="responsibleText">
               De website wordt beheerd door Lauran Calliauw onder de naam Online
               Latu. Voor privacyvragen kun je contact opnemen via
               <a href="mailto:lauran.calliauw@gmail.com">lauran.calliauw@gmail.com</a>.
             </p>
-            <p>
+            <p data-i18n="businessDetails">
               Als Online Latu als onderneming wordt geëxploiteerd, moeten het
               officiële ondernemingsadres en ondernemingsnummer hier nog worden
               toegevoegd.
             </p>
 
-            <h3>Welke gegevens worden verzameld?</h3>
-            <p>
+            <h3 data-i18n="collectedHeading">Welke gegevens worden verzameld?</h3>
+            <p data-i18n="collectedText">
               De website gebruikt geen accounts, Firebase, Google Analytics,
               Google Tag Manager of Google AdSense. De website verzamelt via de
               eigen code geen namen, e-mailadressen, IP-adressen, profielen of
               gedragsgegevens voor tracking.
             </p>
-            <p>
+            <p data-i18n-html="localData">
               De games kunnen lokaal op jouw apparaat scores, spelvoortgang en
               voorkeuren bewaren via <code>localStorage</code>. Deze gegevens
               worden door de website niet naar Online Latu verstuurd.
             </p>
 
-            <h3>Technische verzoeken en externe bronnen</h3>
-            <p>
+            <h3 data-i18n="technicalHeading">Technische verzoeken en externe bronnen</h3>
+            <p data-i18n="technicalText">
               De hostingprovider kan technische gegevens verwerken die nodig zijn
               om webpagina's te leveren, zoals een IP-adres, tijdstip en
               browserinformatie. Sommige games laden noodzakelijke bibliotheken
@@ -99,8 +99,8 @@
               en overweeg deze bestanden zelf te hosten.
             </p>
 
-            <h3>Jouw rechten</h3>
-            <p>
+            <h3 data-i18n="rightsHeading">Jouw rechten</h3>
+            <p data-i18n-html="rightsText">
               Voor zover de AVG van toepassing is, kun je onder meer vragen om
               inzage, verbetering, verwijdering, beperking of bezwaar tegen een
               verwerking. Je kunt ook een klacht indienen bij de
@@ -109,8 +109,8 @@
               >. Neem hiervoor eerst contact op via het e-mailadres hierboven.
             </p>
 
-            <h3>Minderjarigen</h3>
-            <p>
+            <h3 data-i18n="minorsHeading">Minderjarigen</h3>
+            <p data-i18n="minorsText">
               De games zijn niet bedoeld om bewust persoonsgegevens van kinderen
               te verzamelen. Neem contact op als je denkt dat er toch gegevens van
               een kind zijn verwerkt.
@@ -119,25 +119,25 @@
         </details>
 
         <details id="terms">
-          <summary>Gebruiksvoorwaarden</summary>
+          <summary data-i18n="termsHeading">Gebruiksvoorwaarden</summary>
           <div class="policy-content">
-            <h2>Gebruiksvoorwaarden</h2>
-            <p>
+            <h2 data-i18n="termsHeading">Gebruiksvoorwaarden</h2>
+            <p data-i18n="termsText">
               Online Latu biedt gratis browsergames aan voor persoonlijk en
               niet-commercieel gebruik. Gebruik de site niet op een manier die de
               site, de hosting of andere bezoekers hindert.
             </p>
-            <p>
+            <p data-i18n="availabilityText">
               De games en inhoud worden aangeboden zoals ze zijn. Online Latu
               probeert de site beschikbaar en veilig te houden, maar kan niet
               garanderen dat iedere game altijd foutloos of beschikbaar is.
             </p>
-            <p>
+            <p data-i18n="licenseText">
               Gamecode, afbeeldingen, muziek, lettertypes en andere onderdelen
               kunnen van verschillende makers afkomstig zijn. Gebruik of
               verspreid deze onderdelen alleen volgens de bijbehorende licentie.
             </p>
-            <p>
+            <p data-i18n-html="copyrightText">
               Vragen over auteursrecht, inhoud of een mogelijke inbreuk kunnen
               worden gemeld via
               <a href="mailto:lauran.calliauw@gmail.com">lauran.calliauw@gmail.com</a>.
@@ -146,21 +146,21 @@
         </details>
 
         <details id="cookies">
-          <summary>Cookies en lokale opslag</summary>
+          <summary data-i18n="cookiesHeading">Cookies en lokale opslag</summary>
           <div class="policy-content">
-            <h2>Cookies en lokale opslag</h2>
-            <p><strong>Laatst bijgewerkt:</strong> 20 september 2026</p>
-            <p>
+            <h2 data-i18n="cookiesHeading">Cookies en lokale opslag</h2>
+            <p><strong data-i18n="updated">Laatst bijgewerkt:</strong> 20 september 2026</p>
+            <p data-i18n="cookiesText">
               De eigen websitecode plaatst geen trackingcookies en gebruikt geen
               advertentie- of analysecookies. Er is daarom geen toestemming nodig
               voor niet-noodzakelijke tracking op basis van de huidige functies.
             </p>
-            <p>
+            <p data-i18n="localStorageText">
               Voor taalvoorkeuren, scores en spelvoortgang kan lokale opslag in je
               browser worden gebruikt. Deze informatie blijft op jouw apparaat.
               Je kunt die verwijderen via de instellingen van je browser.
             </p>
-            <p>
+            <p data-i18n="futureTrackingText">
               Als later advertenties, analytics, sociale plugins of andere
               niet-noodzakelijke trackers worden toegevoegd, moet dit beleid
               worden bijgewerkt en moet vooraf een geldige toestemmingskeuze
@@ -171,9 +171,10 @@
       </main>
 
       <footer class="site-footer">
-        <span>© 2026 Latu. Speel met plezier.</span>
-        <span><a href="index.html">Home</a> · <a href="about.html">Over Latu</a></span>
+        <span data-i18n="copyright">© 2026 Latu. Speel met plezier.</span>
+        <span><a href="index.html" data-i18n="footerHome">Home</a> · <a href="about.html" data-i18n="about">Over Latu</a></span>
       </footer>
     </div>
+    <script src="page-i18n.js"></script>
   </body>
 </html>
