@@ -405,14 +405,28 @@
         border-color: var(--text);
       }
       .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 16px;
-      }
-      .card {
-        min-width: 0;
+        --card-gap: 16px;
         display: flex;
         flex-direction: column;
+        gap: var(--card-gap);
+      }
+      .card-row {
+        display: flex;
+        gap: var(--card-gap);
+        min-width: 0;
+        height: var(--row-height);
+      }
+      .card-row[hidden] {
+        display: none;
+      }
+      .card {
+        --card-ratio: 1;
+        min-width: 0;
+        position: relative;
+        container-type: inline-size;
+        display: block;
+        flex: var(--card-ratio) var(--card-ratio) 0;
+        height: 100%;
         color: inherit;
         text-decoration: none;
         border: 1px solid var(--line);
@@ -437,7 +451,8 @@
       }
       .card-image {
         position: relative;
-        aspect-ratio: 1.35;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
         background: #27343a;
       }
@@ -465,47 +480,63 @@
         transform: scale(1.06);
       }
       .card-body {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
         display: flex;
-        flex: 1;
         flex-direction: column;
-        padding: 14px 15px 15px;
+        justify-content: flex-end;
+        padding: 16px;
+        background: linear-gradient(
+          180deg,
+          rgba(14, 21, 27, 0) 35%,
+          rgba(14, 21, 27, 0.92) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.22s ease;
       }
       .card-tag {
+        display: none;
         color: var(--blue);
         font-size: 0.68rem;
         letter-spacing: 0.08em;
       }
       .card h3 {
         margin: 7px 0 0;
-        font-size: 1rem;
+        font-size: clamp(0.88rem, 1.6vw, 1.12rem);
         line-height: 1.25;
       }
       .card-description {
-        display: -webkit-box;
-        margin: 8px 0 0;
-        overflow: hidden;
-        color: var(--muted);
-        font-size: 0.8rem;
-        line-height: 1.45;
-        -webkit-box-orient: vertical;
+        display: none;
       }
       .card-meta {
         display: flex;
-        gap: 8px;
+        gap: 5px;
         align-items: center;
-        justify-content: space-between;
-        margin-top: auto;
-        padding-top: 14px;
+        margin-top: 2px;
         color: var(--muted);
-        font-size: 0.76rem;
+        font-size: clamp(0.68rem, 1.1vw, 0.78rem);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .card:hover .card-body,
+      .card:focus-visible .card-body {
+        opacity: 1;
+      }
+      .card-creator {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .card-play {
-        flex: 0 0 auto;
+        display: none;
         color: var(--pink);
         font-weight: 900;
+      }
+      @container (max-width: 190px) {
+        .card-creator {
+          display: none;
+        }
       }
       .no-results {
         display: none;
@@ -545,8 +576,8 @@
         transform: none;
       }
       @media (max-width: 1000px) {
-        .cards-grid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+        .card-row {
+          --row-height: 175px;
         }
       }
       @media (max-width: 720px) {
@@ -596,20 +627,16 @@
           min-height: 300px;
         }
         .cards-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 12px;
+          --card-gap: 12px;
         }
         .card {
           border-radius: 17px;
         }
         .card-body {
-          padding: 11px 12px 13px;
+          padding: 12px;
         }
-        .card h3 {
-          font-size: 0.92rem;
-        }
-        .card-meta {
-          font-size: 0.68rem;
+        .card-row {
+          --row-height: 130px;
         }
         .section {
           margin-top: 30px;
@@ -1092,14 +1119,40 @@
             ? frenchDesc[title] || "Découvre ce jeu et commence à jouer."
             : desc[title] || "Ontdek deze game en speel meteen.";
       const grid = document.querySelector("#cards-grid");
-      games.forEach(([title, image, link, category, creator]) => {
+
+      function shuffleGames(items) {
+        const shuffled = [...items];
+
+        for (let index = shuffled.length - 1; index > 0; index--) {
+          const randomIndex = Math.floor(Math.random() * (index + 1));
+          [shuffled[index], shuffled[randomIndex]] = [
+            shuffled[randomIndex],
+            shuffled[index],
+          ];
+        }
+
+        return shuffled;
+      }
+
+      const shuffledGames = shuffleGames(games);
+      shuffledGames.forEach(([title, image, link, category, creator]) => {
         const description = getDescription(title);
         grid.insertAdjacentHTML(
           "beforeend",
-          `<a class="card reveal" data-title="${title}" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${categoryLabels[language][category]}</span><h3>${title}</h3><p class="card-description">${description}</p><div class="card-meta"><span>${creator}</span><span class="card-play">${translations[language].play}</span></div></div></a>`,
+          `<a class="card reveal" data-title="${title}" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${categoryLabels[language][category]}</span><h3>${title}</h3><p class="card-description">${description}</p><div class="card-meta"><span class="card-creator">${creator}</span><span class="card-play">${translations[language].play}</span></div></div></a>`,
         );
       });
-      const game = games[Math.floor(Math.random() * games.length)],
+      const featuredGameTitles = [
+        "Stickman Hook",
+        "Snake",
+        "Police Runner",
+        "Flappy Bird",
+        "3D Shooter",
+      ];
+      const featuredGames = games.filter(([title]) =>
+        featuredGameTitles.includes(title),
+      );
+      const game = featuredGames[Math.floor(Math.random() * featuredGames.length)],
         featureDesc = getDescription(game[0]);
       document.querySelector(".recommended-title").textContent = game[0];
       document.querySelector(".recommended-description").textContent =
@@ -1116,6 +1169,102 @@
         languageSelect = document.querySelector("#language-select");
       let activeFilter = "all";
       const languagePreferenceKey = "latu-language-preference";
+      const galleryDensity = 0.88 + Math.random() * 0.24;
+
+      function layoutCards() {
+        const visibleCards = cards.filter((card) => !card.hidden);
+        grid.innerHTML = "";
+
+        if (!visibleCards.length || !grid.clientWidth) return;
+
+        const styles = getComputedStyle(grid);
+        const gap = parseFloat(styles.columnGap) || 16;
+        const targetHeight = Math.min(
+          220,
+          Math.max(145, (grid.clientWidth / 5.2) * galleryDensity),
+        );
+        const rows = [];
+        let row = [];
+        let ratioTotal = 0;
+
+        visibleCards.forEach((card, index) => {
+          const image = card.querySelector("img");
+          const ratio = image.naturalWidth && image.naturalHeight
+            ? image.naturalWidth / image.naturalHeight
+            : 1.35;
+          const projectedHeight =
+            (grid.clientWidth - gap * row.length) / (ratioTotal + ratio);
+
+          if (row.length >= 2 && projectedHeight < targetHeight * 0.86) {
+            rows.push(row);
+            row = [];
+            ratioTotal = 0;
+          }
+
+          if (row.length >= 5) {
+            rows.push(row);
+            row = [];
+            ratioTotal = 0;
+          }
+
+          row.push({ card, ratio });
+          ratioTotal += ratio;
+
+          if (index === visibleCards.length - 1) rows.push(row);
+        });
+
+        const balancedRows = [];
+        rows.forEach((items) => {
+          const previousRow = balancedRows[balancedRows.length - 1];
+
+          if (items.length === 1 && previousRow) {
+            balancedRows.pop();
+            const combinedRows = [...previousRow, ...items];
+            const firstRowLength = Math.ceil(combinedRows.length / 2);
+
+            if (combinedRows.length <= 5) {
+              balancedRows.push(combinedRows);
+            } else {
+              balancedRows.push(
+                combinedRows.slice(0, firstRowLength),
+                combinedRows.slice(firstRowLength),
+              );
+            }
+          } else {
+            balancedRows.push(items);
+          }
+        });
+
+        balancedRows.forEach((items) => {
+          const totalRatio = items.reduce((sum, item) => sum + item.ratio, 0);
+          const naturalHeight =
+            (grid.clientWidth - gap * (items.length - 1)) / totalRatio;
+          const rowHeight = Math.min(260, Math.max(130, naturalHeight));
+          const rowElement = document.createElement("div");
+
+          rowElement.className = "card-row";
+          rowElement.style.setProperty("--row-height", `${rowHeight}px`);
+
+          items.forEach(({ card, ratio }) => {
+            card.style.setProperty("--card-ratio", ratio);
+            rowElement.appendChild(card);
+          });
+
+          grid.appendChild(rowElement);
+        });
+      }
+
+      cards.forEach((card) => {
+        card.querySelector("img").addEventListener("load", layoutCards, {
+          once: true,
+        });
+      });
+      let layoutFrame;
+      window.addEventListener("resize", () => {
+        cancelAnimationFrame(layoutFrame);
+        layoutFrame = requestAnimationFrame(layoutCards);
+      });
+
       function applyLanguage(nextLanguage) {
         language = translations[nextLanguage] ? nextLanguage : "nl";
         const text = translations[language];
@@ -1198,6 +1347,7 @@
         count.textContent =
           visible + " " + (visible === 1 ? translations[language].game : translations[language].games);
         empty.classList.toggle("is-visible", visible === 0);
+        layoutCards();
       }
 
       search.addEventListener("input", filterGames);
