@@ -1,31 +1,6 @@
 <!doctype html>
 <html lang="nl">
   <head>
-    <!-- Bestaande analytics en advertentie-integratie behouden -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-HQ0MWMX965"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-HQ0MWMX965");
-    </script>
-    <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l !== "dataLayer" ? "&l=" + l : "";
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-5WZ9ZJWX");
-    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
@@ -34,11 +9,6 @@
     />
     <title>Online Latu — speel meteen</title>
     <link rel="icon" type="image/x-icon" href="logo.ico" />
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6983682584738537"
-      crossorigin="anonymous"
-    ></script>
     <style>
       :root {
         color-scheme: dark;
@@ -656,14 +626,6 @@
     </style>
   </head>
   <body>
-    <noscript
-      ><iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-5WZ9ZJWX"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe
-    ></noscript>
     <div class="container">
       <header class="site-header">
         <a class="brand" href="index.html" aria-label="Online Latu home" data-i18n-aria-label="homeLabel"
@@ -674,7 +636,8 @@
         <nav class="main-nav" aria-label="Hoofdnavigatie" data-i18n-aria-label="navLabel">
           <a href="index.html">Home</a><a href="#games">Games</a>
         </nav>
-        <a class="header-link" href="legal.html" data-i18n="aboutLatu">Over Latu</a>
+        <a class="header-link" href="about.html" data-i18n="aboutLatu">Over Latu</a>
+        <a class="header-link" href="legal.html">Legal</a>
         <label class="language-picker" for="language-select">
           <span data-i18n="languageLabel">Taal</span>
           <select id="language-select" aria-label="Taal">
@@ -695,7 +658,7 @@
             </p>
             <div class="hero-actions">
               <a class="button button-primary" href="#games" data-i18n="viewGames">Bekijk games →</a
-              ><a class="button button-secondary" href="legal.html"
+              ><a class="button button-secondary" href="about.html"
                 ><span data-i18n="aboutOnlineLatu">Over Online Latu</span></a
               >
             </div>
