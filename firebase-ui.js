@@ -9,6 +9,19 @@ import {
 let currentUser = null;
 let refreshCardStats = () => {};
 
+const authLabels = {
+  nl: { signIn: "Inloggen met Google", signOut: "Uitloggen" },
+  en: { signIn: "Sign in with Google", signOut: "Sign out" },
+  fr: { signIn: "Se connecter avec Google", signOut: "Se déconnecter" },
+};
+
+function updateAuthLabel(button) {
+  const language = document.documentElement.lang?.slice(0, 2) || "nl";
+  const labels = authLabels[language] || authLabels.nl;
+  button.textContent = currentUser ? labels.signOut : labels.signIn;
+  button.title = button.textContent;
+}
+
 function setupAuthButton() {
   const header = document.querySelector(".site-header");
   if (!header || document.querySelector(".auth-control")) return;
@@ -23,10 +36,13 @@ function setupAuthButton() {
 
   onUserChanged((user) => {
     currentUser = user;
-    button.textContent = user ? "Uitloggen" : "Inloggen met Google";
-    button.title = user ? "Uitloggen" : "Inloggen met Google";
+    updateAuthLabel(button);
     button.classList.toggle("is-signed-in", Boolean(user));
     refreshCardStats();
+  });
+
+  document.querySelector("#language-select")?.addEventListener("change", () => {
+    updateAuthLabel(button);
   });
 
   button.addEventListener("click", async () => {
