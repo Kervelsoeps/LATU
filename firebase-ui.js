@@ -1,7 +1,6 @@
 import {
   getGameStats,
   onUserChanged,
-  recordPlay,
   signInWithGoogle,
   signOutUser,
   toggleLike,
@@ -93,11 +92,6 @@ function setupFirebaseCards() {
       }
     });
 
-    card.addEventListener("click", () => {
-      recordPlay(gameId).catch((error) =>
-        console.error("Play kon niet worden opgeslagen:", error),
-      );
-    });
   });
 }
 
