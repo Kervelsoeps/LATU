@@ -130,6 +130,30 @@
         color: #fff;
         background: rgba(255, 255, 255, 0.07);
       }
+      .auth-control {
+        margin-left: auto;
+      }
+      .google-login {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--text);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 9px 12px;
+      }
+      .google-login:hover,
+      .google-login:focus-visible,
+      .google-login.is-signed-in {
+        background: var(--pink);
+        color: #fff;
+      }
+      .google-login:disabled {
+        cursor: wait;
+        opacity: 0.65;
+      }
       .search {
         position: relative;
         flex: 1;
@@ -502,6 +526,29 @@
         display: none;
         color: var(--pink);
         font-weight: 900;
+      }
+      .game-stats {
+        color: var(--muted);
+        font-size: 0.78rem;
+        white-space: nowrap;
+      }
+      .game-like {
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 1.05rem;
+        line-height: 1;
+        padding: 0.2rem 0.35rem;
+      }
+      .game-like:hover,
+      .game-like.is-liked {
+        color: #d64a62;
+      }
+      .game-like:disabled {
+        cursor: wait;
+        opacity: 0.6;
       }
       @container (max-width: 190px) {
         .card-creator {
@@ -1393,5 +1440,6 @@
         .querySelectorAll(".reveal")
         .forEach((element) => revealObserver.observe(element));
     </script>
+    <script type="module" src="firebase-ui.js"></script>
   </body>
 </html>

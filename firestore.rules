@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Publieke statistieken mogen gelezen worden.
+    match /gameStats/{gameId} {
+      allow read: if true;
+
+      // Eerste play of eerste like van een game.
+      allow create: if request.auth != null
+        && (
+          (request.resource.data.likesCount == 0
+            && request.resource.data.playsCount == 1)
+          ||
+          (request.resource.data.likesCount == 1
+            && request.resource.data.playsCount == 0
+            && existsAfter(/databases/$(database)/documents/gameLikes/$(gameId)/users/$(request.auth.uid)))
+        );
+
+      // Gebruikers mogen alleen één play optellen, of hun eigen like-counter wijzigen.
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['likesCount', 'playsCount'])
+        && (
+          (
+            request.resource.data.playsCount == resource.data.playsCount + 1
+            && request.resource.data.likesCount == resource.data.likesCount
+          )
+          ||
+          (
+            request.resource.data.playsCount == resource.data.playsCount
+            && request.resource.data.likesCount == resource.data.likesCount + 1
+            && existsAfter(/databases/$(database)/documents/gameLikes/$(gameId)/users/$(request.auth.uid))
+          )
+          ||
+          (
+            request.resource.data.playsCount == resource.data.playsCount
+            && request.resource.data.likesCount == resource.data.likesCount - 1
+            && !existsAfter(/databases/$(database)/documents/gameLikes/$(gameId)/users/$(request.auth.uid))
+          )
+        );
+    }
+
+    match /gameLikes/{gameId}/users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['createdAt']);
+      allow delete: if request.auth != null && request.auth.uid == userId;
+      allow update: if false;
+    }
+  }
+}
