@@ -1,8 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
+  browserLocalPersistence,
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
+  setPersistence,
   signInWithPopup,
   signOut,
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
@@ -28,12 +30,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-const authReady = new Promise((resolve) => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    unsubscribe();
-    resolve(user);
-  });
-});
+const authReady = setPersistence(auth, browserLocalPersistence).then(
+  () =>
+    new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe();
+        resolve(user);
+      });
+    }),
+);
 
 function statsRef(gameId) {
   return doc(db, "gameStats", gameId);
@@ -108,7 +113,7 @@ export function onUserChanged(callback) {
 }
 
 export function signInWithGoogle() {
-  return signInWithPopup(auth, googleProvider);
+  return authReady.then(() => signInWithPopup(auth, googleProvider));
 }
 
 export function signOutUser() {

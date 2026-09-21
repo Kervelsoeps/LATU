@@ -7,6 +7,7 @@ import {
 } from "./firebase.js";
 
 let currentUser = null;
+let refreshCardStats = () => {};
 
 function setupAuthButton() {
   const header = document.querySelector(".site-header");
@@ -26,6 +27,7 @@ function setupAuthButton() {
       ? `Uitloggen (${user.displayName || user.email || "Google"})`
       : "Inloggen met Google";
     button.classList.toggle("is-signed-in", Boolean(user));
+    refreshCardStats();
   });
 
   button.addEventListener("click", async () => {
@@ -48,6 +50,22 @@ const getGameId = (card) => {
 };
 
 function setupFirebaseCards() {
+  refreshCardStats = () => {
+    document.querySelectorAll(".card").forEach((card) => {
+      const stats = card.querySelector(".game-stats");
+      const likeButton = card.querySelector(".game-like");
+      if (!stats || !likeButton) return;
+      const gameId = getGameId(card);
+      getGameStats(gameId)
+        .then(({ likesCount, playsCount, liked }) => {
+          stats.textContent = `♥ ${likesCount} · ▶ ${playsCount}`;
+          likeButton.textContent = liked ? "♥" : "♡";
+          likeButton.classList.toggle("is-liked", liked);
+        })
+        .catch((error) => console.error("Firebase stats konden niet laden:", error));
+    });
+  };
+
   document.querySelectorAll(".card").forEach((card) => {
     const gameId = getGameId(card);
     const meta = card.querySelector(".card-meta");
