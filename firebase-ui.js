@@ -23,9 +23,8 @@ function setupAuthButton() {
 
   onUserChanged((user) => {
     currentUser = user;
-    button.textContent = user
-      ? `Uitloggen (${user.displayName || user.email || "Google"})`
-      : "Inloggen met Google";
+    button.textContent = user ? "Uitloggen" : "Inloggen met Google";
+    button.title = user ? "Uitloggen" : "Inloggen met Google";
     button.classList.toggle("is-signed-in", Boolean(user));
     refreshCardStats();
   });
