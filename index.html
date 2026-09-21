@@ -683,7 +683,7 @@
         <section class="section" aria-labelledby="categories-title">
           <div class="section-heading">
             <h2 id="categories-title" data-i18n="findGame">Vind je game</h2>
-            <p id="game-count">20 games</p>
+            <p id="game-count">21 games</p>
           </div>
           <div class="categories" role="tablist" aria-label="Gamecategorieën" data-i18n-aria-label="categoriesLabel">
             <button class="category is-active" type="button" data-filter="all">
@@ -864,6 +864,13 @@
           "arcade",
           "Lauran Calliauw",
         ],
+        [
+          "Sunny Meadow Adventure",
+          "Sunny_Meadow_Adventure.png",
+          "Sunny_Meadow_Adventure.html",
+          "casual",
+          "Lauran Calliauw",
+        ],
       ];
       const desc = {
         "Basketball Clicker":
@@ -905,6 +912,8 @@
           "Verken een uitdagende 3D-wereld, schakel tegenstanders uit en blijf voortdurend in beweging.",
         Voxelcraft:
           "Bouw, ontdek en overleef in een blokkerige wereld vol mogelijkheden, helemaal in de stijl van Minecraft.",
+        "Sunny Meadow Adventure":
+          "Wandel rustig door een zachte, zonnige weide en verzamel onderweg zoveel mogelijk edelstenen.",
       };
       const englishDesc = {
         "Basketball Clicker":
@@ -947,6 +956,8 @@
           "Explore a challenging 3D world, take down enemies and keep moving at all times.",
         Voxelcraft:
           "Build, explore and survive in a blocky world full of possibilities, inspired by Minecraft.",
+        "Sunny Meadow Adventure":
+          "Take a calm walk through a soft, sunny meadow and collect as many gemstones as you can along the way.",
       };
       const frenchDesc = {
         "Basketball Clicker":
@@ -989,6 +1000,8 @@
           "Explore un monde en 3D, élimine tes adversaires et reste constamment en mouvement.",
         Voxelcraft:
           "Construis, explore et survis dans un monde en blocs plein de possibilités, inspiré de Minecraft.",
+        "Sunny Meadow Adventure":
+          "Promène-toi dans une prairie douce et ensoleillée tout en ramassant un maximum de pierres précieuses.",
       };
       const translations = {
         nl: {
@@ -1127,16 +1140,7 @@
           `<a class="card reveal" data-title="${title}" data-category="${category}" href="${link}"><div class="card-image"><img src="${image}" alt="${title} preview"></div><div class="card-body"><span class="card-tag">${categoryLabels[language][category]}</span><h3>${title}</h3><p class="card-description">${description}</p><div class="card-meta"><span class="card-creator">${creator}</span><span class="card-play">${translations[language].play}</span></div></div></a>`,
         );
       });
-      const featuredGameTitles = [
-        "Maze",
-        "Police Runner",
-        "Flappy Bird",
-        "3D Shooter",
-        "Voxelcraft",
-      ];
-      const featuredGames = games.filter(([title]) =>
-        featuredGameTitles.includes(title),
-      );
+      const featuredGames = games;
       const game = featuredGames[Math.floor(Math.random() * featuredGames.length)],
         featureDesc = getDescription(game[0]);
       document.querySelector(".recommended-title").textContent = game[0];
