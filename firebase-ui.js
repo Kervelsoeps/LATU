@@ -1,6 +1,7 @@
 import {
   getGameStats,
   onUserChanged,
+  recordPlay,
   signInWithGoogle,
   signOutUser,
   toggleLike,
@@ -64,6 +65,55 @@ const getGameId = (card) => {
   return filename.replace(/\.html?$/i, "").toLowerCase();
 };
 
+const playHandoffKey = (gameId) => `latu-play-counted:${gameId}`;
+
+function rememberCountedPlay(gameId) {
+  try {
+    sessionStorage.setItem(playHandoffKey(gameId), String(Date.now()));
+  } catch (error) {
+    console.warn("Play-doorgifte kon niet worden voorbereid:", error);
+  }
+}
+
+async function navigateToGame(event) {
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return;
+  }
+
+  const link = event.currentTarget;
+  if (link.dataset.playPending === "true") {
+    event.preventDefault();
+    return;
+  }
+
+  event.preventDefault();
+  link.dataset.playPending = "true";
+  link.setAttribute("aria-busy", "true");
+
+  const gameId = getGameId(link);
+  try {
+    // Wacht op Firebase voordat de browser de gamepagina opent.
+    if (await recordPlay(gameId)) rememberCountedPlay(gameId);
+  } catch (error) {
+    console.error("Play kon niet worden opgeslagen vóór het openen van de game:", error);
+  }
+
+  window.location.assign(link.href);
+}
+
+function setupGameNavigation() {
+  document.querySelectorAll(".card, .recommended-play").forEach((link) => {
+    link.addEventListener("click", navigateToGame);
+  });
+}
+
 function setupFirebaseCards() {
   refreshCardStats = () => {
     document.querySelectorAll(".card").forEach((card) => {
@@ -126,6 +176,11 @@ function setupFirebaseCards() {
     });
 
   });
+
+  setupGameNavigation();
+
+  // pageshow wordt ook uitgevoerd wanneer index.html uit de bfcache terugkomt.
+  window.addEventListener("pageshow", refreshCardStats);
 }
 
 setupAuthButton();

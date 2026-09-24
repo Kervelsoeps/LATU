@@ -11,6 +11,17 @@ const gameId = window.location.pathname
 let currentUser = null;
 let countedForThisActivation = false;
 
+function consumeCountedPlayHandoff() {
+  try {
+    const key = `latu-play-counted:${gameId}`;
+    const timestamp = Number(sessionStorage.getItem(key));
+    sessionStorage.removeItem(key);
+    return timestamp > 0 && Date.now() - timestamp < 15000;
+  } catch (error) {
+    return false;
+  }
+}
+
 onUserChanged((user) => {
   currentUser = user;
 });
@@ -39,6 +50,13 @@ function waitForGoogleUser(timeout = 8000) {
 
 async function countCurrentPlay() {
   if (!gameId || countedForThisActivation) return;
+
+  // De homepage heeft deze play al opgeslagen voordat er werd genavigeerd.
+  if (consumeCountedPlayHandoff()) {
+    countedForThisActivation = true;
+    return;
+  }
+
   countedForThisActivation = true;
 
   const user = await waitForGoogleUser();
