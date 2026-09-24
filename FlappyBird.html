@@ -174,7 +174,7 @@
             <div class="score-text" id="scoreDisplay">0</div>
             <div class="highscore-text" id="highScoreDisplay">Best: 0</div>
         </div>
-        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <canvas id="gameCanvas" width="400" height="600" tabindex="0" aria-label="Flappy Bird speelveld"></canvas>
     </div>
 </div>
 
@@ -218,9 +218,16 @@ for(let i=0; i<5; i++) {
 }
 
 // Controls
-window.addEventListener("keydown", (e) => { if (e.code === "Space") handleJump(); });
-canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleJump(); });
-canvas.addEventListener("mousedown", () => handleJump());
+window.addEventListener("keydown", (e) => {
+    if (e.code !== "Space") return;
+    e.preventDefault();
+    handleJump();
+});
+canvas.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    canvas.focus();
+    handleJump();
+});
 
 function handleJump() {
     if (multiplayerActive && (!gameStarted || gameOver)) return;

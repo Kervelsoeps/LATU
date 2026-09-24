@@ -199,11 +199,7 @@ function handleRoomSnapshot(snapshot) {
   // de eerste snapshot nog null zijn; daardoor bleven spelers soms wachten
   // terwijl de room al op "playing" stond.
   if (roomData.status === "playing" && roundStartedAt === 0) {
-    roundStartedAt = Number(roomData.startedAt) || Date.now();
-    localEndedAt = null;
-    resultShown = false;
-    setMessage("Vlieg! Overleef langer dan je tegenstander.");
-    window.flappyGame.beginMultiplayerRound();
+    startLocalRound(roomData.startedAt);
   }
   evaluateOutcome(roomData);
 }
@@ -255,6 +251,15 @@ function configureGameForRoom() {
     onState: publishState,
     onDeath: publishDeath,
   });
+}
+
+function startLocalRound(startedAt = Date.now()) {
+  if (roundStartedAt !== 0) return;
+  roundStartedAt = Number(startedAt) || Date.now();
+  localEndedAt = null;
+  resultShown = false;
+  setMessage("Vlieg! Overleef langer dan je tegenstander.");
+  window.flappyGame.beginMultiplayerRound();
 }
 
 async function createRoom() {
@@ -329,11 +334,13 @@ async function joinRoom() {
 async function startRoom() {
   if (role !== "host" || !roomReference || activePlayers(roomData?.players).length < 2) return;
   try {
+    const startedAt = Date.now();
     await update(roomReference, {
       status: "playing",
-      startedAt: Date.now(),
+      startedAt,
       winnerId: null,
     });
+    startLocalRound(startedAt);
   } catch (error) {
     console.error("Starten mislukt:", error);
     setMessage("De game kon niet worden gestart.");
