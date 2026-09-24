@@ -190,8 +190,11 @@ function handleRoomSnapshot(snapshot) {
     });
   }
 
-  if (roomData.status === "playing" && Number(roomData.startedAt) > 0 && roundStartedAt !== Number(roomData.startedAt)) {
-    roundStartedAt = Number(roomData.startedAt);
+  // De status is de betrouwbare starttrigger. Een server timestamp kan in
+  // de eerste snapshot nog null zijn; daardoor bleven spelers soms wachten
+  // terwijl de room al op "playing" stond.
+  if (roomData.status === "playing" && roundStartedAt === 0) {
+    roundStartedAt = Number(roomData.startedAt) || Date.now();
     localEndedAt = null;
     resultShown = false;
     setMessage("Vlieg! Overleef langer dan je tegenstander.");
@@ -322,7 +325,7 @@ async function startRoom() {
   try {
     await update(roomReference, {
       status: "playing",
-      startedAt: serverTimestamp(),
+      startedAt: Date.now(),
       winnerId: null,
     });
   } catch (error) {
