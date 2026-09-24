@@ -163,7 +163,7 @@
         </div>
         <p id="roomStatus">Nog geen multiplayer-room actief.</p>
         <div class="room-actions">
-            <button id="startRoomButton" type="button" disabled>Start game</button>
+            <button id="readyRoomButton" type="button" disabled>Ik ben ready</button>
             <button id="leaveRoomButton" class="secondary" type="button" hidden>Room verlaten</button>
         </div>
         <p id="multiplayerMessage"></p>
@@ -211,6 +211,7 @@ let multiplayerActive = false;
 let multiplayerResult = "";
 let opponentBird = null;
 let multiplayerCallbacks = {};
+let multiplayerLobby = { ready: false, opponentReady: false, countdown: null };
 
 // Genereer beginwolken
 for(let i=0; i<5; i++) {
@@ -257,11 +258,13 @@ function resetGame(startImmediately = true) {
 function beginMultiplayerRound() {
     resetGame(false);
     gameStarted = true;
+    multiplayerLobby.countdown = null;
 }
 
 function configureMultiplayer(active, callbacks = {}) {
     multiplayerActive = active;
     multiplayerCallbacks = callbacks;
+    multiplayerLobby = { ready: false, opponentReady: false, countdown: null };
     opponentBird = null;
     if (active) resetGame(false);
 }
@@ -275,11 +278,16 @@ function showMultiplayerResult(message) {
     multiplayerResult = message;
 }
 
+function setMultiplayerLobby(state = {}) {
+    multiplayerLobby = { ...multiplayerLobby, ...state };
+}
+
 window.flappyGame = {
     configureMultiplayer,
     beginMultiplayerRound,
     setOpponentBird,
     showMultiplayerResult,
+    setMultiplayerLobby,
     getState: () => ({ y: bird.y, angle: bird.angle, score, alive: !gameOver }),
 };
 
@@ -369,7 +377,7 @@ function update() {
     }
 
     multiplayerCallbacks.onState?.({
-        ready: true,
+        live: true,
         y: bird.y,
         angle: bird.angle,
         score,
@@ -523,9 +531,23 @@ function draw() {
             ctx.stroke();
             ctx.fillStyle = "white";
             ctx.font = "bold 22px sans-serif";
-            ctx.fillText("WACHT OP DE START", canvas.width / 2, canvas.height / 2 - 5);
-            ctx.font = "16px sans-serif";
-            ctx.fillText("De host moet de game starten", canvas.width / 2, canvas.height / 2 + 25);
+            if (multiplayerLobby.countdown !== null) {
+                ctx.font = "bold 42px sans-serif";
+                ctx.fillText(String(multiplayerLobby.countdown), canvas.width / 2, canvas.height / 2 + 12);
+            } else {
+                ctx.font = "bold 22px sans-serif";
+                ctx.fillText(
+                    multiplayerLobby.ready ? "JE BENT READY" : "KLIK OP IK BEN READY",
+                    canvas.width / 2,
+                    canvas.height / 2 - 5,
+                );
+                ctx.font = "16px sans-serif";
+                ctx.fillText(
+                    multiplayerLobby.opponentReady ? "Wacht op de countdown" : "Wacht op je tegenstander",
+                    canvas.width / 2,
+                    canvas.height / 2 + 25,
+                );
+            }
         } else {
             ctx.font = "bold 26px sans-serif";
             ctx.fillText("TAP OF SPATIE OM", canvas.width / 2, canvas.height / 2 - 15);
@@ -545,7 +567,11 @@ function draw() {
         ctx.strokeStyle = "#555"; ctx.lineWidth = 3;
         ctx.stroke();
 
-        ctx.fillStyle = multiplayerResult.includes("wint") ? "#27ae60" : "#e74c3c";
+        ctx.fillStyle = multiplayerResult === "Jij wint!"
+            ? "#27ae60"
+            : multiplayerResult === "Je tegenstander wint!"
+                ? "#e74c3c"
+                : "#d68910";
         ctx.font = "bold 28px sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(multiplayerResult || "GAME OVER", canvas.width / 2, canvas.height / 2 - 40);
