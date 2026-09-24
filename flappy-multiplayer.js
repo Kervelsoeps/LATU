@@ -311,7 +311,7 @@ async function joinRoom() {
   } catch (error) {
     console.error("Joinen mislukt:", error);
     cleanupRoom(false);
-    setMessage("Joinen mislukt. Controleer de code en Realtime Database-regels.");
+    setMessage(`Joinen mislukt: ${error?.message || "onbekende fout"}`);
   } finally {
     setBusy(false);
   }
