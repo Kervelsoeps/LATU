@@ -501,25 +501,36 @@ function draw() {
     }
 
     // UI Overlays
-    if (!gameStarted && multiplayerActive) {
-        const panelWidth = 300;
-        const panelHeight = 92;
-        const panelX = (canvas.width - panelWidth) / 2;
-        const panelY = canvas.height / 2 - panelHeight / 2;
+    if (!gameStarted) {
         ctx.save();
-        ctx.fillStyle = "rgba(0, 0, 0, 0.72)";
-        ctx.roundRect(panelX, panelY, panelWidth, panelHeight, 14);
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "white";
-        ctx.font = "bold 22px sans-serif";
         ctx.textAlign = "center";
-        ctx.shadowColor = "black"; ctx.shadowBlur = 4;
-        ctx.fillText("WACHT OP DE START", canvas.width / 2, canvas.height / 2 - 5);
-        ctx.font = "16px sans-serif";
-        ctx.fillText("De host moet de game starten", canvas.width / 2, canvas.height / 2 + 25);
+        ctx.shadowColor = "black";
+        ctx.shadowBlur = 4;
+
+        if (multiplayerActive) {
+            const panelWidth = 300;
+            const panelHeight = 92;
+            const panelX = (canvas.width - panelWidth) / 2;
+            const panelY = canvas.height / 2 - panelHeight / 2;
+            ctx.fillStyle = "rgba(0, 0, 0, 0.72)";
+            ctx.roundRect(panelX, panelY, panelWidth, panelHeight, 14);
+            ctx.fill();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = "white";
+            ctx.font = "bold 22px sans-serif";
+            ctx.fillText("WACHT OP DE START", canvas.width / 2, canvas.height / 2 - 5);
+            ctx.font = "16px sans-serif";
+            ctx.fillText("De host moet de game starten", canvas.width / 2, canvas.height / 2 + 25);
+        } else {
+            ctx.font = "bold 26px sans-serif";
+            ctx.fillText("TAP OF SPATIE OM", canvas.width / 2, canvas.height / 2 - 15);
+            ctx.fillText("TE STARTEN", canvas.width / 2, canvas.height / 2 + 20);
+        }
         ctx.restore();
     }
 
