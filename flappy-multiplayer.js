@@ -137,11 +137,20 @@ async function publishFinishedResult(winnerId) {
   if (!roomReference) return;
   await runTransaction(roomReference, (current) => {
     if (!current || current.status !== "playing") return;
+    const players = Object.fromEntries(
+      Object.entries(current.players || {}).map(([id, player]) => [id, {
+        ...player,
+        ready: false,
+        live: false,
+        alive: false,
+      }]),
+    );
     return {
       ...current,
       status: "finished",
       winnerId,
       finishedAt: serverTimestamp(),
+      players,
     };
   });
 }
@@ -211,6 +220,15 @@ function handleRoomSnapshot(snapshot) {
   if (roomData.status === "countdown") startCountdown(roomData.countdownStartedAt);
   if (roomData.status !== "countdown") clearCountdownTimer();
 
+  if (roomData.status === "waiting") {
+    roundStartedAt = 0;
+    localEndedAt = null;
+    window.flappyGame.prepareMultiplayerRound();
+  } else if (roomData.status === "finished") {
+    roundStartedAt = 0;
+    localEndedAt = null;
+  }
+
   // De status is de betrouwbare starttrigger. Een server timestamp kan in
   // de eerste snapshot nog null zijn; daardoor bleven spelers soms wachten
   // terwijl de room al op "playing" stond.
@@ -266,6 +284,7 @@ function configureGameForRoom() {
   window.flappyGame.configureMultiplayer(true, {
     onState: publishState,
     onDeath: publishDeath,
+    onReady: toggleReady,
   });
 }
 
@@ -333,9 +352,28 @@ function maybeStartCountdown(data) {
 }
 
 async function toggleReady() {
-  if (!playerReference || roomData?.status !== "waiting") return;
+  if (!playerReference || !["waiting", "finished"].includes(roomData?.status)) return;
   const currentReady = roomData.players?.[playerId]?.ready === true;
   try {
+    if (roomData.status === "finished") {
+      await runTransaction(roomReference, (current) => {
+        if (!current || !["waiting", "finished"].includes(current.status)) return;
+        const players = Object.fromEntries(Object.entries(current.players || {}).map(([id, player]) => [id, {
+          ...player,
+          ready: current.status === "finished" ? id === playerId : player?.ready === true || id === playerId,
+          live: false,
+          alive: false,
+        }]));
+        return {
+          ...current,
+          status: "waiting",
+          winnerId: null,
+          finishedAt: null,
+          players,
+        };
+      });
+      return;
+    }
     await update(playerReference, {
       ready: !currentReady,
       live: false,
