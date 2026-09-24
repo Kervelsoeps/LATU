@@ -501,7 +501,7 @@ function draw() {
     }
 
     // UI Overlays
-    if (!gameStarted) {
+    if (!gameStarted && multiplayerActive) {
         const panelWidth = 300;
         const panelHeight = 92;
         const panelX = (canvas.width - panelWidth) / 2;
@@ -517,13 +517,9 @@ function draw() {
         ctx.font = "bold 22px sans-serif";
         ctx.textAlign = "center";
         ctx.shadowColor = "black"; ctx.shadowBlur = 4;
-        if (multiplayerActive) {
-            ctx.fillText("WACHT OP DE START", canvas.width / 2, canvas.height / 2 - 5);
-            ctx.font = "16px sans-serif";
-            ctx.fillText("De host moet de game starten", canvas.width / 2, canvas.height / 2 + 25);
-        } else {
-            ctx.fillText("TAP OF SPATIE OM TE STARTEN", canvas.width / 2, canvas.height / 2 + 7);
-        }
+        ctx.fillText("WACHT OP DE START", canvas.width / 2, canvas.height / 2 - 5);
+        ctx.font = "16px sans-serif";
+        ctx.fillText("De host moet de game starten", canvas.width / 2, canvas.height / 2 + 25);
         ctx.restore();
     }
 
