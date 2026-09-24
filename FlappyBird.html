@@ -23,6 +23,11 @@
             flex-direction: column;
             gap: 12px;
         }
+        #gameContainer { order: 1; }
+        #multiplayerPanel {
+            order: 2;
+            width: 100%;
+        }
         #gameContainer {
             position: relative;
             box-shadow: 0 15px 50px rgba(0,0,0,0.8);
@@ -78,6 +83,9 @@
             gap: 7px;
             flex-wrap: wrap;
         }
+        #multiplayerPanel > .room-actions:last-of-type {
+            margin-top: 8px;
+        }
         .room-actions button,
         .room-actions input {
             border: 0;
@@ -116,6 +124,9 @@
             margin-top: 9px;
         }
         #roomInfo.visible { display: flex; }
+        #roomInfo button {
+            margin-left: auto;
+        }
         #roomCodeLabel {
             color: #ffe27a;
             font-size: 20px;
