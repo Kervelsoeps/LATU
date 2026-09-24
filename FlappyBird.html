@@ -11,10 +11,17 @@
             font-family: 'Segoe UI', Tahoma, sans-serif;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow: auto;
             user-select: none;
+            padding: 18px 10px;
+        }
+        #pageShell {
+            width: min(100%, 420px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         #gameContainer {
             position: relative;
@@ -48,16 +55,116 @@
             font-weight: bold;
             text-shadow: 2px 2px 0 #000;
         }
+        #multiplayerPanel {
+            background: #303030;
+            color: #fff;
+            border: 2px solid #4a4a4a;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+        #multiplayerPanel h1 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        #multiplayerPanel p {
+            color: #d7d7d7;
+            font-size: 13px;
+            line-height: 1.35;
+            margin-bottom: 9px;
+        }
+        .room-actions {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+        .room-actions button,
+        .room-actions input {
+            border: 0;
+            border-radius: 7px;
+            font: inherit;
+            min-height: 38px;
+        }
+        .room-actions button {
+            background: #f1c40f;
+            color: #302600;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 0 12px;
+        }
+        .room-actions button.secondary {
+            background: #5b9bd5;
+            color: #fff;
+        }
+        .room-actions button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .room-actions input {
+            background: #fff;
+            color: #222;
+            flex: 1 1 120px;
+            letter-spacing: 2px;
+            min-width: 0;
+            padding: 0 10px;
+            text-transform: uppercase;
+        }
+        #roomInfo {
+            align-items: center;
+            display: none;
+            gap: 8px;
+            margin-top: 9px;
+        }
+        #roomInfo.visible { display: flex; }
+        #roomCodeLabel {
+            color: #ffe27a;
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 3px;
+        }
+        #roomStatus {
+            color: #c8c8c8;
+            font-size: 13px;
+            margin: 0;
+        }
+        #multiplayerMessage {
+            color: #ffe27a;
+            font-size: 13px;
+            margin: 8px 0 0;
+            min-height: 17px;
+        }
     </style>
 </head>
 <body>
 
-<div id="gameContainer">
-    <div id="scoreBoard">
-        <div class="score-text" id="scoreDisplay">0</div>
-        <div class="highscore-text" id="highScoreDisplay">Best: 0</div>
+<div id="pageShell">
+    <section id="multiplayerPanel" aria-label="Multiplayer">
+        <h1>Flappy Bird multiplayer</h1>
+        <p>Maak een room aan of geef de roomcode van je vriend in. Zodra de host start, vliegen jullie tegelijk.</p>
+        <div class="room-actions">
+            <button id="createRoomButton" type="button">Room aanmaken</button>
+            <input id="roomCodeInput" type="text" maxlength="6" placeholder="ROOMCODE" aria-label="Roomcode">
+            <button id="joinRoomButton" class="secondary" type="button">Joinen</button>
+        </div>
+        <div id="roomInfo">
+            <span>Code:</span><span id="roomCodeLabel"></span>
+            <button id="copyRoomButton" class="secondary" type="button">Kopiëren</button>
+        </div>
+        <p id="roomStatus">Nog geen multiplayer-room actief.</p>
+        <div class="room-actions">
+            <button id="startRoomButton" type="button" disabled>Start game</button>
+            <button id="leaveRoomButton" class="secondary" type="button" hidden>Room verlaten</button>
+        </div>
+        <p id="multiplayerMessage"></p>
+    </section>
+
+    <div id="gameContainer">
+        <div id="scoreBoard">
+            <div class="score-text" id="scoreDisplay">0</div>
+            <div class="highscore-text" id="highScoreDisplay">Best: 0</div>
+        </div>
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
     </div>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
 </div>
 
 <script>
@@ -89,6 +196,10 @@ let frameCount = 0;
 let score = 0;
 let gameOver = false;
 let gameStarted = false;
+let multiplayerActive = false;
+let multiplayerResult = "";
+let opponentBird = null;
+let multiplayerCallbacks = {};
 
 // Genereer beginwolken
 for(let i=0; i<5; i++) {
@@ -101,6 +212,7 @@ canvas.addEventListener("touchstart", (e) => { e.preventDefault(); handleJump();
 canvas.addEventListener("mousedown", () => handleJump());
 
 function handleJump() {
+    if (multiplayerActive && (!gameStarted || gameOver)) return;
     if (gameOver) {
         resetGame();
         return;
@@ -110,7 +222,7 @@ function handleJump() {
     createParticles(bird.x, bird.y + 10, "white", 5); // Flap stofwolkje
 }
 
-function resetGame() {
+function resetGame(startImmediately = true) {
     bird.y = 250;
     bird.velocity = 0;
     bird.angle = 0;
@@ -120,8 +232,38 @@ function resetGame() {
     frameCount = 0;
     scoreDisplay.innerText = score;
     gameOver = false;
+    gameStarted = startImmediately;
+    multiplayerResult = "";
+}
+
+function beginMultiplayerRound() {
+    resetGame(false);
     gameStarted = true;
 }
+
+function configureMultiplayer(active, callbacks = {}) {
+    multiplayerActive = active;
+    multiplayerCallbacks = callbacks;
+    opponentBird = null;
+    if (active) resetGame(false);
+}
+
+function setOpponentBird(state) {
+    opponentBird = state ? { ...state } : null;
+}
+
+function showMultiplayerResult(message) {
+    gameOver = true;
+    multiplayerResult = message;
+}
+
+window.flappyGame = {
+    configureMultiplayer,
+    beginMultiplayerRound,
+    setOpponentBird,
+    showMultiplayerResult,
+    getState: () => ({ y: bird.y, angle: bird.angle, score, alive: !gameOver }),
+};
 
 function createParticles(x, y, color, amount) {
     for (let i = 0; i < amount; i++) {
@@ -207,11 +349,61 @@ function update() {
         // Verwijder oude buizen
         if (p.x < -70) pipes.splice(i, 1);
     }
+
+    multiplayerCallbacks.onState?.({
+        y: bird.y,
+        angle: bird.angle,
+        score,
+        alive: !gameOver,
+    });
 }
 
 function die() {
+    if (gameOver) return;
     gameOver = true;
     createParticles(bird.x, bird.y, "#f7dc6f", 30); // Explosie van veren
+    multiplayerCallbacks.onDeath?.({ score });
+}
+
+function drawBird(birdToDraw, color = "#f1c40f", alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(birdToDraw.x, birdToDraw.y);
+    ctx.rotate(birdToDraw.angle || 0);
+
+    // Lichaam
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color === "#f1c40f" ? "#c0392b" : "#24557c";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, birdToDraw.radius || 15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Oog
+    ctx.fillStyle = "white";
+    ctx.beginPath(); ctx.arc(6, -5, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "black";
+    ctx.beginPath(); ctx.arc(8, -5, 2.5, 0, Math.PI * 2); ctx.fill();
+
+    // Vleugel
+    ctx.fillStyle = color === "#f1c40f" ? "#f39c12" : "#4b9bd2";
+    ctx.beginPath();
+    ctx.ellipse(-4, birdToDraw.wingY || 0, 8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Snavel
+    ctx.fillStyle = "#e67e22";
+    ctx.beginPath();
+    ctx.moveTo(10, 0);
+    ctx.lineTo(24, 3);
+    ctx.lineTo(10, 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    ctx.globalAlpha = 1;
 }
 
 function draw() {
@@ -273,45 +465,20 @@ function draw() {
     });
     ctx.globalAlpha = 1.0;
 
+    // Teken de vogel van de tegenstander semi-transparant.
+    if (multiplayerActive && opponentBird?.alive !== false) {
+        drawBird({
+            x: bird.x,
+            y: opponentBird.y,
+            angle: opponentBird.angle,
+            radius: bird.radius,
+            wingY: Math.sin(frameCount * 0.4) * 5,
+        }, "#4b9bd2", 0.42);
+    }
+
     // Teken Vogel
     if (!gameOver || bird.y < canvas.height - GROUND_HEIGHT) {
-        ctx.save();
-        ctx.translate(bird.x, bird.y);
-        ctx.rotate(bird.angle);
-        
-        // Lichaam
-        ctx.fillStyle = "#f1c40f";
-        ctx.strokeStyle = "#c0392b";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 0, bird.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Oog
-        ctx.fillStyle = "white";
-        ctx.beginPath(); ctx.arc(6, -5, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "black";
-        ctx.beginPath(); ctx.arc(8, -5, 2.5, 0, Math.PI * 2); ctx.fill();
-
-        // Vleugel
-        ctx.fillStyle = "#f39c12";
-        ctx.beginPath();
-        ctx.ellipse(-4, bird.wingY, 8, 5, 0, 0, Math.PI*2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Snavel
-        ctx.fillStyle = "#e67e22";
-        ctx.beginPath();
-        ctx.moveTo(10, 0);
-        ctx.lineTo(24, 3);
-        ctx.lineTo(10, 8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        
-        ctx.restore();
+        drawBird(bird);
     }
 
     // UI Overlays
@@ -322,8 +489,13 @@ function draw() {
         ctx.font = "bold 26px sans-serif";
         ctx.textAlign = "center";
         ctx.shadowColor = "black"; ctx.shadowBlur = 4;
-        ctx.fillText("TAP OF SPATIE OM", canvas.width / 2, canvas.height / 2 - 15);
-        ctx.fillText("TE STARTEN", canvas.width / 2, canvas.height / 2 + 20);
+        if (multiplayerActive) {
+            ctx.fillText("WACHT OP DE START", canvas.width / 2, canvas.height / 2 - 15);
+            ctx.fillText("VAN DE HOST", canvas.width / 2, canvas.height / 2 + 20);
+        } else {
+            ctx.fillText("TAP OF SPATIE OM", canvas.width / 2, canvas.height / 2 - 15);
+            ctx.fillText("TE STARTEN", canvas.width / 2, canvas.height / 2 + 20);
+        }
         ctx.shadowBlur = 0; // reset
     }
 
@@ -338,10 +510,10 @@ function draw() {
         ctx.strokeStyle = "#555"; ctx.lineWidth = 3;
         ctx.stroke();
 
-        ctx.fillStyle = "#e74c3c";
+        ctx.fillStyle = multiplayerResult.includes("wint") ? "#27ae60" : "#e74c3c";
         ctx.font = "bold 28px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 40);
+        ctx.fillText(multiplayerResult || "GAME OVER", canvas.width / 2, canvas.height / 2 - 40);
         
         ctx.fillStyle = "#333";
         ctx.font = "20px sans-serif";
@@ -375,4 +547,5 @@ gameLoop();
 
 </body>
 <script type="module" src="firebase-play.js"></script>
+<script type="module" src="flappy-multiplayer.js"></script>
 </html>

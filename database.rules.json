@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "flappyRooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['status', 'players']) && newData.child('players').numChildren() <= 2",
+        "players": {
+          "$playerId": {
+            ".validate": "newData.hasChildren(['connected', 'alive']) && newData.child('y').isNumber() && newData.child('score').isNumber()"
+          }
+        }
+      }
+    }
+  }
+}

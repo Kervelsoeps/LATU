@@ -19,6 +19,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCy1_gGJPEuN71gpyorq39cJyn1OCzIL-4",
   authDomain: "latu-55675.firebaseapp.com",
   projectId: "latu-55675",
+  databaseURL: "https://latu-55675-default-rtdb.europe-west1.firebasedatabase.app",
   storageBucket: "latu-55675.firebasestorage.app",
   messagingSenderId: "89442182773",
   appId: "1:89442182773:web:9617a702cbce571a197a3c",
@@ -129,3 +130,5 @@ window.latuFirebase = {
   signOutUser,
 };
 window.dispatchEvent(new Event("latu-firebase-ready"));
+
+export { app };
