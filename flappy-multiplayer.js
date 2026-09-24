@@ -298,7 +298,12 @@ async function joinRoom() {
       current.players[playerId] = playerData();
       return current;
     });
-    if (!result.committed) throw new Error("Room is al vol of gestart");
+    if (!result.committed) {
+      const currentRoom = existing.val();
+      const currentStatus = currentRoom?.status || "onbekend";
+      const currentPlayers = activePlayers(currentRoom?.players).length;
+      throw new Error(`Roomstatus: ${currentStatus}; actieve spelers: ${currentPlayers}`);
+    }
 
     roomCode = code;
     roomReference = reference;
