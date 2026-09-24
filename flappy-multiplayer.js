@@ -56,6 +56,7 @@ function roomPath(code) {
 function playerData() {
   return {
     connected: true,
+    ready: false,
     alive: false,
     y: 250,
     angle: 0,
@@ -151,6 +152,10 @@ function evaluateOutcome(data) {
   }
   if (data.status !== "playing" || !opponent) return;
 
+  // alive=false is ook de beginwaarde. Wacht tot beide spelers minstens één
+  // echte game-update hebben verstuurd voordat dit als overlijden telt.
+  if (local.ready !== true || opponent.ready !== true) return;
+
   const opponentDisconnected = opponent.connected === false;
   if (local.alive !== false && (opponent.alive === false || opponentDisconnected)) {
     showResult("Jij wint!");
@@ -236,6 +241,7 @@ async function publishDeath({ score }) {
   // niet bepalen wie er gewonnen heeft.
   localEndedAt = Date.now();
   await update(playerReference, {
+    ready: true,
     alive: false,
     connected: true,
     score: Number(score || 0),
