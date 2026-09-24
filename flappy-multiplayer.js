@@ -291,23 +291,18 @@ async function joinRoom() {
     if (!existing.exists()) throw new Error("Room bestaat niet");
     playerId = createPlayerId();
     role = "guest";
-    const result = await runTransaction(reference, (current) => {
-      if (!current || current.status !== "waiting") return;
-      if (activePlayers(current.players).length >= 2) return;
-      current.players = current.players || {};
-      current.players[playerId] = playerData();
-      return current;
-    });
-    if (!result.committed) {
-      const currentRoom = existing.val();
-      const currentStatus = currentRoom?.status || "onbekend";
-      const currentPlayers = activePlayers(currentRoom?.players).length;
+    const currentRoom = existing.val();
+    const currentStatus = currentRoom?.status || "onbekend";
+    const currentPlayers = activePlayers(currentRoom?.players).length;
+    if (currentStatus !== "waiting" || currentPlayers >= 2) {
       throw new Error(`Roomstatus: ${currentStatus}; actieve spelers: ${currentPlayers}`);
     }
+    const newPlayerReference = ref(database, `${roomRoot}/${code}/players/${playerId}`);
+    await update(newPlayerReference, playerData());
 
     roomCode = code;
     roomReference = reference;
-    playerReference = ref(database, `${roomRoot}/${roomCode}/players/${playerId}`);
+    playerReference = newPlayerReference;
     await registerPresence();
     configureGameForRoom();
     subscribeToRoom();
