@@ -52,12 +52,12 @@
         "Als Online Latu als onderneming wordt geëxploiteerd, moeten het officiële ondernemingsadres en ondernemingsnummer hier nog worden toegevoegd.",
       collectedHeading: "Welke gegevens worden verzameld?",
       collectedText:
-        "De website gebruikt geen accounts, Firebase, Google Analytics, Google Tag Manager of Google AdSense. De website verzamelt via de eigen code geen namen, e-mailadressen, IP-adressen, profielen of gedragsgegevens voor tracking.",
+        "Voor Google-login gebruikt Online Latu Firebase Authentication. Bij het inloggen kan Firebase basisprofielgegevens verwerken, zoals je Google-account-ID, naam, e-mailadres en profielfoto. Online Latu gebruikt Firestore om likes en geaggregeerde speeltellingen per game te bewaren. Voor Flappy Bird gebruikt de multiplayerfunctie Firebase Realtime Database om roomcodes en tijdelijke spelstatussen van spelers te synchroniseren. Online Latu gebruikt geen Google Analytics, Google Tag Manager of Google AdSense.",
       localData:
-        "De games kunnen lokaal op jouw apparaat scores, spelvoortgang en voorkeuren bewaren via <code>localStorage</code>. Deze gegevens worden door de website niet naar Online Latu verstuurd.",
+        "De games kunnen lokaal op jouw apparaat scores, spelvoortgang en voorkeuren bewaren via <code>localStorage</code>. De taalvoorkeur wordt lokaal bewaard. Tijdelijke navigatie-informatie voor het tellen van een play kan via <code>sessionStorage</code> worden gebruikt. Deze lokale gegevens worden niet als onderdeel van deze opslag naar Online Latu verstuurd.",
       technicalHeading: "Technische verzoeken en externe bronnen",
       technicalText:
-        "De hostingprovider kan technische gegevens verwerken die nodig zijn om webpagina's te leveren, zoals een IP-adres, tijdstip en browserinformatie. Sommige games laden noodzakelijke bibliotheken vanaf externe CDN-servers. Die diensten kunnen technische verbindingsgegevens ontvangen; controleer hun actuele voorwaarden en overweeg deze bestanden zelf te hosten.",
+        "Firebase en de externe CDN's die de website gebruikt kunnen technische verbindingsgegevens verwerken die nodig zijn om hun diensten te leveren, zoals IP-adres, tijdstip en browserinformatie. De hostingprovider kan zulke gegevens ook verwerken. Firebase, Google en de CDN-providers verwerken gegevens volgens hun eigen voorwaarden en privacybeleid.",
       rightsHeading: "Jouw rechten",
       rightsText:
         "Voor zover de AVG van toepassing is, kun je onder meer vragen om inzage, verbetering, verwijdering, beperking of bezwaar tegen een verwerking. Je kunt ook een klacht indienen bij de <a href=\"https://www.gegevensbeschermingsautoriteit.be/\">Gegevensbeschermingsautoriteit</a>. Neem hiervoor eerst contact op via het e-mailadres hierboven.",
@@ -75,9 +75,9 @@
         "Vragen over auteursrecht, inhoud of een mogelijke inbreuk kunnen worden gemeld via <a href=\"mailto:lauran.calliauw@gmail.com\">lauran.calliauw@gmail.com</a>.",
       cookiesHeading: "Cookies en lokale opslag",
       cookiesText:
-        "De eigen websitecode plaatst geen trackingcookies en gebruikt geen advertentie- of analysecookies. Er is daarom geen toestemming nodig voor niet-noodzakelijke tracking op basis van de huidige functies.",
+        "De eigen websitecode plaatst geen trackingcookies en gebruikt geen advertentie- of analysecookies. Firebase Authentication kan noodzakelijke browseropslag gebruiken om je login te onthouden. De multiplayerfunctie gebruikt tijdelijke sessiegegevens om een spelroom en aanwezigheid te laten werken. Dit is geen advertentie- of analysetracking.",
       localStorageText:
-        "Voor taalvoorkeuren, scores en spelvoortgang kan lokale opslag in je browser worden gebruikt. Deze informatie blijft op jouw apparaat. Je kunt die verwijderen via de instellingen van je browser.",
+        "Voor taalvoorkeuren, scores en spelvoortgang kan lokale opslag in je browser worden gebruikt. Voor het tellen van een play kan tijdelijk sessieopslag worden gebruikt. Deze lokale informatie blijft op jouw apparaat en kan via de browserinstellingen worden verwijderd.",
       futureTrackingText:
         "Als later advertenties, analytics, sociale plugins of andere niet-noodzakelijke trackers worden toegevoegd, moet dit beleid worden bijgewerkt en moet vooraf een geldige toestemmingskeuze worden gevraagd.",
       footerHome: "Home",
@@ -134,12 +134,12 @@
         "If Online Latu is operated as a business, the official business address and registration number still need to be added here.",
       collectedHeading: "What data is collected?",
       collectedText:
-        "The website does not use accounts, Firebase, Google Analytics, Google Tag Manager or Google AdSense. The website's own code does not collect names, email addresses, IP addresses, profiles or behavioural data for tracking.",
+        "Online Latu uses Firebase Authentication for Google sign-in. When you sign in, Firebase may process basic profile data such as your Google account ID, name, email address and profile photo. Online Latu uses Firestore to store likes and aggregated play counts per game. Flappy Bird multiplayer uses Firebase Realtime Database to synchronize room codes and temporary player game states. Online Latu does not use Google Analytics, Google Tag Manager or Google AdSense.",
       localData:
-        "The games may store scores, game progress and preferences locally on your device using <code>localStorage</code>. The website does not send this data to Online Latu.",
+        "The games may store scores, game progress and preferences locally on your device using <code>localStorage</code>. The language preference is stored locally. Temporary navigation information for counting a play may be stored in <code>sessionStorage</code>. This local data is not sent to Online Latu as part of that storage.",
       technicalHeading: "Technical requests and external sources",
       technicalText:
-        "The hosting provider may process technical data needed to deliver web pages, such as an IP address, time and browser information. Some games load necessary libraries from external CDN servers. Those services may receive technical connection data; check their current terms and consider hosting these files yourself.",
+        "Firebase and the external CDNs used by the website may process technical connection data needed to provide their services, such as an IP address, time and browser information. The hosting provider may process similar data. Firebase, Google and CDN providers process data under their own terms and privacy policies.",
       rightsHeading: "Your rights",
       rightsText:
         "Where the GDPR applies, you may request access, correction, deletion or restriction, or object to processing. You can also complain to the <a href=\"https://www.gegevensbeschermingsautoriteit.be/\">Belgian Data Protection Authority</a>. Please contact us first using the email address above.",
@@ -157,9 +157,9 @@
         "Questions about copyright, content or a possible infringement can be reported to <a href=\"mailto:lauran.calliauw@gmail.com\">lauran.calliauw@gmail.com</a>.",
       cookiesHeading: "Cookies and local storage",
       cookiesText:
-        "The website's own code does not place tracking cookies or use advertising or analytics cookies. Based on the current features, no consent is needed for non-essential tracking.",
+        "The website's own code does not place tracking cookies or use advertising or analytics cookies. Firebase Authentication may use necessary browser storage to remember your sign-in. The multiplayer feature uses temporary session data to make a game room and presence work. This is not advertising or analytics tracking.",
       localStorageText:
-        "Local storage may be used for language preferences, scores and game progress. This information stays on your device and can be removed through your browser settings.",
+        "Local storage may be used for language preferences, scores and game progress. Temporary session storage may be used to count a play. This local information stays on your device and can be removed through your browser settings.",
       futureTrackingText:
         "If advertising, analytics, social plugins or other non-essential trackers are added later, this policy must be updated and valid consent must be requested first.",
       footerHome: "Home",
@@ -216,12 +216,12 @@
         "Si Online Latu est exploité comme une entreprise, l'adresse officielle et le numéro d'entreprise doivent encore être ajoutés ici.",
       collectedHeading: "Quelles données sont collectées ?",
       collectedText:
-        "Le site n'utilise pas de comptes, Firebase, Google Analytics, Google Tag Manager ou Google AdSense. Le code du site ne collecte pas de noms, d'adresses e-mail, d'adresses IP, de profils ou de données comportementales à des fins de suivi.",
+        "Online Latu utilise Firebase Authentication pour la connexion Google. Lors de la connexion, Firebase peut traiter des données de profil de base comme l'identifiant de ton compte Google, ton nom, ton adresse e-mail et ta photo de profil. Online Latu utilise Firestore pour enregistrer les likes et les compteurs de parties agrégés par jeu. Le mode multijoueur de Flappy Bird utilise Firebase Realtime Database pour synchroniser les codes de salon et les états de jeu temporaires des joueurs. Online Latu n'utilise pas Google Analytics, Google Tag Manager ou Google AdSense.",
       localData:
-        "Les jeux peuvent enregistrer localement sur ton appareil les scores, la progression et les préférences via <code>localStorage</code>. Le site n'envoie pas ces données à Online Latu.",
+        "Les jeux peuvent enregistrer localement sur ton appareil les scores, la progression et les préférences via <code>localStorage</code>. La préférence de langue est enregistrée localement. Des informations de navigation temporaires pour compter une partie peuvent être stockées dans <code>sessionStorage</code>. Ces données locales ne sont pas envoyées à Online Latu dans le cadre de ce stockage.",
       technicalHeading: "Requêtes techniques et sources externes",
       technicalText:
-        "L'hébergeur peut traiter les données techniques nécessaires à la diffusion des pages, comme une adresse IP, l'heure et les informations du navigateur. Certains jeux chargent des bibliothèques nécessaires depuis des serveurs CDN externes. Ces services peuvent recevoir des données de connexion techniques ; consulte leurs conditions et envisage d'héberger toi-même ces fichiers.",
+        "Firebase et les CDN externes utilisés par le site peuvent traiter les données techniques nécessaires à leurs services, comme une adresse IP, l'heure et les informations du navigateur. L'hébergeur peut traiter des données similaires. Firebase, Google et les fournisseurs de CDN traitent les données selon leurs propres conditions et politiques de confidentialité.",
       rightsHeading: "Tes droits",
       rightsText:
         "Lorsque le RGPD s'applique, tu peux demander l'accès, la rectification, la suppression ou la limitation du traitement, ou t'y opposer. Tu peux également déposer une plainte auprès de l'<a href=\"https://www.gegevensbeschermingsautoriteit.be/\">Autorité de protection des données</a>. Contacte-nous d'abord à l'adresse e-mail ci-dessus.",
@@ -239,9 +239,9 @@
         "Les questions concernant les droits d'auteur, le contenu ou une éventuelle violation peuvent être envoyées à <a href=\"mailto:lauran.calliauw@gmail.com\">lauran.calliauw@gmail.com</a>.",
       cookiesHeading: "Cookies et stockage local",
       cookiesText:
-        "Le code du site ne place pas de cookies de suivi et n'utilise pas de cookies publicitaires ou analytiques. Selon les fonctionnalités actuelles, aucun consentement n'est nécessaire pour un suivi non essentiel.",
+        "Le code du site ne place pas de cookies de suivi et n'utilise pas de cookies publicitaires ou analytiques. Firebase Authentication peut utiliser un stockage nécessaire du navigateur pour mémoriser ta connexion. Le mode multijoueur utilise des données de session temporaires pour faire fonctionner un salon et la présence des joueurs. Il ne s'agit pas d'un suivi publicitaire ou analytique.",
       localStorageText:
-        "Le stockage local peut être utilisé pour les préférences de langue, les scores et la progression. Ces informations restent sur ton appareil et peuvent être supprimées dans les réglages du navigateur.",
+        "Le stockage local peut être utilisé pour les préférences de langue, les scores et la progression. Un stockage de session temporaire peut être utilisé pour compter une partie. Ces informations locales restent sur ton appareil et peuvent être supprimées dans les réglages du navigateur.",
       futureTrackingText:
         "Si des publicités, des outils d'analyse, des plugins sociaux ou d'autres traceurs non essentiels sont ajoutés, cette politique devra être mise à jour et un consentement valide devra être demandé au préalable.",
       footerHome: "Accueil",

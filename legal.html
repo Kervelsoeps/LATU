@@ -10,6 +10,10 @@
     <title>Online Latu - Juridische informatie</title>
     <link rel="icon" type="image/x-icon" href="logo.ico" />
     <link rel="stylesheet" href="legal.css" />
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
   </head>
   <body>
     <div class="container">
@@ -58,7 +62,7 @@
           <summary data-i18n="privacyHeading">Privacybeleid</summary>
           <div class="policy-content">
             <h2 data-i18n="privacyHeading">Privacybeleid</h2>
-            <p><strong data-i18n="updated">Laatst bijgewerkt:</strong> 20 september 2026</p>
+            <p><strong data-i18n="updated">Laatst bijgewerkt:</strong> 24 september 2026</p>
             <p data-i18n="privacyIntro">
               Dit beleid beschrijft wat Online Latu doet met persoonsgegevens bij
               het bezoeken van de website en het spelen van de games.
@@ -78,25 +82,32 @@
 
             <h3 data-i18n="collectedHeading">Welke gegevens worden verzameld?</h3>
             <p data-i18n="collectedText">
-              De website gebruikt geen accounts, Firebase, Google Analytics,
-              Google Tag Manager of Google AdSense. De website verzamelt via de
-              eigen code geen namen, e-mailadressen, IP-adressen, profielen of
-              gedragsgegevens voor tracking.
+              Voor Google-login gebruikt Online Latu Firebase Authentication.
+              Bij het inloggen kan Firebase basisprofielgegevens verwerken,
+              zoals je Google-account-ID, naam, e-mailadres en profielfoto.
+              Online Latu gebruikt Firestore om likes en geaggregeerde speeltellingen
+              per game te bewaren. Voor Flappy Bird gebruikt de multiplayerfunctie
+              Firebase Realtime Database om roomcodes en tijdelijke spelstatussen
+              van spelers te synchroniseren. Online Latu gebruikt geen Google
+              Analytics, Google Tag Manager of Google AdSense.
             </p>
             <p data-i18n-html="localData">
               De games kunnen lokaal op jouw apparaat scores, spelvoortgang en
-              voorkeuren bewaren via <code>localStorage</code>. Deze gegevens
-              worden door de website niet naar Online Latu verstuurd.
+              voorkeuren bewaren via <code>localStorage</code>. De taalvoorkeur
+              wordt lokaal bewaard. Tijdelijke navigatie-informatie voor het
+              tellen van een play kan via <code>sessionStorage</code> worden
+              gebruikt. Deze lokale gegevens worden niet als onderdeel van deze
+              opslag naar Online Latu verstuurd.
             </p>
 
             <h3 data-i18n="technicalHeading">Technische verzoeken en externe bronnen</h3>
             <p data-i18n="technicalText">
-              De hostingprovider kan technische gegevens verwerken die nodig zijn
-              om webpagina's te leveren, zoals een IP-adres, tijdstip en
-              browserinformatie. Sommige games laden noodzakelijke bibliotheken
-              vanaf externe CDN-servers. Die diensten kunnen technische
-              verbindingsgegevens ontvangen; controleer hun actuele voorwaarden
-              en overweeg deze bestanden zelf te hosten.
+              Firebase en de externe CDN's die de website gebruikt kunnen
+              technische verbindingsgegevens verwerken die nodig zijn om hun
+              diensten te leveren, zoals IP-adres, tijdstip en browserinformatie.
+              De hostingprovider kan zulke gegevens ook verwerken. Firebase,
+              Google en de CDN-providers verwerken gegevens volgens hun eigen
+              voorwaarden en privacybeleid.
             </p>
 
             <h3 data-i18n="rightsHeading">Jouw rechten</h3>
@@ -149,16 +160,20 @@
           <summary data-i18n="cookiesHeading">Cookies en lokale opslag</summary>
           <div class="policy-content">
             <h2 data-i18n="cookiesHeading">Cookies en lokale opslag</h2>
-            <p><strong data-i18n="updated">Laatst bijgewerkt:</strong> 20 september 2026</p>
+            <p><strong data-i18n="updated">Laatst bijgewerkt:</strong> 24 september 2026</p>
             <p data-i18n="cookiesText">
               De eigen websitecode plaatst geen trackingcookies en gebruikt geen
-              advertentie- of analysecookies. Er is daarom geen toestemming nodig
-              voor niet-noodzakelijke tracking op basis van de huidige functies.
+              advertentie- of analysecookies. Firebase Authentication kan
+              noodzakelijke browseropslag gebruiken om je login te onthouden.
+              De multiplayerfunctie gebruikt tijdelijke sessiegegevens om een
+              spelroom en aanwezigheid te laten werken. Dit is geen advertentie-
+              of analysetracking.
             </p>
             <p data-i18n="localStorageText">
               Voor taalvoorkeuren, scores en spelvoortgang kan lokale opslag in je
-              browser worden gebruikt. Deze informatie blijft op jouw apparaat.
-              Je kunt die verwijderen via de instellingen van je browser.
+              browser worden gebruikt. Voor het tellen van een play kan tijdelijk
+              sessieopslag worden gebruikt. Deze lokale informatie blijft op jouw
+              apparaat en kan via de browserinstellingen worden verwijderd.
             </p>
             <p data-i18n="futureTrackingText">
               Als later advertenties, analytics, sociale plugins of andere
