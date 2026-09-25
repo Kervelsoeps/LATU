@@ -17,7 +17,7 @@ Belangrijke onderdelen:
 - `index.html`: homepage, gamecatalogus, zoeken, categorieën, taalkeuze en
   Firebase-kaartstatistieken.
 - `about.html`: uitleg over Online Latu.
-- `legal.html` en `legal.css`: privacybeleid, gebruiksvoorwaarden en informatie
+- `legal.html` en `legal.css`: privacybeleid, gebruiksvoorwaarden en infromatie
   over cookies/lokale opslag.
 - `page-i18n.js`: vertalingen voor `about.html` en `legal.html`.
 - `firebase.js`: Firebase-initialisatie, Google-authenticatie, Firestore-statistieken.

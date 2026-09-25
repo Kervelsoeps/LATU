@@ -63,6 +63,80 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
+        #chessMultiplayerPanel {
+            width: min(100%, 620px);
+            margin-bottom: 18px;
+            padding: 16px;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        #chessMultiplayerPanel h2 {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+        }
+
+        #chessMultiplayerPanel p {
+            margin: 6px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .chess-room-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .chess-room-actions input {
+            min-width: 150px;
+            flex: 1;
+            padding: 9px 10px;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            background: #2a2a35;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .chess-room-actions button,
+        #chessMultiplayerPanel button {
+            margin-top: 0;
+            padding: 9px 12px;
+            font-size: 0.8rem;
+        }
+
+        #chessRoomInfo {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--panel-border);
+        }
+
+        #chessRoomInfo.visible { display: block; }
+
+        #chessRoomCodeLabel {
+            color: var(--accent-neon);
+            font-weight: 800;
+            letter-spacing: 0.12em;
+        }
+
+        #chessCountdown {
+            display: none;
+            position: fixed;
+            inset: 0;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            color: var(--accent-neon);
+            font-size: 5rem;
+            font-weight: 900;
+            text-shadow: 0 4px 20px #000;
+            z-index: 10;
+        }
+
         label {
             font-weight: 600;
             color: var(--text-muted);
@@ -236,10 +310,32 @@
             </select>
         </div>
 
+        <section id="chessMultiplayerPanel" aria-label="Chess multiplayer">
+            <h2>Multiplayer schaken</h2>
+            <p>Maak een room aan of join met een code. Wit is de host, zwart is de tweede speler.</p>
+            <div class="chess-room-actions">
+                <button id="createChessRoomButton" type="button">Room maken</button>
+                <input id="chessRoomCodeInput" type="text" maxlength="6" placeholder="ROOMCODE" aria-label="Chess roomcode">
+                <button id="joinChessRoomButton" type="button">Join room</button>
+            </div>
+            <p id="chessRoomStatus">Nog geen multiplayer-room actief.</p>
+            <p id="chessMultiplayerMessage" aria-live="polite"></p>
+            <div id="chessRoomInfo">
+                <p>Roomcode: <span id="chessRoomCodeLabel"></span></p>
+                <div class="chess-room-actions">
+                    <button id="copyChessRoomButton" type="button">Code kopiëren</button>
+                    <button id="readyChessRoomButton" type="button" hidden>Ik ben ready</button>
+                    <button id="leaveChessRoomButton" type="button" hidden>Room verlaten</button>
+                </div>
+            </div>
+        </section>
+
         <div id="status">Your Turn (White)</div>
         <div id="board" class="board"></div>
-        <button onclick="resetGame()">Restart Match</button>
+        <button id="restartButton" onclick="resetGame()">Restart Match</button>
     </div>
+
+    <div id="chessCountdown" aria-live="assertive"></div>
 
     <script>
         // Using filled variations for black and outlined for white gives the best 3D lighting effect
@@ -253,6 +349,10 @@
         let game = new Chess();
         let selectedSquare = null;
         let currentDifficulty = 'normal';
+        let multiplayerActive = false;
+        let multiplayerColor = 'w';
+        let multiplayerMoveHandler = null;
+        let multiplayerResetHandler = null;
         
         const boardElement = document.getElementById('board');
         const statusElement = document.getElementById('status');
@@ -315,10 +415,16 @@
         function updateStatus() {
             if (game.in_checkmate()) {
                 statusElement.style.color = 'var(--accent-danger)';
-                statusElement.innerText = game.turn() === 'w' ? 'Defeat! Checkmate.' : 'Victory! Checkmate!';
+                const localWasCheckmated = multiplayerActive
+                    ? game.turn() === multiplayerColor
+                    : game.turn() === 'w';
+                statusElement.innerText = localWasCheckmated ? 'Defeat! Checkmate.' : 'Victory! Checkmate!';
             } else if (game.in_draw() || game.in_stalemate() || game.in_threefold_repetition()) {
                 statusElement.style.color = '#eccc68';
                 statusElement.innerText = 'Draw Match';
+            } else if (multiplayerActive) {
+                statusElement.style.color = game.turn() === multiplayerColor ? 'var(--accent-neon)' : '#ff7f50';
+                statusElement.innerText = game.turn() === multiplayerColor ? 'Jouw beurt' : 'Beurt van tegenstander';
             } else {
                 statusElement.style.color = game.turn() === 'w' ? 'var(--accent-neon)' : '#ff7f50';
                 statusElement.innerText = game.turn() === 'w' ? 'Your Turn (White)' : 'Engine Thinking...';
@@ -326,15 +432,16 @@
         }
 
         function handleSquareClick(squareCode) {
-            if (game.game_over() || game.turn() === 'b') return;
+            if (game.game_over() || (multiplayerActive ? game.turn() !== multiplayerColor : game.turn() === 'b')) return;
 
             const piece = game.get(squareCode);
 
             if (selectedSquare === squareCode) {
                 selectedSquare = null;
-            } else if (piece && piece.color === 'w') {
+            } else if (piece && piece.color === (multiplayerActive ? multiplayerColor : 'w')) {
                 selectedSquare = squareCode;
             } else if (selectedSquare) {
+                const previousFen = game.fen();
                 const move = game.move({
                     from: selectedSquare,
                     to: squareCode,
@@ -344,8 +451,10 @@
                 if (move) {
                     selectedSquare = null;
                     updateBoardUI();
-                    
-                    if (!game.game_over()) {
+
+                    if (multiplayerActive) {
+                        multiplayerMoveHandler?.({ from: move.from, to: move.to, promotion: move.promotion || 'q', previousFen });
+                    } else if (!game.game_over()) {
                         setTimeout(makeBotMove, 400); 
                     }
                     return;
@@ -461,13 +570,49 @@
         }
 
         function resetGame() {
+            if (multiplayerActive) {
+                multiplayerResetHandler?.();
+                return;
+            }
             game.reset();
             selectedSquare = null;
             updateBoardUI();
         }
 
+        function configureMultiplayer(active, options = {}) {
+            multiplayerActive = active;
+            multiplayerColor = options.color || 'w';
+            multiplayerMoveHandler = options.onMove || null;
+            multiplayerResetHandler = options.onReset || null;
+            selectedSquare = null;
+            document.getElementById('difficulty').disabled = active;
+            document.getElementById('restartButton').textContent = active ? 'Nieuwe match' : 'Restart Match';
+            if (active) game.reset();
+            if (!active) {
+                game.reset();
+                updateBoardUI();
+            }
+        }
+
+        function applyRemoteState(fen) {
+            if (!fen || game.fen() === fen) return;
+            if (game.load(fen)) {
+                selectedSquare = null;
+                updateBoardUI();
+            }
+        }
+
+        function setMultiplayerCountdown(value) {
+            const element = document.getElementById('chessCountdown');
+            element.textContent = value ? String(value) : '';
+            element.style.display = value ? 'flex' : 'none';
+        }
+
+        window.chessGame = { configureMultiplayer, applyRemoteState, setMultiplayerCountdown };
+
         createBoard();
     </script>
 </body>
 <script type="module" src="firebase-play.js"></script>
+<script type="module" src="chess-multiplayer.js"></script>
 </html>

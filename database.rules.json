@@ -11,6 +11,21 @@
           }
         }
       }
+    },
+    "chessRooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['status', 'players', 'game'])",
+        "players": {
+          "$playerId": {
+            ".validate": "newData.hasChildren(['connected', 'ready', 'color']) && newData.child('color').isString()"
+          }
+        },
+        "game": {
+          ".validate": "newData.hasChildren(['fen', 'turn', 'moveNumber']) && newData.child('fen').isString() && newData.child('turn').isString() && newData.child('moveNumber').isNumber()"
+        }
+      }
     }
   }
 }
