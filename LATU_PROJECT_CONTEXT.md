@@ -25,7 +25,8 @@ Belangrijke onderdelen:
 - `firebase-play.js`: play-telling op gamepagina's en overdracht via
   `sessionStorage`.
 - `flappy-multiplayer.js`: realtime multiplayer voor Flappy Bird.
-- `database.rules.json`: Firebase Realtime Database-regels voor Flappy-rooms.
+- `chess-multiplayer.js`: realtime multiplayer voor Chess.
+- `database.rules.json`: Firebase Realtime Database-regels voor Flappy- en Chess-rooms.
 - `firestore.rules`: Firestore-regels voor game-statistieken en likes.
 - Alle echte HTML-pagina's bevatten vóór `</head>` de officiële Vercel Web
   Analytics-snippet voor statische HTML/JavaScript:
