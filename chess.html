@@ -123,20 +123,6 @@
             letter-spacing: 0.12em;
         }
 
-        #chessCountdown {
-            display: none;
-            position: fixed;
-            inset: 0;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-            color: var(--accent-neon);
-            font-size: 5rem;
-            font-weight: 900;
-            text-shadow: 0 4px 20px #000;
-            z-index: 10;
-        }
-
         label {
             font-weight: 600;
             color: var(--text-muted);
@@ -324,7 +310,6 @@
                 <p>Roomcode: <span id="chessRoomCodeLabel"></span></p>
                 <div class="chess-room-actions">
                     <button id="copyChessRoomButton" type="button">Code kopiëren</button>
-                    <button id="readyChessRoomButton" type="button" hidden>Ik ben ready</button>
                     <button id="leaveChessRoomButton" type="button" hidden>Room verlaten</button>
                 </div>
             </div>
@@ -334,8 +319,6 @@
         <div id="board" class="board"></div>
         <button id="restartButton" onclick="resetGame()">Restart Match</button>
     </div>
-
-    <div id="chessCountdown" aria-live="assertive"></div>
 
     <script>
         // Using filled variations for black and outlined for white gives the best 3D lighting effect
@@ -376,8 +359,13 @@
         }
 
         function getSquareCode(row, col) {
-            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-            const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+            const blackPerspective = multiplayerActive && multiplayerColor === 'b';
+            const files = blackPerspective
+                ? ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a']
+                : ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            const ranks = blackPerspective
+                ? ['1', '2', '3', '4', '5', '6', '7', '8']
+                : ['8', '7', '6', '5', '4', '3', '2', '1'];
             return files[col] + ranks[row];
         }
 
@@ -587,11 +575,8 @@
             selectedSquare = null;
             document.getElementById('difficulty').disabled = active;
             document.getElementById('restartButton').textContent = active ? 'Nieuwe match' : 'Restart Match';
-            if (active) game.reset();
-            if (!active) {
-                game.reset();
-                updateBoardUI();
-            }
+            game.reset();
+            createBoard();
         }
 
         function applyRemoteState(fen) {
@@ -602,13 +587,7 @@
             }
         }
 
-        function setMultiplayerCountdown(value) {
-            const element = document.getElementById('chessCountdown');
-            element.textContent = value ? String(value) : '';
-            element.style.display = value ? 'flex' : 'none';
-        }
-
-        window.chessGame = { configureMultiplayer, applyRemoteState, setMultiplayerCountdown };
+        window.chessGame = { configureMultiplayer, applyRemoteState };
 
         createBoard();
     </script>

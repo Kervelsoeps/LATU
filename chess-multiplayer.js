@@ -12,7 +12,6 @@ import {
 
 const database = getDatabase(app);
 const roomRoot = "chessRooms";
-const COUNTDOWN_MS = 3000;
 const PRESENCE_TIMEOUT_MS = 30000;
 const PRESENCE_INTERVAL_MS = 10000;
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -23,7 +22,6 @@ const roomInput = document.getElementById("chessRoomCodeInput");
 const roomInfo = document.getElementById("chessRoomInfo");
 const roomCodeLabel = document.getElementById("chessRoomCodeLabel");
 const copyButton = document.getElementById("copyChessRoomButton");
-const readyButton = document.getElementById("readyChessRoomButton");
 const leaveButton = document.getElementById("leaveChessRoomButton");
 const roomStatus = document.getElementById("chessRoomStatus");
 const message = document.getElementById("chessMultiplayerMessage");
@@ -35,7 +33,6 @@ let playerReference = null;
 let roomReference = null;
 let roomData = null;
 let stopListening = null;
-let countdownTimer = null;
 let presenceTimer = null;
 let configuredColor = null;
 
@@ -94,15 +91,9 @@ function setBusy(busy) {
 
 function updateRoomControls() {
   const players = activePlayers(roomData?.players, roomData?.hostId);
-  const localPlayer = roomData?.players?.[playerId];
-  const localReady = localPlayer?.ready === true;
-  const waiting = roomData?.status === "waiting";
 
   roomInfo.classList.toggle("visible", Boolean(roomCode));
   roomCodeLabel.textContent = roomCode;
-  readyButton.hidden = !roomCode;
-  readyButton.disabled = !roomCode || !waiting;
-  readyButton.textContent = localReady ? "Niet ready" : "Ik ben ready";
   leaveButton.hidden = !roomCode;
   createButton.disabled = Boolean(roomCode);
   joinButton.disabled = Boolean(roomCode);
@@ -110,16 +101,12 @@ function updateRoomControls() {
 
   if (!roomCode) {
     roomStatus.textContent = "Nog geen multiplayer-room actief.";
-  } else if (roomData?.status === "countdown") {
-    roomStatus.textContent = "Iedereen is ready. De match start bijna.";
   } else if (roomData?.status === "playing") {
     roomStatus.textContent = `Je speelt met ${configuredColor === "w" ? "wit" : "zwart"}.`;
   } else if (players.length < 2) {
     roomStatus.textContent = "Deel de code en wacht op de tweede speler.";
   } else {
-    roomStatus.textContent = localReady
-      ? "Je bent ready. Wacht tot je tegenstander ready is."
-      : "Speler gevonden. Klik op Ik ben ready.";
+    roomStatus.textContent = "Tegenstander gevonden. De match start automatisch.";
   }
 }
 
@@ -148,9 +135,7 @@ function handleRoomSnapshot(snapshot) {
 
   updateRoomControls();
   applyRoomGame(roomData);
-  if (roomData.status === "countdown") startCountdown(roomData.countdownStartedAt);
-  else clearCountdownTimer();
-  maybeStartCountdown(roomData);
+  maybeStartGame(roomData);
 }
 
 function subscribeToRoom() {
@@ -201,62 +186,17 @@ function publishMove({ from, to, promotion = "q", previousFen }) {
   });
 }
 
-function maybeStartCountdown(data) {
-  if (data?.status !== "waiting") return;
+function maybeStartGame(data) {
+  if (!data || !["waiting", "countdown"].includes(data.status)) return;
   const players = activePlayers(data.players, data.hostId);
-  if (players.length < 2 || !players.every(([, player]) => player?.ready === true)) return;
+  if (players.length < 2) return;
 
   runTransaction(roomReference, (current) => {
-    if (!current || current.status !== "waiting") return;
+    if (!current || !["waiting", "countdown"].includes(current.status)) return;
     const currentPlayers = activePlayers(current.players, current.hostId);
-    if (currentPlayers.length < 2 || !currentPlayers.every(([, player]) => player?.ready === true)) return;
-    return { ...current, status: "countdown", countdownStartedAt: Date.now() };
-  }).catch((error) => console.error("Chess-countdown kon niet worden gestart:", error));
-}
-
-function finishCountdown() {
-  if (!roomReference) return;
-  runTransaction(roomReference, (current) => {
-    if (!current || current.status !== "countdown") return;
-    const players = activePlayers(current.players, current.hostId);
-    if (players.length < 2 || !players.every(([, player]) => player?.ready === true)) {
-      return { ...current, status: "waiting", countdownStartedAt: null };
-    }
-    return { ...current, status: "playing", startedAt: Date.now(), countdownStartedAt: null };
+    if (currentPlayers.length < 2) return;
+    return { ...current, status: "playing", startedAt: current.startedAt || Date.now() };
   }).catch((error) => console.error("Chess-match kon niet worden gestart:", error));
-}
-
-function clearCountdownTimer() {
-  if (countdownTimer) window.clearInterval(countdownTimer);
-  countdownTimer = null;
-  window.chessGame?.setMultiplayerCountdown(null);
-}
-
-function startCountdown(startedAt) {
-  clearCountdownTimer();
-  const countdownStart = Number(startedAt) || Date.now();
-  const updateCountdown = () => {
-    const remaining = COUNTDOWN_MS - (Date.now() - countdownStart);
-    if (remaining <= 0) {
-      clearCountdownTimer();
-      finishCountdown();
-      return;
-    }
-    window.chessGame?.setMultiplayerCountdown(Math.ceil(remaining / 1000));
-  };
-  updateCountdown();
-  countdownTimer = window.setInterval(updateCountdown, 100);
-}
-
-async function toggleReady() {
-  if (!playerReference || roomData?.status !== "waiting") return;
-  const currentReady = roomData.players?.[playerId]?.ready === true;
-  try {
-    await update(playerReference, { ready: !currentReady, connected: true });
-  } catch (error) {
-    console.error("Ready-status kon niet worden opgeslagen:", error);
-    setMessage("Je ready-status kon niet worden opgeslagen.");
-  }
 }
 
 async function createRoom() {
@@ -320,7 +260,7 @@ async function joinRoom() {
     await registerPresence();
     window.chessGame.configureMultiplayer(true, { color: "b", onMove: publishMove, onReset: requestRematch });
     subscribeToRoom();
-    setMessage("Je bent gejoined. Klik op Ik ben ready zodra je klaar bent.");
+    setMessage("Je bent gejoined. De match start automatisch.");
     updateRoomControls();
   } catch (error) {
     console.error("Chess-room joinen mislukt:", error);
@@ -347,14 +287,13 @@ function requestRematch() {
         connected: player.connected !== false,
       }]),
     );
-    return { ...current, status: "waiting", game: initialGame(), players, countdownStartedAt: null };
+    return { ...current, status: "waiting", game: initialGame(), players };
   }).catch((error) => console.error("Rematch kon niet worden gestart:", error));
 }
 
 async function cleanupRoom(resetGame = true) {
   stopListening?.();
   stopListening = null;
-  clearCountdownTimer();
   if (presenceTimer) window.clearInterval(presenceTimer);
   presenceTimer = null;
   roomCode = "";
@@ -383,7 +322,6 @@ async function leaveRoom() {
 
 createButton.addEventListener("click", createRoom);
 joinButton.addEventListener("click", joinRoom);
-readyButton.addEventListener("click", toggleReady);
 leaveButton.addEventListener("click", leaveRoom);
 roomInput.addEventListener("input", () => {
   roomInput.value = roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
