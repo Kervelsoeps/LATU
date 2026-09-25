@@ -13,6 +13,8 @@ import {
 const database = getDatabase(app);
 const roomRoot = "chessRooms";
 const COUNTDOWN_MS = 3000;
+const PRESENCE_TIMEOUT_MS = 30000;
+const PRESENCE_INTERVAL_MS = 10000;
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 const createButton = document.getElementById("createChessRoomButton");
@@ -34,6 +36,7 @@ let roomReference = null;
 let roomData = null;
 let stopListening = null;
 let countdownTimer = null;
+let presenceTimer = null;
 let configuredColor = null;
 
 function createPlayerId() {
@@ -55,11 +58,17 @@ function initialGame() {
 }
 
 function playerData(color) {
-  return { connected: true, ready: false, color };
+  return { connected: true, ready: false, color, lastSeenAt: Date.now() };
 }
 
-function activePlayers(players = {}) {
-  return Object.entries(players).filter(([, player]) => player?.connected === true);
+function activePlayers(players = {}, hostId = "") {
+  const cutoff = Date.now() - PRESENCE_TIMEOUT_MS;
+  return Object.entries(players).filter(([id, player]) => {
+    if (player?.connected !== true) return false;
+    // Een host uit een oudere room heeft mogelijk nog geen heartbeatveld.
+    if (id === hostId && !player.lastSeenAt) return true;
+    return Number(player.lastSeenAt || 0) >= cutoff;
+  });
 }
 
 function setMessage(text) {
@@ -84,7 +93,7 @@ function setBusy(busy) {
 }
 
 function updateRoomControls() {
-  const players = activePlayers(roomData?.players);
+  const players = activePlayers(roomData?.players, roomData?.hostId);
   const localPlayer = roomData?.players?.[playerId];
   const localReady = localPlayer?.ready === true;
   const waiting = roomData?.status === "waiting";
@@ -154,6 +163,13 @@ function subscribeToRoom() {
 
 async function registerPresence() {
   await onDisconnect(playerReference).update({ connected: false, ready: false });
+  await update(playerReference, { connected: true, lastSeenAt: Date.now() });
+  if (presenceTimer) window.clearInterval(presenceTimer);
+  presenceTimer = window.setInterval(() => {
+    update(playerReference, { connected: true, lastSeenAt: Date.now() }).catch((error) => {
+      console.error("Chess-presence kon niet worden bijgewerkt:", error);
+    });
+  }, PRESENCE_INTERVAL_MS);
 }
 
 function publishMove({ from, to, promotion = "q", previousFen }) {
@@ -187,12 +203,12 @@ function publishMove({ from, to, promotion = "q", previousFen }) {
 
 function maybeStartCountdown(data) {
   if (data?.status !== "waiting") return;
-  const players = activePlayers(data.players);
+  const players = activePlayers(data.players, data.hostId);
   if (players.length < 2 || !players.every(([, player]) => player?.ready === true)) return;
 
   runTransaction(roomReference, (current) => {
     if (!current || current.status !== "waiting") return;
-    const currentPlayers = activePlayers(current.players);
+    const currentPlayers = activePlayers(current.players, current.hostId);
     if (currentPlayers.length < 2 || !currentPlayers.every(([, player]) => player?.ready === true)) return;
     return { ...current, status: "countdown", countdownStartedAt: Date.now() };
   }).catch((error) => console.error("Chess-countdown kon niet worden gestart:", error));
@@ -202,7 +218,7 @@ function finishCountdown() {
   if (!roomReference) return;
   runTransaction(roomReference, (current) => {
     if (!current || current.status !== "countdown") return;
-    const players = activePlayers(current.players);
+    const players = activePlayers(current.players, current.hostId);
     if (players.length < 2 || !players.every(([, player]) => player?.ready === true)) {
       return { ...current, status: "waiting", countdownStartedAt: null };
     }
@@ -287,7 +303,7 @@ async function joinRoom() {
     const existing = await get(reference);
     if (!existing.exists()) throw new Error("Room bestaat niet");
     const currentRoom = existing.val();
-    if (currentRoom.status !== "waiting" || activePlayers(currentRoom.players).length >= 2) {
+    if (currentRoom.status !== "waiting" || activePlayers(currentRoom.players, currentRoom.hostId).length >= 2) {
       throw new Error("Deze room is niet meer beschikbaar");
     }
 
@@ -298,7 +314,7 @@ async function joinRoom() {
     playerReference = ref(database, `${roomRoot}/${code}/players/${playerId}`);
     const joinResult = await runTransaction(reference, (current) => {
       if (!current || current.status !== "waiting") return;
-      if (activePlayers(current.players).length >= 2) return;
+      if (activePlayers(current.players, current.hostId).length >= 2) return;
       return {
         ...current,
         players: { ...(current.players || {}), [playerId]: playerData("b") },
@@ -344,6 +360,8 @@ async function cleanupRoom(resetGame = true) {
   stopListening?.();
   stopListening = null;
   clearCountdownTimer();
+  if (presenceTimer) window.clearInterval(presenceTimer);
+  presenceTimer = null;
   roomCode = "";
   playerId = "";
   role = "";
