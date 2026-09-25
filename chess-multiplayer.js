@@ -59,11 +59,21 @@ function playerData(color) {
 }
 
 function activePlayers(players = {}) {
-  return Object.entries(players).filter(([, player]) => player?.connected !== false);
+  return Object.entries(players).filter(([, player]) => player?.connected === true);
 }
 
 function setMessage(text) {
   message.textContent = text;
+}
+
+function readableFirebaseError(error) {
+  if (error?.code === "PERMISSION_DENIED" || error?.code === "permission-denied") {
+    return "Firebase weigert deze room. Publiceer database.rules.json opnieuw voor de Realtime Database.";
+  }
+  if (error?.code === "NETWORK_ERROR") {
+    return "De verbinding met Firebase is verbroken. Controleer je internetverbinding.";
+  }
+  return error?.message || "onbekende fout";
 }
 
 function setBusy(busy) {
@@ -258,7 +268,7 @@ async function createRoom() {
   } catch (error) {
     console.error("Chess-room aanmaken mislukt:", error);
     cleanupRoom(false);
-    setMessage("Room aanmaken mislukt. Controleer je Firebase-configuratie.");
+    setMessage(`Room aanmaken mislukt: ${readableFirebaseError(error)}`);
   } finally {
     setBusy(false);
   }
@@ -303,8 +313,13 @@ async function joinRoom() {
     updateRoomControls();
   } catch (error) {
     console.error("Chess-room joinen mislukt:", error);
+    if (role === "guest" && playerReference) {
+      await remove(playerReference).catch((cleanupError) => {
+        console.error("Mislukte gastregistratie kon niet worden opgeruimd:", cleanupError);
+      });
+    }
     cleanupRoom(false);
-    setMessage(`Joinen mislukt: ${error?.message || "onbekende fout"}`);
+    setMessage(`Joinen mislukt: ${readableFirebaseError(error)}`);
   } finally {
     setBusy(false);
   }
