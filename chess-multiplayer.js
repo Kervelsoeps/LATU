@@ -312,15 +312,10 @@ async function joinRoom() {
     roomCode = code;
     roomReference = reference;
     playerReference = ref(database, `${roomRoot}/${code}/players/${playerId}`);
-    const joinResult = await runTransaction(reference, (current) => {
-      if (!current || current.status !== "waiting") return;
-      if (activePlayers(current.players, current.hostId).length >= 2) return;
-      return {
-        ...current,
-        players: { ...(current.players || {}), [playerId]: playerData("b") },
-      };
-    });
-    if (!joinResult.committed) throw new Error("Deze room is net vol geraakt");
+    // Net als Flappy schrijven we alleen de nieuwe speler onder /players.
+    // Een root-transactie kan onnodig worden afgewezen door de room-validatie
+    // wanneer een oudere room nog geen actuele game-state bevat.
+    await update(playerReference, playerData("b"));
     configuredColor = "b";
     await registerPresence();
     window.chessGame.configureMultiplayer(true, { color: "b", onMove: publishMove, onReset: requestRematch });
