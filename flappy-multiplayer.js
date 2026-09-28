@@ -405,7 +405,10 @@ async function createRoom() {
   } catch (error) {
     console.error("Room aanmaken mislukt:", error);
     cleanupRoom(false);
-    setMessage("Room aanmaken mislukt. Controleer je Realtime Database-URL en regels.");
+    const details = error?.code === "PERMISSION_DENIED"
+      ? "Firebase weigert de toegang. Publiceer de Realtime Database-regels opnieuw."
+      : error?.message || "onbekende Firebase-fout";
+    setMessage(`Room aanmaken mislukt: ${details}`);
   } finally {
     setBusy(false);
   }
