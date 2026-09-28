@@ -155,7 +155,7 @@
 <div id="pageShell">
     <section id="multiplayerPanel" aria-label="Multiplayer">
         <h1>Flappy Bird multiplayer</h1>
-        <p>Maak een room aan of geef de roomcode van je vriend in. Zodra de host start, vliegen jullie tegelijk.</p>
+        <p>Maak een room aan of deel de roomcode. Er kunnen maximaal 10 spelers tegelijk meevliegen.</p>
         <div class="room-actions">
             <button id="createRoomButton" type="button">Room aanmaken</button>
             <input id="roomCodeInput" type="text" maxlength="6" placeholder="ROOMCODE" aria-label="Roomcode">
@@ -213,9 +213,9 @@ let gameOver = false;
 let gameStarted = false;
 let multiplayerActive = false;
 let multiplayerResult = "";
-let opponentBird = null;
+let opponentBirds = [];
 let multiplayerCallbacks = {};
-let multiplayerLobby = { ready: false, opponentReady: false, countdown: null };
+let multiplayerLobby = { ready: false, readyCount: 0, playerCount: 0, countdown: null };
 
 function multiplayerResultButtonBounds() {
     return {
@@ -292,13 +292,13 @@ function prepareMultiplayerRound() {
 function configureMultiplayer(active, callbacks = {}) {
     multiplayerActive = active;
     multiplayerCallbacks = callbacks;
-    multiplayerLobby = { ready: false, opponentReady: false, countdown: null };
-    opponentBird = null;
+    multiplayerLobby = { ready: false, readyCount: 0, playerCount: 0, countdown: null };
+    opponentBirds = [];
     if (active) resetGame(false);
 }
 
-function setOpponentBird(state) {
-    opponentBird = state ? { ...state } : null;
+function setOpponentBirds(states = []) {
+    opponentBirds = Array.isArray(states) ? states.map((state) => ({ ...state })) : [];
 }
 
 function showMultiplayerResult(message) {
@@ -314,7 +314,7 @@ window.flappyGame = {
     configureMultiplayer,
     beginMultiplayerRound,
     prepareMultiplayerRound,
-    setOpponentBird,
+    setOpponentBirds,
     showMultiplayerResult,
     setMultiplayerLobby,
     getState: () => ({ y: bird.y, angle: bird.angle, score, alive: !gameOver }),
@@ -521,15 +521,18 @@ function draw() {
     });
     ctx.globalAlpha = 1.0;
 
-    // Teken de vogel van de tegenstander semi-transparant.
-    if (multiplayerActive && opponentBird && (!gameStarted || opponentBird.alive !== false)) {
-        drawBird({
-            x: bird.x,
-            y: opponentBird.y,
-            angle: opponentBird.angle,
-            radius: bird.radius,
-            wingY: Math.sin(frameCount * 0.4) * 5,
-        }, "#4b9bd2", 0.42);
+    // Teken de vogels van de andere spelers semi-transparant.
+    if (multiplayerActive) {
+        opponentBirds.forEach((opponent, index) => {
+            if (gameStarted && opponent.alive === false) return;
+            drawBird({
+                x: bird.x,
+                y: opponent.y,
+                angle: opponent.angle,
+                radius: bird.radius,
+                wingY: Math.sin(frameCount * 0.4 + index) * 5,
+            }, opponent.color, 0.42);
+        });
     }
 
     // Teken Vogel
@@ -572,7 +575,9 @@ function draw() {
                 );
                 ctx.font = "16px sans-serif";
                 ctx.fillText(
-                    multiplayerLobby.opponentReady ? "Wacht op de countdown" : "Wacht op je tegenstander",
+                    multiplayerLobby.readyCount > 0
+                        ? `${multiplayerLobby.readyCount}/${multiplayerLobby.playerCount} spelers ready`
+                        : "Wacht op andere spelers",
                     canvas.width / 2,
                     canvas.height / 2 + 25,
                 );
