@@ -531,7 +531,7 @@ function draw() {
                 angle: opponent.angle,
                 radius: bird.radius,
                 wingY: Math.sin(frameCount * 0.4 + index) * 5,
-            }, opponent.color, 0.42);
+            }, opponent.color || "#4b9bd2", 0.42);
         });
     }
 
@@ -603,7 +603,7 @@ function draw() {
 
         ctx.fillStyle = multiplayerResult === "Jij wint!"
             ? "#27ae60"
-            : multiplayerResult === "Je tegenstander wint!"
+            : multiplayerResult
                 ? "#e74c3c"
                 : "#d68910";
         ctx.font = "bold 28px sans-serif";
@@ -623,7 +623,7 @@ function draw() {
             ctx.fillStyle = multiplayerLobby.ready ? "#eee" : "#302600";
             ctx.font = "bold 16px sans-serif";
             ctx.fillText(
-                multiplayerLobby.ready ? "WACHT OP DE ANDERE SPELER" : "IK BEN OPNIEUW READY",
+                multiplayerLobby.ready ? "WACHT OP DE ANDERE SPELERS" : "IK BEN OPNIEUW READY",
                 canvas.width / 2,
                 bounds.y + 27,
             );

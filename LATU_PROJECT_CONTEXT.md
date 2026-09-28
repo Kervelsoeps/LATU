@@ -102,8 +102,9 @@ Realtime Database voor Flappy multiplayer:
 
 - Pad: `flappyRooms/{roomId}`.
 - Een room heeft minstens `status` en `players`.
-- Een speler heeft onder andere `connected`, `alive`, `y` en `score`; daarnaast
-  worden `ready`, `live`, `angle` en tijdstempels gebruikt.
+- Een room ondersteunt maximaal 10 actieve spelers. Een speler heeft onder
+  andere `connected`, `alive`, `y` en `score`; daarnaast worden `ready`, `live`,
+  `angle`, een vogel-kleur en tijdstempels gebruikt.
 - Roomstatussen: `waiting`, `countdown`, `playing`, `finished`.
 - Presence wordt bijgewerkt met `onDisconnect`.
 - Roomcodes zijn zes tekens lang en gebruiken geen verwarrende tekens.
@@ -188,7 +189,7 @@ controleren. Op sommige hostingplatformen zijn hoofdletters in URL's relevant.
 - Google inloggen/uitloggen werkt.
 - Een ingelogde gebruiker ziet stats, kan één like toevoegen en weer verwijderen.
 - Een game-opening telt niet dubbel.
-- Flappy multiplayer werkt met twee aparte sessies: create, join, ready,
+- Flappy multiplayer werkt met maximaal 10 aparte sessies: create, join, ready,
   countdown, spelen, winnen/verliezen, verlaten en reconnect.
 - Geen onbedoelde wijziging in Firebase-regels of juridische teksten.
 - Iedere echte HTML-pagina heeft precies één Vercel Web Analytics-integratie

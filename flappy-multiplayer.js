@@ -291,7 +291,7 @@ function startLocalRound(startedAt = Date.now()) {
   roundStartedAt = Number(startedAt) || Date.now();
   localEndedAt = null;
   resultShown = false;
-  setMessage("Vlieg! Overleef langer dan je tegenstander.");
+  setMessage("Vlieg! Overleef langer dan de andere spelers.");
   window.flappyGame.beginMultiplayerRound();
 }
 
